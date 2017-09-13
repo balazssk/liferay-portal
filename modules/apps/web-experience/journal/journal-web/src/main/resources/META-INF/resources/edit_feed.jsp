@@ -74,7 +74,7 @@ if ((ddmStructure == null) && Validator.isNotNull(ddmTemplateKey)) {
 String ddmRendererTemplateKey = ParamUtil.getString(request, "ddmRendererTemplateKey");
 
 if (Validator.isNull(ddmRendererTemplateKey) && (feed != null)) {
-	ddmRendererTemplateKey = feed.getDDMTemplateKey();
+	ddmRendererTemplateKey = feed.getDDMRendererTemplateKey();
 }
 
 String contentField = BeanParamUtil.getString(feed, request, "contentField");
@@ -401,8 +401,8 @@ renderResponse.setTitle((feed == null) ? LanguageUtil.get(request, "new-feed") :
 			var renderedWebContent = '<%= JournalFeedConstants.RENDERED_WEB_CONTENT %>';
 
 			if (selectedFeedItemOption.data('contentfield') === renderedWebContent) {
-				contentFieldValue = renderedWebContent;
 				ddmRendererTemplateKeyValue = contentFieldValue;
+				contentFieldValue = renderedWebContent;
 			}
 
 			form.fm('contentField').val(contentFieldValue);
