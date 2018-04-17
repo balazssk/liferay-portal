@@ -3,7 +3,7 @@
 
 	var NEW_LINE = '\n';
 
-	var REGEX_CREOLE_RESERVED_CHARACTERS = /(\/{1,2}|={1,6}|\[{1,2}|\]{1,2}|\\{1,2}|\*{1,}|----|{{2,3}|}{2,3}|#{1,})/g;
+	var REGEX_CREOLE_RESERVED_CHARACTERS = /(~{1,2}|\/{1,2}|={1,6}|\[{1,2}|\]{1,2}|\\{1,2}|\*{1,}|----|{{2,3}|}{2,3}|#{1,})/g;
 
 	var REGEX_HEADER = /^h([1-6])$/i;
 
@@ -616,7 +616,7 @@
 
 		_skipParse: false,
 
-		_verbatim: true
+		_verbatim: false
 	};
 
 	CKEDITOR.plugins.add(
