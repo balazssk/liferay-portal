@@ -57,7 +57,7 @@ public class ExportImportConfigurationParameterMapFactoryImpl
 
 	public Map<String, String[]> buildFullPublishParameterMap() {
 		return buildParameterMap(
-			PortletDataHandlerKeys.DATA_STRATEGY_MIRROR_OVERWRITE, true, false,
+			PortletDataHandlerKeys.DATA_STRATEGY_MIRROR_OVERWRITE, false, false,
 			true, true, false, true, true, true, true, true, null, true, true,
 			null, true, null, ExportImportDateUtil.RANGE_ALL, true, true,
 			UserIdStrategy.CURRENT_USER_ID);
@@ -65,7 +65,7 @@ public class ExportImportConfigurationParameterMapFactoryImpl
 
 	public Map<String, String[]> buildParameterMap() {
 		return buildParameterMap(
-			PortletDataHandlerKeys.DATA_STRATEGY_MIRROR_OVERWRITE, true, false,
+			PortletDataHandlerKeys.DATA_STRATEGY_MIRROR_OVERWRITE, false, false,
 			true, false, false, true, true, true, true, true, null, true, true,
 			null, true, null, ExportImportDateUtil.RANGE_FROM_LAST_PUBLISH_DATE,
 			true, true, UserIdStrategy.CURRENT_USER_ID);
@@ -208,7 +208,7 @@ public class ExportImportConfigurationParameterMapFactoryImpl
 
 		// Delete missing layouts
 
-		boolean deleteMissingLayoutsParameter = true;
+		boolean deleteMissingLayoutsParameter = false;
 
 		if (deleteMissingLayouts != null) {
 			deleteMissingLayoutsParameter = deleteMissingLayouts.booleanValue();
