@@ -14,8 +14,10 @@
 
 package com.liferay.message.boards.web.internal.upgrade;
 
+import com.liferay.message.boards.constants.MBPortletKeys;
 import com.liferay.message.boards.web.internal.upgrade.v1_0_0.UpgradePortletSettings;
 import com.liferay.portal.kernel.settings.SettingsFactory;
+import com.liferay.portal.kernel.upgrade.BaseUpgradePortletId;
 import com.liferay.portal.kernel.upgrade.DummyUpgradeStep;
 import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
 
@@ -33,7 +35,18 @@ public class MBWebUpgrade implements UpgradeStepRegistrator {
 		registry.register("0.0.0", "1.0.0", new DummyUpgradeStep());
 
 		registry.register(
-			"0.0.1", "1.0.0", new UpgradePortletSettings(_settingsFactory));
+			"0.0.1", "1.0.0",
+			new BaseUpgradePortletId() {
+
+				@Override
+				protected String[][] getRenamePortletIdsArray() {
+					return new String[][] {
+						{"19", MBPortletKeys.MESSAGE_BOARDS}
+					};
+				}
+
+			},
+			new UpgradePortletSettings(_settingsFactory));
 	}
 
 	@Reference(unbind = "-")

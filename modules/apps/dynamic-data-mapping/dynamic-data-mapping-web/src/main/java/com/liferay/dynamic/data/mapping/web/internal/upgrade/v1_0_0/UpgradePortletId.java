@@ -24,7 +24,10 @@ public class UpgradePortletId extends BaseUpgradePortletId {
 
 	@Override
 	protected String[][] getRenamePortletIdsArray() {
-		return new String[][] {{"166", DDMPortletKeys.DYNAMIC_DATA_MAPPING}};
+		return new String[][] {
+			{"166", DDMPortletKeys.DYNAMIC_DATA_MAPPING},
+			{"183", DDMPortletKeys.PORTLET_DISPLAY_TEMPLATE}
+		};
 	}
 
 }

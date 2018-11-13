@@ -32,4 +32,7 @@ public class DDMPortletKeys {
 		"com_liferay_dynamic_data_mapping_form_web_portlet_" +
 			"DDMFormBrowserPortlet";
 
+	public static final String PORTLET_DISPLAY_TEMPLATE =
+		"com_liferay_dynamic_data_mapping_web_portlet_" +
+			"PortletDisplayTemplatePortlet";
 }
