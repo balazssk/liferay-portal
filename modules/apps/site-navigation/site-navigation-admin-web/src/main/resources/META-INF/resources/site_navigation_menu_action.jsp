@@ -155,7 +155,7 @@ PortletURL portletURL = renderResponse.createRenderURL();
 		/>
 	</c:if>
 
-	<c:if test="<%= SiteNavigationMenuPermission.contains(permissionChecker, siteNavigationMenu, ActionKeys.DELETE) %>">
+	<c:if test="<%= SiteNavigationMenuPermission.contains(permissionChecker, siteNavigationMenu, ActionKeys.DELETE) && siteNavigationAdminDisplayContext.hasEditPermission() %>">
 		<portlet:actionURL name="/navigation_menu/delete_site_navigation_menu" var="deleteSiteNavigationMenuURL">
 			<portlet:param name="redirect" value="<%= portletURL.toString() %>" />
 			<portlet:param name="siteNavigationMenuId" value="<%= String.valueOf(siteNavigationMenu.getSiteNavigationMenuId()) %>" />
