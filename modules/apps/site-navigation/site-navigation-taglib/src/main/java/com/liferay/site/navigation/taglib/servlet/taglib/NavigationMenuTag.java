@@ -190,7 +190,7 @@ public class NavigationMenuTag extends IncludeTag {
 
 		List<Layout> ancestorLayouts = layout.getAncestors();
 
-		List<NavItem> navItems = new ArrayList<>(ancestorLayouts.size());
+		List<NavItem> navItems = new ArrayList<>(ancestorLayouts.size() + 1);
 
 		for (int i = ancestorLayouts.size() - 1; i >= 0; i--) {
 			Layout ancestorLayout = ancestorLayouts.get(i);
@@ -198,6 +198,8 @@ public class NavigationMenuTag extends IncludeTag {
 			navItems.add(
 				new NavItem(request, themeDisplay, ancestorLayout, null));
 		}
+
+		navItems.add(new NavItem(request, themeDisplay, layout, null));
 
 		return navItems;
 	}
