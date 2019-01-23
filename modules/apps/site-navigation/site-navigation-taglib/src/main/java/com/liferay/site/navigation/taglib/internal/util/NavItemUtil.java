@@ -29,6 +29,7 @@ import com.liferay.site.navigation.type.SiteNavigationMenuItemType;
 import com.liferay.site.navigation.type.SiteNavigationMenuItemTypeRegistry;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -41,6 +42,35 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(immediate = true, service = {})
 public class NavItemUtil {
+
+	public static List<NavItem> getBranchNavItems(HttpServletRequest request)
+		throws PortalException {
+
+		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		Layout layout = themeDisplay.getLayout();
+
+		if (layout.isRootLayout()) {
+			return Collections.singletonList(
+				new NavItem(request, themeDisplay, layout, null));
+		}
+
+		List<Layout> ancestorLayouts = layout.getAncestors();
+
+		List<NavItem> navItems = new ArrayList<>(ancestorLayouts.size() + 1);
+
+		for (int i = ancestorLayouts.size() - 1; i >= 0; i--) {
+			Layout ancestorLayout = ancestorLayouts.get(i);
+
+			navItems.add(
+				new NavItem(request, themeDisplay, ancestorLayout, null));
+		}
+
+		navItems.add(new NavItem(request, themeDisplay, layout, null));
+
+		return navItems;
+	}
 
 	public static List<NavItem> getChildNavItems(
 		HttpServletRequest request, long siteNavigationMenuId,

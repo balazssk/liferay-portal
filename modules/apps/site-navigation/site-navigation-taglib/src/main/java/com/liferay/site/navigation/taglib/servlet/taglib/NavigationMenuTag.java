@@ -38,7 +38,6 @@ import com.liferay.site.navigation.taglib.internal.util.SiteNavigationMenuNavIte
 import com.liferay.taglib.util.IncludeTag;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -178,30 +177,7 @@ public class NavigationMenuTag extends IncludeTag {
 	protected List<NavItem> getBranchNavItems(HttpServletRequest request)
 		throws PortalException {
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
-		Layout layout = themeDisplay.getLayout();
-
-		if (layout.isRootLayout()) {
-			return Collections.singletonList(
-				new NavItem(request, themeDisplay, layout, null));
-		}
-
-		List<Layout> ancestorLayouts = layout.getAncestors();
-
-		List<NavItem> navItems = new ArrayList<>(ancestorLayouts.size() + 1);
-
-		for (int i = ancestorLayouts.size() - 1; i >= 0; i--) {
-			Layout ancestorLayout = ancestorLayouts.get(i);
-
-			navItems.add(
-				new NavItem(request, themeDisplay, ancestorLayout, null));
-		}
-
-		navItems.add(new NavItem(request, themeDisplay, layout, null));
-
-		return navItems;
+		return NavItemUtil.getBranchNavItems(request);
 	}
 
 	protected String getDisplayStyle() {
