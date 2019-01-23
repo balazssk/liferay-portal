@@ -253,6 +253,9 @@ public class NavigationMenuTag extends IncludeTag {
 			return new ArrayList<>();
 		}
 
+		SiteNavigationMenuItem originalSiteNavigationMenuItem =
+			siteNavigationMenuItem;
+
 		List<SiteNavigationMenuItem> ancestorSiteNavigationMenuItems =
 			new ArrayList<>();
 
@@ -282,7 +285,7 @@ public class NavigationMenuTag extends IncludeTag {
 
 		navItems.add(
 			new SiteNavigationMenuNavItem(
-				request, themeDisplay, siteNavigationMenuItem));
+				request, themeDisplay, originalSiteNavigationMenuItem));
 
 		return navItems;
 	}
