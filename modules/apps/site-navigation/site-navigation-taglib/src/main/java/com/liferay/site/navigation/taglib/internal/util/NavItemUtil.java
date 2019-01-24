@@ -140,8 +140,7 @@ public class NavItemUtil {
 			if ((rootLayoutLevel >= 0) &&
 				(rootLayoutLevel <= (branchNavItems.size() + 1))) {
 
-				int absoluteLevel = _getAbsoluteLevel(
-					rootLayoutLevel, branchNavItems);
+				int absoluteLevel = branchNavItems.size() - 1 - rootLayoutLevel;
 
 				if (absoluteLevel == -1) {
 					navItems = NavItem.fromLayouts(request, themeDisplay, null);
@@ -202,14 +201,6 @@ public class NavItemUtil {
 
 		_siteNavigationMenuItemTypeRegistry =
 			siteNavigationMenuItemTypeRegistry;
-	}
-
-	private static int _getAbsoluteLevel(
-		int rootLayoutLevel, List<NavItem> branchNavItems) {
-
-		int absoluteLevel = branchNavItems.size() - 1 - rootLayoutLevel;
-
-		return absoluteLevel;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(NavItemUtil.class);
