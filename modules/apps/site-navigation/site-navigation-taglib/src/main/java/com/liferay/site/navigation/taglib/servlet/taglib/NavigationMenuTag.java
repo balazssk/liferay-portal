@@ -79,7 +79,7 @@ public class NavigationMenuTag extends IncludeTag {
 			if (_siteNavigationMenuId > 0) {
 				branchNavItems = _getBranchNavItems();
 
-				navItems = _getMenuNavItems(branchNavItems);
+				navItems = _getMenuNavItems(request, branchNavItems);
 			}
 			else {
 				branchNavItems = getBranchNavItems(request);
@@ -206,7 +206,7 @@ public class NavigationMenuTag extends IncludeTag {
 	@Deprecated
 	protected List<NavItem> getMenuItems() {
 		try {
-			return _getMenuNavItems(new ArrayList<NavItem>());
+			return _getMenuNavItems(request, new ArrayList<NavItem>());
 		}
 		catch (Exception e) {
 			_log.error(e, e);
@@ -290,15 +290,26 @@ public class NavigationMenuTag extends IncludeTag {
 		return navItems;
 	}
 
-	private List<NavItem> _getMenuNavItems(List<NavItem> branchNavItems)
+	private List<NavItem> _getMenuNavItems(
+			HttpServletRequest request, List<NavItem> branchNavItems)
 		throws Exception {
 
 		if (_rootItemType.equals("relative") && (_rootItemLevel >= 0) &&
-			(_rootItemLevel < branchNavItems.size())) {
+			(_rootItemLevel < branchNavItems.size() + 1)) {
 
-			NavItem rootNavItem = branchNavItems.get(_rootItemLevel);
+			int absoluteLevel = branchNavItems.size() - 1 - _rootItemLevel;
 
-			return rootNavItem.getChildren();
+			if (absoluteLevel == -1) {
+				return NavItemUtil.getChildNavItems(
+					request, _siteNavigationMenuId, 0);
+			}
+			else if ((absoluteLevel >= 0) &&
+					 (absoluteLevel < branchNavItems.size())) {
+
+				NavItem rootNavItem = branchNavItems.get(absoluteLevel);
+
+				return rootNavItem.getChildren();
+			}
 		}
 		else if (_rootItemType.equals("absolute")) {
 			if (_rootItemLevel == 0) {
