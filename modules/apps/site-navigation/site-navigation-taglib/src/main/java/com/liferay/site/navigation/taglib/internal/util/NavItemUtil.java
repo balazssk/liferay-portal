@@ -141,19 +141,15 @@ public class NavItemUtil {
 				(rootLayoutLevel <= (branchNavItems.size() + 1))) {
 
 				int absoluteLevel = _getAbsoluteLevel(
-					rootLayoutLevel, branchNavItems, themeDisplay);
+					rootLayoutLevel, branchNavItems);
 
-				if (absoluteLevel == 0) {
+				if (absoluteLevel == -1) {
 					navItems = NavItem.fromLayouts(request, themeDisplay, null);
 				}
-				else if ((absoluteLevel > 0) &&
-						 (absoluteLevel <= branchNavItems.size())) {
+				else if ((absoluteLevel >= 0) &&
+						 (absoluteLevel < branchNavItems.size())) {
 
-					rootNavItem = branchNavItems.get(absoluteLevel - 1);
-				}
-				else if (absoluteLevel == (branchNavItems.size() + 1)) {
-					rootNavItem = new NavItem(
-						request, themeDisplay, themeDisplay.getLayout(), null);
+					rootNavItem = branchNavItems.get(absoluteLevel);
 				}
 			}
 		}
@@ -209,16 +205,9 @@ public class NavItemUtil {
 	}
 
 	private static int _getAbsoluteLevel(
-		int rootLayoutLevel, List<NavItem> branchNavItems,
-		ThemeDisplay themeDisplay) {
+		int rootLayoutLevel, List<NavItem> branchNavItems) {
 
-		int absoluteLevel = branchNavItems.size() - (rootLayoutLevel - 1);
-
-		Layout layout = themeDisplay.getLayout();
-
-		if (layout.isFirstParent()) {
-			absoluteLevel -= 1;
-		}
+		int absoluteLevel = branchNavItems.size() - 1 - rootLayoutLevel;
 
 		return absoluteLevel;
 	}
