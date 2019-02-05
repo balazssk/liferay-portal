@@ -49,6 +49,7 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
@@ -76,6 +77,8 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.rss.util.RSSUtil;
+import com.liferay.staging.StagingGroupHelper;
+import com.liferay.staging.StagingGroupHelperUtil;
 
 import java.io.Serializable;
 
@@ -812,6 +815,28 @@ public class AssetPublisherDisplayContext {
 		return _referencedModelsGroupIds;
 	}
 
+	public long[] getReferencedModelsGroupIdsForPortlet(String portletId)
+		throws PortalException {
+
+		if (Validator.isNull(portletId)) {
+			return getReferencedModelsGroupIds();
+		}
+
+		if (_portletReferencedModelsGroupIds == null) {
+			_portletReferencedModelsGroupIds = new HashMap<>();
+		}
+
+		long[] ret = _portletReferencedModelsGroupIds.get(portletId);
+
+		if (ret == null) {
+			ret = _createPortletReferencedModelsGroupIdsEntry(portletId);
+
+			_portletReferencedModelsGroupIds.put(portletId, ret);
+		}
+
+		return ret;
+	}
+
 	public String getRootPortletId() {
 		if (_rootPortletId != null) {
 			return _rootPortletId;
@@ -1540,6 +1565,32 @@ public class AssetPublisherDisplayContext {
 		}
 	}
 
+	private long[] _createPortletReferencedModelsGroupIdsEntry(String portletId)
+		throws PortalException {
+
+		long[] referencedModelsGroupIds = getReferencedModelsGroupIds();
+
+		StagingGroupHelper stagingGroupHelper =
+			StagingGroupHelperUtil.getStagingGroupHelper();
+
+		if (stagingGroupHelper.isLocalStagingGroup(getScopeGroupId()) &&
+			!stagingGroupHelper.isStagedPortlet(_scopeGroupId, portletId)) {
+
+			for (int i = 0; i < referencedModelsGroupIds.length; i++) {
+				if (referencedModelsGroupIds[i] == _scopeGroupId) {
+					Group group = stagingGroupHelper.fetchLocalLiveGroup(
+						_scopeGroupId);
+
+					referencedModelsGroupIds[i] = group.getGroupId();
+
+					break;
+				}
+			}
+		}
+
+		return referencedModelsGroupIds;
+	}
+
 	private List<AssetCategory> _filterAssetCategories(long[] categoryIds) {
 		List<AssetCategory> filteredCategories = new ArrayList<>();
 
@@ -1633,6 +1684,7 @@ public class AssetPublisherDisplayContext {
 	private String _orderByType2;
 	private String _paginationType;
 	private final PortletPreferences _portletPreferences;
+	private Map<String, long[]> _portletReferencedModelsGroupIds;
 	private final PortletRequest _portletRequest;
 	private String _portletResource;
 	private final PortletResponse _portletResponse;

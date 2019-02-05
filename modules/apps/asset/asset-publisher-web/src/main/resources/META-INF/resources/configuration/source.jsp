@@ -90,9 +90,13 @@ List<AssetRendererFactory<?>> classTypesAssetRendererFactories = (List<AssetRend
 	List<AssetRendererFactory<?>> assetRendererFactories = ListUtil.sort(AssetRendererFactoryRegistryUtil.getAssetRendererFactories(company.getCompanyId()), new AssetRendererFactoryTypeNameComparator(locale));
 
 	for (AssetRendererFactory<?> assetRendererFactory : assetRendererFactories) {
+		String portletId = assetRendererFactory.getPortletId();
+
+		long[] referencedModelsGroupIds = assetPublisherDisplayContext.getReferencedModelsGroupIdsForPortlet(portletId);
+
 		ClassTypeReader classTypeReader = assetRendererFactory.getClassTypeReader();
 
-		List<ClassType> classTypes = classTypeReader.getAvailableClassTypes(assetPublisherDisplayContext.getReferencedModelsGroupIds(), locale);
+		List<ClassType> classTypes = classTypeReader.getAvailableClassTypes(referencedModelsGroupIds, locale);
 
 		if (classTypes.isEmpty()) {
 			continue;
@@ -268,9 +272,13 @@ List<AssetRendererFactory<?>> classTypesAssetRendererFactories = (List<AssetRend
 		}
 
 		<%
+		String portletId = curRendererFactory.getPortletId();
+
+		long[] referencedModelsGroupIds = assetPublisherDisplayContext.getReferencedModelsGroupIdsForPortlet(portletId);
+
 		ClassTypeReader classTypeReader = curRendererFactory.getClassTypeReader();
 
-		List<ClassType> assetAvailableClassTypes = classTypeReader.getAvailableClassTypes(assetPublisherDisplayContext.getReferencedModelsGroupIds(), locale);
+		List<ClassType> assetAvailableClassTypes = classTypeReader.getAvailableClassTypes(referencedModelsGroupIds, locale);
 
 		if (assetAvailableClassTypes.isEmpty()) {
 			continue;
