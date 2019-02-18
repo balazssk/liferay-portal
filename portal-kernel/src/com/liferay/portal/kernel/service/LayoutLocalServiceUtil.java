@@ -65,7 +65,7 @@ public class LayoutLocalServiceUtil {
 	* @param userId the primary key of the user
 	* @param groupId the primary key of the group
 	* @param privateLayout whether the layout is private to the group
-	* @param parentLayoutId the primary key of the parent layout (optionally
+	* @param parentLayoutId the layout ID of the parent layout (optionally
 	{@link LayoutConstants#DEFAULT_PARENT_LAYOUT_ID})
 	* @param nameMap the layout's locales and localized names
 	* @param titleMap the layout's locales and localized titles
@@ -129,7 +129,7 @@ public class LayoutLocalServiceUtil {
 	* @param userId the primary key of the user
 	* @param groupId the primary key of the group
 	* @param privateLayout whether the layout is private to the group
-	* @param parentLayoutId the primary key of the parent layout (optionally
+	* @param parentLayoutId the layout ID of the parent layout (optionally
 	{@link LayoutConstants#DEFAULT_PARENT_LAYOUT_ID})
 	* @param nameMap the layout's locales and localized names
 	* @param titleMap the layout's locales and localized titles
@@ -193,7 +193,7 @@ public class LayoutLocalServiceUtil {
 	* @param userId the primary key of the user
 	* @param groupId the primary key of the group
 	* @param privateLayout whether the layout is private to the group
-	* @param parentLayoutId the primary key of the parent layout (optionally
+	* @param parentLayoutId the layout ID of the parent layout (optionally
 	{@link LayoutConstants#DEFAULT_PARENT_LAYOUT_ID}). The possible
 	values can be found in {@link LayoutConstants}.
 	* @param name the layout's name (optionally {@link
@@ -253,7 +253,7 @@ public class LayoutLocalServiceUtil {
 	* @param userId the primary key of the user
 	* @param groupId the primary key of the group
 	* @param privateLayout whether the layout is private to the group
-	* @param parentLayoutId the primary key of the parent layout (optionally
+	* @param parentLayoutId the layout ID of the parent layout (optionally
 	{@link LayoutConstants#DEFAULT_PARENT_LAYOUT_ID}). The possible
 	values can be found in {@link LayoutConstants}.
 	* @param name the layout's name (optionally {@link
@@ -348,12 +348,12 @@ public class LayoutLocalServiceUtil {
 	}
 
 	/**
-	* Deletes the layout with the primary key, also deleting the layout's child
+	* Deletes the layout with the layout ID, also deleting the layout's child
 	* layouts, and associated resources.
 	*
 	* @param groupId the primary key of the group
 	* @param privateLayout whether the layout is private to the group
-	* @param layoutId the primary key of the layout
+	* @param layoutId the layout ID of the layout
 	* @param serviceContext the service context to be applied
 	* @throws PortalException if a portal exception occurred
 	*/
@@ -483,11 +483,11 @@ public class LayoutLocalServiceUtil {
 	}
 
 	/**
-	* Exports layouts with the primary keys and criteria as a byte array.
+	* Exports layouts with the layout IDs and criteria as a byte array.
 	*
 	* @param groupId the primary key of the group
 	* @param privateLayout whether the layout is private to the group
-	* @param layoutIds the primary keys of the layouts to be exported
+	* @param layoutIds the layout IDs of the layouts to be exported
 	* @param parameterMap the mapping of parameters indicating which
 	information to export. For information on the keys used in
 	the map see {@link
@@ -547,11 +547,11 @@ public class LayoutLocalServiceUtil {
 	}
 
 	/**
-	* Exports the layouts that match the primary keys and criteria as a file.
+	* Exports the layouts that match the layout IDs and criteria as a file.
 	*
 	* @param groupId the primary key of the group
 	* @param privateLayout whether the layout is private to the group
-	* @param layoutIds the primary keys of the layouts to be exported
+	* @param layoutIds the layout IDs of the layouts to be exported
 	(optionally <code>null</code>)
 	* @param parameterMap the mapping of parameters indicating which
 	information to export. For information on the keys used in
@@ -921,12 +921,12 @@ public class LayoutLocalServiceUtil {
 	}
 
 	/**
-	* Returns the layout matching the primary key, group, and privacy; throws a
+	* Returns the layout matching the layout ID, group, and privacy; throws a
 	* {@link NoSuchLayoutException} otherwise.
 	*
 	* @param groupId the primary key of the group
 	* @param privateLayout whether the layout is private to the group
-	* @param layoutId the primary key of the layout
+	* @param layoutId the layout ID of the layout
 	* @return the matching layout
 	* @throws PortalException if a portal exception occurred
 	*/
@@ -1029,7 +1029,7 @@ public class LayoutLocalServiceUtil {
 	*
 	* @param groupId the primary key of the group
 	* @param privateLayout whether the layout is private to the group
-	* @param parentLayoutId the primary key of the parent layout
+	* @param parentLayoutId the layout ID of the parent layout
 	* @return the matching layouts, or <code>null</code> if no matches were
 	found
 	*/
@@ -1053,7 +1053,7 @@ public class LayoutLocalServiceUtil {
 	*
 	* @param groupId the primary key of the group
 	* @param privateLayout whether the layout is private to the group
-	* @param parentLayoutId the primary key of the parent layout
+	* @param parentLayoutId the layout ID of the parent layout
 	* @param incomplete whether the layout is incomplete
 	* @param start the lower bound of the range of layouts
 	* @param end the upper bound of the range of layouts (not inclusive)
@@ -1083,7 +1083,7 @@ public class LayoutLocalServiceUtil {
 	*
 	* @param groupId the primary key of the group
 	* @param privateLayout whether the layout is private to the group
-	* @param parentLayoutId the primary key of the parent layout
+	* @param parentLayoutId the layout ID of the parent layout
 	* @param start the lower bound of the range of layouts
 	* @param end the upper bound of the range of layouts (not inclusive)
 	* @param obc the comparator to order the layouts
@@ -1105,7 +1105,7 @@ public class LayoutLocalServiceUtil {
 	*
 	* @param groupId the primary key of the group
 	* @param privateLayout whether the layout is private to the group
-	* @param layoutIds the primary keys of the layouts
+	* @param layoutIds the layout IDs of the layouts
 	* @return the matching layouts, or an empty list if no matches were found
 	* @throws PortalException if a portal exception occurred
 	*/
@@ -1286,11 +1286,11 @@ public class LayoutLocalServiceUtil {
 	}
 
 	/**
-	* Returns the primary key to use for the next layout.
+	* Returns the layout ID to use for the next layout.
 	*
 	* @param groupId the primary key of the group
 	* @param privateLayout whether the layout is private to the group
-	* @return the primary key to use for the next layout
+	* @return the layout ID to use for the next layout
 	*/
 	public static long getNextLayoutId(long groupId, boolean privateLayout) {
 		return getService().getNextLayoutId(groupId, privateLayout);
@@ -1403,7 +1403,7 @@ public class LayoutLocalServiceUtil {
 	*
 	* @param groupId the primary key of the group
 	* @param privateLayout whether the layout is private to the group
-	* @param parentLayoutId the primary key of the parent layout
+	* @param parentLayoutId the layout ID of the parent layout
 	* @return <code>true</code> if the group has any layouts;
 	<code>false</code> otherwise
 	*/
@@ -1822,8 +1822,8 @@ public class LayoutLocalServiceUtil {
 	*
 	* @param groupId the primary key of the group
 	* @param privateLayout whether the layout is private to the group
-	* @param parentLayoutId the primary key of the parent layout
-	* @param layoutIds the primary keys of the layouts
+	* @param parentLayoutId the layout ID of the parent layout
+	* @param layoutIds the layout IDs of the layouts
 	* @param serviceContext the service context to be applied
 	* @throws PortalException if a portal exception occurred
 	*/
@@ -1904,8 +1904,8 @@ public class LayoutLocalServiceUtil {
 	*
 	* @param groupId the primary key of the group
 	* @param privateLayout whether the layout is private to the group
-	* @param layoutId the primary key of the layout
-	* @param parentLayoutId the primary key of the layout's new parent layout
+	* @param layoutId the layout ID of the layout
+	* @param parentLayoutId the layout ID of the layout's new parent layout
 	* @param nameMap the locales and localized names to merge (optionally
 	<code>null</code>)
 	* @param titleMap the locales and localized titles to merge (optionally
@@ -1959,7 +1959,7 @@ public class LayoutLocalServiceUtil {
 	*
 	* @param groupId the primary key of the group
 	* @param privateLayout whether the layout is private to the group
-	* @param layoutId the primary key of the layout
+	* @param layoutId the layout ID of the layout
 	* @param typeSettings the settings to load the unicode properties object.
 	See {@link UnicodeProperties #fastLoad(String)}.
 	* @return the updated layout
@@ -1977,7 +1977,7 @@ public class LayoutLocalServiceUtil {
 	*
 	* @param groupId the primary key of the group
 	* @param privateLayout whether the layout is private to the group
-	* @param layoutId the primary key of the layout
+	* @param layoutId the layout ID of the layout
 	* @param themeId the primary key of the layout's new theme
 	* @param colorSchemeId the primary key of the layout's new color scheme
 	* @param css the layout's new CSS
@@ -2016,7 +2016,7 @@ public class LayoutLocalServiceUtil {
 	*
 	* @param groupId the primary key of the group
 	* @param privateLayout whether the layout is private to the group
-	* @param layoutId the primary key of the layout
+	* @param layoutId the layout ID of the layout
 	* @param name the layout's new name
 	* @param languageId the primary key of the language. For more information
 	see {@link Locale}.
@@ -2054,8 +2054,8 @@ public class LayoutLocalServiceUtil {
 	*
 	* @param groupId the primary key of the group
 	* @param privateLayout whether the layout is private to the group
-	* @param layoutId the primary key of the layout
-	* @param parentLayoutId the primary key to be assigned to the parent
+	* @param layoutId the layout ID of the layout
+	* @param parentLayoutId the layout ID to be assigned to the parent
 	layout
 	* @return the matching layout
 	* @throws PortalException if a portal exception occurred
@@ -2133,7 +2133,7 @@ public class LayoutLocalServiceUtil {
 	*
 	* @param groupId the primary key of the group
 	* @param privateLayout whether the layout is private to the group
-	* @param layoutId the primary key of the layout
+	* @param layoutId the layout ID of the layout
 	* @param priority the layout's new priority
 	* @return the updated layout
 	* @throws PortalException if a portal exception occurred
@@ -2152,9 +2152,9 @@ public class LayoutLocalServiceUtil {
 	*
 	* @param groupId the primary key of the group
 	* @param privateLayout whether the layout is private to the group
-	* @param layoutId the primary key of the layout
-	* @param nextLayoutId the primary key of the next layout
-	* @param previousLayoutId the primary key of the previous layout
+	* @param layoutId the layout ID of the layout
+	* @param nextLayoutId the layout ID of the next layout
+	* @param previousLayoutId the layout ID of the previous layout
 	* @return the updated layout
 	* @throws PortalException if a portal exception occurred
 	*/
