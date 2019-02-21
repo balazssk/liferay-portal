@@ -86,5 +86,26 @@ JournalArticle article = journalContentDisplayContext.getArticle();
 				useDialog="<%= true %>"
 			/>
 		</c:if>
+
+		<c:if test="<%= JournalArticlePermission.contains(permissionChecker, article, ActionKeys.UPDATE) %>">
+
+			<%
+			JournalArticle latestArticle = journalContentDisplayContext.getLatestArticle();
+
+			Map<String, Object> data = new HashMap<String, Object>();
+
+			data.put("destroyOnHide", true);
+			data.put("id", HtmlUtil.escape(portletDisplay.getNamespace()) + "editAsset");
+			data.put("title", HtmlUtil.escape(latestArticle.getTitle(locale)));
+			%>
+
+			<liferay-ui:icon
+				data="<%= data %>"
+				id="basicViewHistoryButton"
+				message="view-history"
+				url="<%= journalContentDisplayContext.getURLViewHistory() %>"
+				useDialog="<%= true %>"
+			/>
+		</c:if>
 	</liferay-ui:icon-menu>
 </div>

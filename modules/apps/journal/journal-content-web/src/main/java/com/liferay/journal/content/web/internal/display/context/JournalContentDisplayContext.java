@@ -679,6 +679,42 @@ public class JournalContentDisplayContext {
 		return portletURL.toString();
 	}
 
+	public String getURLViewHistory() {
+		try {
+			JournalArticle article = getArticle();
+
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)_portletRequest.getAttribute(
+					WebKeys.THEME_DISPLAY);
+
+			PortletURL portletURL = PortletURLFactoryUtil.create(
+				_portletRequest, JournalPortletKeys.JOURNAL,
+				PortletRequest.RENDER_PHASE);
+
+			portletURL.setParameter("mvcPath", "/view_article_history.jsp");
+
+			PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
+
+			portletURL.setParameter(
+				"referringPortletResource", portletDisplay.getId());
+
+			portletURL.setParameter("articleId", article.getArticleId());
+
+			portletURL.setWindowState(LiferayWindowState.POP_UP);
+
+			portletURL.setParameter(
+				"hideDefaultSuccessMessage", Boolean.TRUE.toString());
+			portletURL.setParameter("showHeader", Boolean.FALSE.toString());
+
+			return portletURL.toString();
+		}
+		catch (Exception e) {
+			_log.error("Unable to get view history URL", e);
+
+			return StringPool.BLANK;
+		}
+	}
+
 	public boolean hasRestorePermission() throws PortalException {
 		JournalArticle selectedArticle = getSelectedArticle();
 
