@@ -22,6 +22,8 @@ import com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.site.navigation.model.SiteNavigationMenu;
 import com.liferay.site.navigation.service.SiteNavigationMenuLocalService;
 
@@ -56,6 +58,8 @@ public class SiteNavigationMenuStagedModelRepository
 		if (portletDataContext.isDataStrategyMirror()) {
 			serviceContext.setUuid(siteNavigationMenu.getUuid());
 		}
+
+		_createUniqueName(siteNavigationMenu);
 
 		return _siteNavigationMenuLocalService.addSiteNavigationMenu(
 			userId, siteNavigationMenu.getGroupId(),
@@ -149,11 +153,63 @@ public class SiteNavigationMenuStagedModelRepository
 		long userId = portletDataContext.getUserId(
 			siteNavigationMenu.getUserUuid());
 
+		SiteNavigationMenu existingSiteNavigationMenu =
+			_siteNavigationMenuLocalService.
+				fetchSiteNavigationMenuByUuidAndGroupId(
+					siteNavigationMenu.getUuid(),
+					siteNavigationMenu.getGroupId());
+
+		if (_wasBaseNameChanged(
+				siteNavigationMenu.getName(),
+				existingSiteNavigationMenu.getName())) {
+
+			_createUniqueName(siteNavigationMenu);
+		}
+		else {
+			siteNavigationMenu.setName(existingSiteNavigationMenu.getName());
+		}
+
 		return _siteNavigationMenuLocalService.updateSiteNavigationMenu(
 			userId, siteNavigationMenu.getSiteNavigationMenuId(),
 			siteNavigationMenu.getGroupId(), siteNavigationMenu.getName(),
 			siteNavigationMenu.getType(), siteNavigationMenu.isAuto());
 	}
+
+	private void _createUniqueName(SiteNavigationMenu siteNavigationMenu) {
+		String name = siteNavigationMenu.getName();
+
+		while (_siteNavigationMenuLocalService.fetchSiteNavigationMenu(
+					siteNavigationMenu.getGroupId(),
+					siteNavigationMenu.getName()) != null) {
+
+			StringBundler sb = new StringBundler(3);
+
+			sb.append(name);
+			sb.append(_SEPARATOR);
+			sb.append(StringUtil.randomString(12));
+
+			siteNavigationMenu.setName(sb.toString());
+		}
+	}
+
+	private boolean _wasBaseNameChanged(
+		String importedName, String existingName) {
+
+		boolean wasNameChanged = false;
+
+		if (!importedName.equals(existingName)) {
+			String strippedExistingName =
+				StringUtil.split(existingName, _SEPARATOR)[0];
+
+			if (!importedName.equals(strippedExistingName)) {
+				wasNameChanged = true;
+			}
+		}
+
+		return wasNameChanged;
+	}
+
+	private static final String _SEPARATOR = "_Imported_";
 
 	@Reference
 	private SiteNavigationMenuLocalService _siteNavigationMenuLocalService;
