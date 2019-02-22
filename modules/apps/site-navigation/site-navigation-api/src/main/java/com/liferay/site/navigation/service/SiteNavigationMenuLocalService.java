@@ -201,6 +201,9 @@ public interface SiteNavigationMenuLocalService extends BaseLocalService,
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public SiteNavigationMenu fetchSiteNavigationMenu(long groupId, int type);
 
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public SiteNavigationMenu fetchSiteNavigationMenu(long groupId, String name);
+
 	/**
 	* Returns the site navigation menu matching the UUID and group.
 	*

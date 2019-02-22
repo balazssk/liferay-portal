@@ -233,6 +233,13 @@ public class SiteNavigationMenuLocalServiceWrapper
 			type);
 	}
 
+	@Override
+	public com.liferay.site.navigation.model.SiteNavigationMenu fetchSiteNavigationMenu(
+		long groupId, String name) {
+		return _siteNavigationMenuLocalService.fetchSiteNavigationMenu(groupId,
+			name);
+	}
+
 	/**
 	* Returns the site navigation menu matching the UUID and group.
 	*

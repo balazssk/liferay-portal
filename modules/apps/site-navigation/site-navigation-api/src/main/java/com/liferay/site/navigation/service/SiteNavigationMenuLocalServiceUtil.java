@@ -220,6 +220,11 @@ public class SiteNavigationMenuLocalServiceUtil {
 		return getService().fetchSiteNavigationMenu(groupId, type);
 	}
 
+	public static com.liferay.site.navigation.model.SiteNavigationMenu fetchSiteNavigationMenu(
+		long groupId, String name) {
+		return getService().fetchSiteNavigationMenu(groupId, name);
+	}
+
 	/**
 	* Returns the site navigation menu matching the UUID and group.
 	*
