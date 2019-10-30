@@ -152,11 +152,19 @@ public class SiteNavigationLanguageDisplayContext {
 			return _languageIds;
 		}
 
-		_languageIds = StringUtil.split(
+		String[] configurationLanguageIds = StringUtil.split(
 			_siteNavigationLanguagePortletInstanceConfiguration.languageIds());
 
-		if (ArrayUtil.isEmpty(_languageIds)) {
-			_languageIds = getAvailableLanguageIds();
+		String[] availableLanguageIds = getAvailableLanguageIds();
+
+		Set languageIds = SetUtil.intersect(
+			configurationLanguageIds, availableLanguageIds);
+
+		if (languageIds.isEmpty()) {
+			_languageIds = availableLanguageIds;
+		}
+		else {
+			_languageIds = ArrayUtil.toStringArray(languageIds);
 		}
 
 		return _languageIds;
