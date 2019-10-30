@@ -249,6 +249,10 @@ public class SetUtil {
 		return intersect(fromArray(array1), fromArray(array2));
 	}
 
+	public static <T> Set<T> intersect(T[] array1, T[] array2) {
+		return intersect(fromArray(array1), fromArray(array2));
+	}
+
 	public static boolean isEmpty(Set<?> set) {
 		if ((set == null) || set.isEmpty()) {
 			return true;
