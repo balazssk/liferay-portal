@@ -20,6 +20,7 @@ import com.liferay.layout.admin.kernel.util.SitemapURLProvider;
 import com.liferay.layout.admin.kernel.util.SitemapURLProviderRegistryUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -27,7 +28,7 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.LayoutTypeController;
-import com.liferay.portal.kernel.service.LayoutLocalService;
+import com.liferay.portal.kernel.service.LayoutService;
 import com.liferay.portal.kernel.service.LayoutSetLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.DateUtil;
@@ -223,9 +224,21 @@ public class SitemapImpl implements Sitemap {
 				continue;
 			}
 
-			List<Layout> layouts = _layoutLocalService.getLayouts(
+			int end = QueryUtil.ALL_POS;
+			int start = QueryUtil.ALL_POS;
+
+			int layoutsCount = _layoutService.getLayoutsCount(
 				layoutSet.getGroupId(), layoutSet.isPrivateLayout(),
 				entry.getKey());
+
+			if (layoutsCount > MAXIMUM_NUMBER_OF_ENTRIES) {
+				end = layoutsCount;
+				start = layoutsCount - MAXIMUM_NUMBER_OF_ENTRIES;
+			}
+
+			List<Layout> layouts = _layoutService.getLayouts(
+				layoutSet.getGroupId(), layoutSet.isPrivateLayout(),
+				entry.getKey(), start, end);
 
 			for (Layout layout : layouts) {
 				UnicodeProperties typeSettingsProperties =
@@ -414,7 +427,7 @@ public class SitemapImpl implements Sitemap {
 		entries++;
 		size += _getElementSize(newElement);
 
-		while ((entries >= _MAXIMUM_NUMBER_OF_ENTRIES) ||
+		while ((entries >= MAXIMUM_NUMBER_OF_ENTRIES) ||
 			   (size >= _MAXIMUM_SIZE_IN_BYTES)) {
 
 			Element oldestUrlElement = rootElement.element(
@@ -432,8 +445,6 @@ public class SitemapImpl implements Sitemap {
 
 	private static final String _ENTRIES = "entries";
 
-	private static final int _MAXIMUM_NUMBER_OF_ENTRIES = 50000;
-
 	private static final int _MAXIMUM_SIZE_IN_BYTES = 50 * 1024 * 1024;
 
 	private static final String _SIZE = "size";
@@ -448,7 +459,7 @@ public class SitemapImpl implements Sitemap {
 		SitemapImpl.class.getName());
 
 	@Reference
-	private LayoutLocalService _layoutLocalService;
+	private LayoutService _layoutService;
 
 	@Reference
 	private LayoutSetLocalService _layoutSetLocalService;

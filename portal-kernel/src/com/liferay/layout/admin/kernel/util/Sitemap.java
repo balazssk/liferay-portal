@@ -32,6 +32,8 @@ import org.osgi.annotation.versioning.ProviderType;
 @ProviderType
 public interface Sitemap {
 
+	public static final int MAXIMUM_NUMBER_OF_ENTRIES = 50000;
+
 	public void addURLElement(
 		Element element, String url, UnicodeProperties typeSettingsProperties,
 		Date modifiedDate, String canonicalURL,
