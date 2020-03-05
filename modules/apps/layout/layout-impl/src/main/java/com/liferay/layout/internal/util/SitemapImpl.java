@@ -427,7 +427,7 @@ public class SitemapImpl implements Sitemap {
 		entries++;
 		size += _getElementSize(newElement);
 
-		while ((entries >= MAXIMUM_NUMBER_OF_ENTRIES) ||
+		while ((entries > MAXIMUM_NUMBER_OF_ENTRIES) ||
 			   (size >= _MAXIMUM_SIZE_IN_BYTES)) {
 
 			Element oldestUrlElement = rootElement.element(
