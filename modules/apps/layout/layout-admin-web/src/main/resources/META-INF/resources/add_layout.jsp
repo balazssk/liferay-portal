@@ -30,7 +30,7 @@ List<SiteNavigationMenu> autoSiteNavigationMenus = layoutsAdminDisplayContext.ge
 		onSubmit="event.preventDefault();"
 	>
 		<liferay-frontend:edit-form-body>
-			<aui:input label="name" name="name" required="<%= true %>" />
+			<aui:input autofocus="<%= true %>" label="name" name="name" required="<%= true %>" />
 
 			<c:choose>
 				<c:when test="<%= autoSiteNavigationMenus.size() > 1 %>">
