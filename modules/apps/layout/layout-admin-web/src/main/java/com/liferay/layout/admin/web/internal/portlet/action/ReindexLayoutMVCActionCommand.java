@@ -15,8 +15,13 @@
 package com.liferay.layout.admin.web.internal.portlet.action;
 
 import com.liferay.layout.admin.constants.LayoutAdminPortletKeys;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
+import com.liferay.portal.kernel.search.Indexer;
+import com.liferay.portal.kernel.search.IndexerRegistry;
+import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 
@@ -24,6 +29,7 @@ import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Balázs Sáfrány-Kovalik
@@ -56,7 +62,25 @@ public class ReindexLayoutMVCActionCommand extends BaseMVCActionCommand {
 		}
 	}
 
-	private void _reindexLayout(long plid, ActionRequest actionRequest) {
+	private void _reindexLayout(long plid, ActionRequest actionRequest)
+		throws PortalException {
+
+		Layout layout = _layoutLocalService.fetchLayout(plid);
+
+		if (layout == null) {
+			return;
+		}
+
+		Indexer<Layout> indexer = _indexerRegistry.getIndexer(
+			"com.liferay.portal.kernel.model.Layout");
+
+		indexer.reindex(layout);
 	}
+
+	@Reference
+	private IndexerRegistry _indexerRegistry;
+
+	@Reference
+	private LayoutLocalService _layoutLocalService;
 
 }
