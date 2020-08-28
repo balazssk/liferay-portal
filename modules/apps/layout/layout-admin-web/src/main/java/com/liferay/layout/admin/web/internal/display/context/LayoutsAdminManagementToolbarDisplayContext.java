@@ -116,6 +116,25 @@ public class LayoutsAdminManagementToolbarDisplayContext
 				dropdownItem.setLabel(LanguageUtil.get(request, "delete"));
 				dropdownItem.setQuickAction(true);
 			}
+		).add(
+			dropdownItem -> {
+				dropdownItem.putData("action", "reindexSelectedPages");
+
+				PortletURL reindexLayoutURL =
+					liferayPortletResponse.createActionURL();
+
+				reindexLayoutURL.setParameter(
+					ActionRequest.ACTION_NAME, "/layout/reindex_layout");
+				reindexLayoutURL.setParameter(
+					"redirect", _themeDisplay.getURLCurrent());
+
+				dropdownItem.putData(
+					"reindexLayoutURL", reindexLayoutURL.toString());
+
+				dropdownItem.setIcon("times-circle");
+				dropdownItem.setLabel(LanguageUtil.get(request, "reindex"));
+				dropdownItem.setQuickAction(true);
+			}
 		).build();
 	}
 

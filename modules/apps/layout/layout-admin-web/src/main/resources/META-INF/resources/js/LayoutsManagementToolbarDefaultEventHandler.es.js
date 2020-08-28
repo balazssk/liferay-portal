@@ -37,6 +37,10 @@ class LayoutsManagementToolbarDefaultEventHandler extends DefaultEventHandler {
 		}
 	}
 
+	reindexSelectedPages(itemData) {
+		this._send(itemData.reindexLayoutURL);
+	}
+
 	_send(url) {
 		submitForm(this.one('#fm'), url);
 	}

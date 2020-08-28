@@ -1599,6 +1599,13 @@ public class LayoutsAdminDisplayContext {
 			availableActions.add("deleteSelectedPages");
 		}
 
+		if (LayoutPermissionUtil.contains(
+				themeDisplay.getPermissionChecker(), layout,
+				ActionKeys.UPDATE)) {
+
+			availableActions.add("reindexSelectedPages");
+		}
+
 		return availableActions;
 	}
 
