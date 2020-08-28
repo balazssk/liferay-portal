@@ -24,9 +24,13 @@ import com.liferay.portal.kernel.search.IndexerRegistry;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.WebKeys;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -49,6 +53,12 @@ public class ReindexLayoutMVCActionCommand extends BaseMVCActionCommand {
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
 
+		HttpServletRequest httpServletRequest = _portal.getHttpServletRequest(
+			actionRequest);
+
+		Layout originalLayout = (Layout)httpServletRequest.getAttribute(
+			WebKeys.LAYOUT);
+
 		long selPlid = ParamUtil.getLong(actionRequest, "selPlid");
 
 		long[] selPlids = ParamUtil.getLongValues(actionRequest, "rowIds");
@@ -60,6 +70,8 @@ public class ReindexLayoutMVCActionCommand extends BaseMVCActionCommand {
 		for (long plid : selPlids) {
 			_reindexLayout(plid, actionRequest);
 		}
+
+		httpServletRequest.setAttribute(WebKeys.LAYOUT, originalLayout);
 	}
 
 	private void _reindexLayout(long plid, ActionRequest actionRequest)
@@ -70,6 +82,11 @@ public class ReindexLayoutMVCActionCommand extends BaseMVCActionCommand {
 		if (layout == null) {
 			return;
 		}
+
+		HttpServletRequest httpServletRequest = _portal.getHttpServletRequest(
+			actionRequest);
+
+		httpServletRequest.setAttribute(WebKeys.LAYOUT, layout);
 
 		Indexer<Layout> indexer = _indexerRegistry.getIndexer(
 			"com.liferay.portal.kernel.model.Layout");
@@ -82,5 +99,8 @@ public class ReindexLayoutMVCActionCommand extends BaseMVCActionCommand {
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;
+
+	@Reference
+	private Portal _portal;
 
 }
