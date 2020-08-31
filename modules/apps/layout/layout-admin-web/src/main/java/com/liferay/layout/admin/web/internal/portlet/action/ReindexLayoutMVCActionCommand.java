@@ -22,6 +22,7 @@ import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerRegistry;
 import com.liferay.portal.kernel.service.LayoutLocalService;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
@@ -59,6 +60,12 @@ public class ReindexLayoutMVCActionCommand extends BaseMVCActionCommand {
 		Layout originalLayout = (Layout)httpServletRequest.getAttribute(
 			WebKeys.LAYOUT);
 
+		ThemeDisplay originalThemeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		originalThemeDisplay = (ThemeDisplay)originalThemeDisplay.clone();
+
 		long selPlid = ParamUtil.getLong(actionRequest, "selPlid");
 
 		long[] selPlids = ParamUtil.getLongValues(actionRequest, "rowIds");
@@ -72,6 +79,9 @@ public class ReindexLayoutMVCActionCommand extends BaseMVCActionCommand {
 		}
 
 		httpServletRequest.setAttribute(WebKeys.LAYOUT, originalLayout);
+
+		httpServletRequest.setAttribute(
+			WebKeys.THEME_DISPLAY, originalThemeDisplay);
 	}
 
 	private void _reindexLayout(long plid, ActionRequest actionRequest)
@@ -87,6 +97,13 @@ public class ReindexLayoutMVCActionCommand extends BaseMVCActionCommand {
 			actionRequest);
 
 		httpServletRequest.setAttribute(WebKeys.LAYOUT, layout);
+
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		themeDisplay.setPlid(plid);
+		themeDisplay.setLayout(layout);
 
 		Indexer<Layout> indexer = _indexerRegistry.getIndexer(
 			"com.liferay.portal.kernel.model.Layout");
