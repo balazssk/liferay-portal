@@ -96,6 +96,10 @@ public class TableReferenceDefinitionManager {
 	public boolean isChildModelOptional(
 		long childModelClassNameId, long parentModelClassNameId) {
 
+		if (childModelClassNameId == parentModelClassNameId) {
+			return false;
+		}
+
 		Map<Long, TableReferenceInfo<?>> combinedTableReferenceInfos =
 			getCombinedTableReferenceInfos();
 
