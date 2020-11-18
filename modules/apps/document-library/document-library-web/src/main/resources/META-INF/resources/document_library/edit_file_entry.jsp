@@ -301,6 +301,7 @@ renderResponse.setTitle(headerTitle);
 											title: '<liferay-ui:message arguments="folder" key="select-x" />',
 
 											<liferay-portlet:renderURL var="selectFolderURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
+												<portlet:param name="fileFolderId" value="<%= String.valueOf(folderId) %>" />
 												<portlet:param name="mvcRenderCommandName" value="/document_library/select_folder" />
 											</liferay-portlet:renderURL>
 
