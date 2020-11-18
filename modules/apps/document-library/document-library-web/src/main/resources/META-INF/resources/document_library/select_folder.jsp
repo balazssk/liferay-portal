@@ -20,6 +20,7 @@
 Folder folder = (Folder)request.getAttribute(WebKeys.DOCUMENT_LIBRARY_FOLDER);
 
 long folderId = BeanParamUtil.getLong(folder, request, "folderId", DLFolderConstants.DEFAULT_PARENT_FOLDER_ID);
+long fileFolderId = ParamUtil.getLong(request, "fileFolderId", DLFolderConstants.DEFAULT_PARENT_FOLDER_ID);
 
 long repositoryId = scopeGroupId;
 String folderName = LanguageUtil.get(request, "home");
@@ -69,6 +70,7 @@ DLVisualizationHelper dlVisualizationHelper = new DLVisualizationHelper(dlReques
 						"foldername", folderName
 					).build()
 				%>'
+				disabled="<%= folderId == fileFolderId %>"
 				value="select-this-folder"
 			/>
 		</aui:button-row>
@@ -77,6 +79,7 @@ DLVisualizationHelper dlVisualizationHelper = new DLVisualizationHelper(dlReques
 		PortletURL portletURL = renderResponse.createRenderURL();
 
 		portletURL.setParameter("mvcRenderCommandName", "/document_library/select_folder");
+		portletURL.setParameter("fileFolderId", String.valueOf(fileFolderId));
 		portletURL.setParameter("folderId", String.valueOf(folderId));
 		portletURL.setParameter("ignoreRootFolder", Boolean.TRUE.toString());
 		portletURL.setParameter("showMountFolder", String.valueOf(dlVisualizationHelper.isMountFolderVisible()));
@@ -98,6 +101,7 @@ DLVisualizationHelper dlVisualizationHelper = new DLVisualizationHelper(dlReques
 			>
 				<liferay-portlet:renderURL varImpl="rowURL">
 					<portlet:param name="mvcRenderCommandName" value="/document_library/select_folder" />
+					<portlet:param name="fileFolderId" value="<%= String.valueOf(fileFolderId) %>" />
 					<portlet:param name="folderId" value="<%= String.valueOf(curFolder.getFolderId()) %>" />
 					<portlet:param name="ignoreRootFolder" value="<%= Boolean.TRUE.toString() %>" />
 					<portlet:param name="showMountFolder" value="<%= String.valueOf(dlVisualizationHelper.isMountFolderVisible()) %>" />
@@ -166,6 +170,7 @@ DLVisualizationHelper dlVisualizationHelper = new DLVisualizationHelper(dlReques
 									"foldername", curFolder.getName()
 								).build()
 							%>'
+							disabled="<%= curFolder.getFolderId() == fileFolderId %>"
 							value="select"
 						/>
 					</c:if>
