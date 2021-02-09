@@ -792,12 +792,10 @@ public class JournalContentDisplayContext {
 	}
 
 	public void incrementViewCounter() throws PortalException {
-		JournalArticle article = getArticle();
 		JournalArticleDisplay articleDisplay = getArticleDisplay();
 
-		if ((article == null) || !hasViewPermission() ||
-			(articleDisplay == null) || isExpired() ||
-			!isEnableViewCountIncrement()) {
+		if ((articleDisplay == null) || !hasViewPermission() ||
+			isExpired() || !isEnableViewCountIncrement()) {
 
 			return;
 		}
@@ -870,14 +868,6 @@ public class JournalContentDisplayContext {
 
 	public boolean isShowArticle() throws PortalException {
 		if (_showArticle != null) {
-			return _showArticle;
-		}
-
-		JournalArticle article = getArticle();
-
-		if (article == null) {
-			_showArticle = false;
-
 			return _showArticle;
 		}
 
