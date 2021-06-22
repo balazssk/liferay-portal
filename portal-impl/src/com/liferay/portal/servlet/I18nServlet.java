@@ -251,17 +251,28 @@ public class I18nServlet extends HttpServlet {
 		_setRequestAttributes(
 			httpServletRequest, httpServletResponse, i18nData);
 
-		Locale locale = LocaleUtil.fromLanguageId(i18nData.getLanguageId());
+		String languageId = i18nData.getLanguageId();
+
+		Locale locale = LocaleUtil.fromLanguageId(languageId);
 
 		httpServletResponse.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
 
 		ServletContext servletContext = getServletContext();
 
+		String languageTag = locale.toLanguageTag();
+
+		if (languageId.equals("iw_IL")) {
+			languageTag = "iw-IL";
+		}
+		else if (languageId.equals("in_ID")) {
+			languageTag = "in-ID";
+		}
+
 		httpServletResponse.setHeader(
 			"Location",
 			StringBundler.concat(
-				servletContext.getContextPath(), StringPool.SLASH,
-				locale.toLanguageTag(), i18nData.getPath()));
+				servletContext.getContextPath(), StringPool.SLASH, languageTag,
+				i18nData.getPath()));
 	}
 
 	protected class I18nData {
