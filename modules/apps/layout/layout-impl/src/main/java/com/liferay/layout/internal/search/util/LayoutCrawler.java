@@ -26,8 +26,6 @@ import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
 
-import java.net.InetAddress;
-
 import java.util.Locale;
 import java.util.Objects;
 
@@ -55,13 +53,6 @@ public class LayoutCrawler {
 	public String getLayoutContent(Layout layout, Locale locale)
 		throws Exception {
 
-		InetAddress inetAddress = _portal.getPortalServerInetAddress(
-			_isHttpsEnabled());
-
-		if (inetAddress == null) {
-			return StringPool.BLANK;
-		}
-
 		HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
 
 		HttpClient httpClient = httpClientBuilder.setUserAgent(
@@ -80,7 +71,7 @@ public class LayoutCrawler {
 		themeDisplay.setLayoutSet(layout.getLayoutSet());
 		themeDisplay.setLocale(locale);
 		themeDisplay.setScopeGroupId(layout.getGroupId());
-		themeDisplay.setServerName(inetAddress.getHostName());
+		themeDisplay.setServerName(company.getVirtualHostname());
 		themeDisplay.setServerPort(
 			_portal.getPortalServerPort(_isHttpsEnabled()));
 		themeDisplay.setSiteGroupId(layout.getGroupId());
@@ -95,7 +86,7 @@ public class LayoutCrawler {
 		BasicClientCookie basicClientCookie = new BasicClientCookie(
 			CookieKeys.GUEST_LANGUAGE_ID, LocaleUtil.toLanguageId(locale));
 
-		basicClientCookie.setDomain(inetAddress.getHostName());
+		basicClientCookie.setDomain(company.getVirtualHostname());
 
 		cookieStore.addCookie(basicClientCookie);
 
