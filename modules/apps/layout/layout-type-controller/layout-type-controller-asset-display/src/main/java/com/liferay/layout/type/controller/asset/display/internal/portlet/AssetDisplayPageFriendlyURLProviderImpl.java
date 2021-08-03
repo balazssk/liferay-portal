@@ -16,19 +16,15 @@ package com.liferay.layout.type.controller.asset.display.internal.portlet;
 
 import com.liferay.asset.display.page.portlet.AssetDisplayPageFriendlyURLProvider;
 import com.liferay.asset.display.page.util.AssetDisplayPageUtil;
-import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.info.item.InfoItemReference;
 import com.liferay.layout.display.page.LayoutDisplayPageObjectProvider;
 import com.liferay.layout.display.page.LayoutDisplayPageProvider;
 import com.liferay.layout.display.page.LayoutDisplayPageProviderTracker;
 import com.liferay.petra.string.StringBundler;
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.servlet.filters.i18n.I18nFilter;
 import com.liferay.portal.util.PropsValues;
@@ -132,13 +128,7 @@ public class AssetDisplayPageFriendlyURLProviderImpl
 	}
 
 	@Reference
-	private AssetEntryLocalService _assetEntryLocalService;
-
-	@Reference
 	private GroupLocalService _groupLocalService;
-
-	@Reference
-	private Language _language;
 
 	@Reference
 	private LayoutDisplayPageProviderTracker _layoutDisplayPageProviderTracker;
