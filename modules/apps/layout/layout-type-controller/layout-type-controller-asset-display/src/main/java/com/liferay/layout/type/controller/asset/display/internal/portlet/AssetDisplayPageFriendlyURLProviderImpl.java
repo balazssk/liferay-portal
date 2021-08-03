@@ -21,13 +21,10 @@ import com.liferay.layout.display.page.LayoutDisplayPageObjectProvider;
 import com.liferay.layout.display.page.LayoutDisplayPageProvider;
 import com.liferay.layout.display.page.LayoutDisplayPageProviderTracker;
 import com.liferay.petra.string.StringBundler;
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 
 import java.util.Locale;
@@ -110,51 +107,24 @@ public class AssetDisplayPageFriendlyURLProviderImpl
 
 		StringBundler sb = new StringBundler(3);
 
-		sb.append(_getGroupFriendlyURL(groupId, locale, themeDisplay));
+		sb.append(_getGroupFriendlyURL(groupId, themeDisplay));
 		sb.append(layoutDisplayPageProvider.getURLSeparator());
 		sb.append(layoutDisplayPageObjectProvider.getURLTitle(locale));
 
 		return sb.toString();
 	}
 
-	private String _getGroupFriendlyURL(
-			long groupId, Locale locale, ThemeDisplay themeDisplay)
+	private String _getGroupFriendlyURL(long groupId, ThemeDisplay themeDisplay)
 		throws PortalException {
 
 		Group group = _groupLocalService.getGroup(groupId);
-
-		if (locale != null) {
-			try {
-				ThemeDisplay clonedThemeDisplay =
-					(ThemeDisplay)themeDisplay.clone();
-
-				return _portal.getGroupFriendlyURL(
-					group.getPublicLayoutSet(), clonedThemeDisplay);
-			}
-			catch (CloneNotSupportedException cloneNotSupportedException) {
-				throw new PortalException(cloneNotSupportedException);
-			}
-		}
 
 		return _portal.getGroupFriendlyURL(
 			group.getPublicLayoutSet(), themeDisplay);
 	}
 
-	private String _getI18nPath(Locale locale) {
-		Locale defaultLocale = _language.getLocale(locale.getLanguage());
-
-		if (LocaleUtil.equals(defaultLocale, locale)) {
-			return StringPool.SLASH + defaultLocale.getLanguage();
-		}
-
-		return StringPool.SLASH + locale.toLanguageTag();
-	}
-
 	@Reference
 	private GroupLocalService _groupLocalService;
-
-	@Reference
-	private Language _language;
 
 	@Reference
 	private LayoutDisplayPageProviderTracker _layoutDisplayPageProviderTracker;
