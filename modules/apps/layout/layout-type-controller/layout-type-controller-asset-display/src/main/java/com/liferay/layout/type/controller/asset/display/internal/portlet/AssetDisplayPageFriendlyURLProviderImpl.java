@@ -16,7 +16,6 @@ package com.liferay.layout.type.controller.asset.display.internal.portlet;
 
 import com.liferay.asset.display.page.portlet.AssetDisplayPageFriendlyURLProvider;
 import com.liferay.asset.display.page.util.AssetDisplayPageUtil;
-import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.info.item.InfoItemReference;
 import com.liferay.layout.display.page.LayoutDisplayPageObjectProvider;
 import com.liferay.layout.display.page.LayoutDisplayPageProvider;
@@ -159,9 +158,6 @@ public class AssetDisplayPageFriendlyURLProviderImpl
 
 		return StringPool.SLASH + locale.toLanguageTag();
 	}
-
-	@Reference
-	private AssetEntryLocalService _assetEntryLocalService;
 
 	@Reference
 	private GroupLocalService _groupLocalService;
