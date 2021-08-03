@@ -23,8 +23,6 @@ import com.liferay.layout.display.page.LayoutDisplayPageProviderTracker;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Portal;
@@ -120,18 +118,6 @@ public class AssetDisplayPageFriendlyURLProviderImpl
 
 		return sb.toString();
 	}
-
-	private String _getGroupFriendlyURL(long groupId, ThemeDisplay themeDisplay)
-		throws PortalException {
-
-		Group group = _groupLocalService.getGroup(groupId);
-
-		return _portal.getGroupFriendlyURL(
-			group.getPublicLayoutSet(), themeDisplay);
-	}
-
-	@Reference
-	private GroupLocalService _groupLocalService;
 
 	@Reference
 	private LayoutDisplayPageProviderTracker _layoutDisplayPageProviderTracker;
