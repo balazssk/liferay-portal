@@ -110,6 +110,7 @@ public class DefaultAssetDisplayPageFriendlyURLResolver
 
 			ThemeDisplay themeDisplay = new ThemeDisplay();
 
+			themeDisplay.setCompany(_portal.getCompany(httpServletRequest));
 			themeDisplay.setI18nLanguageId(
 				(String)httpServletRequest.getAttribute(
 					WebKeys.I18N_LANGUAGE_ID));
@@ -122,6 +123,11 @@ public class DefaultAssetDisplayPageFriendlyURLResolver
 
 			themeDisplay.setLanguageId(LocaleUtil.toLanguageId(locale));
 			themeDisplay.setLocale(locale);
+
+			themeDisplay.setServerName(
+				_portal.getForwardedHost(httpServletRequest));
+			themeDisplay.setServerPort(
+				_portal.getForwardedPort(httpServletRequest));
 
 			String assetFriendlyURL =
 				_assetDisplayPageFriendlyURLProvider.getFriendlyURL(
