@@ -20,12 +20,14 @@ import com.liferay.info.item.InfoItemReference;
 import com.liferay.layout.display.page.LayoutDisplayPageObjectProvider;
 import com.liferay.layout.display.page.LayoutDisplayPageProvider;
 import com.liferay.layout.display.page.LayoutDisplayPageProviderTracker;
+import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.GroupLocalService;
+import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
@@ -103,17 +105,22 @@ public class AssetDisplayPageFriendlyURLProviderImpl
 			Locale locale, ThemeDisplay themeDisplay)
 		throws PortalException {
 
-		if (!AssetDisplayPageUtil.hasAssetDisplayPage(
+		LayoutPageTemplateEntry layoutPageTemplateEntry =
+			AssetDisplayPageUtil.getAssetDisplayPageLayoutPageTemplateEntry(
 				groupId, layoutDisplayPageObjectProvider.getClassNameId(),
 				layoutDisplayPageObjectProvider.getClassPK(),
-				layoutDisplayPageObjectProvider.getClassTypeId())) {
+				layoutDisplayPageObjectProvider.getClassTypeId());
 
+		if (layoutPageTemplateEntry == null) {
 			return null;
 		}
 
+		themeDisplay.setLayout(
+			_layoutLocalService.getLayout(layoutPageTemplateEntry.getPlid()));
+
 		StringBundler sb = new StringBundler(3);
 
-		sb.append(_getGroupFriendlyURL(groupId, locale, themeDisplay));
+		sb.append(_portal.getCanonicalURL(null, themeDisplay, null));
 		sb.append(layoutDisplayPageProvider.getURLSeparator());
 		sb.append(layoutDisplayPageObjectProvider.getURLTitle(locale));
 
@@ -184,6 +191,9 @@ public class AssetDisplayPageFriendlyURLProviderImpl
 
 	@Reference
 	private LayoutDisplayPageProviderTracker _layoutDisplayPageProviderTracker;
+
+	@Reference
+	private LayoutLocalService _layoutLocalService;
 
 	@Reference
 	private Portal _portal;
