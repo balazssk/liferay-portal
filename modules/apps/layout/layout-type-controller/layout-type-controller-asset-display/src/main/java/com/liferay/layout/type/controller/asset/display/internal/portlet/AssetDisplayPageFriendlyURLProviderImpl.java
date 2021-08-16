@@ -144,7 +144,13 @@ public class AssetDisplayPageFriendlyURLProviderImpl
 
 			_setThemeDisplayI18n(themeDisplay, locale);
 
+			themeDisplay.setCompany(
+				_portal.getCompany(themeDisplay.getRequest()));
 			themeDisplay.setLayout(_layoutLocalService.getLayout(plid));
+			themeDisplay.setServerName(
+				_portal.getForwardedHost(themeDisplay.getRequest()));
+			themeDisplay.setServerPort(
+				_portal.getForwardedPort(themeDisplay.getRequest()));
 		}
 		catch (CloneNotSupportedException cloneNotSupportedException) {
 			throw new PortalException(cloneNotSupportedException);

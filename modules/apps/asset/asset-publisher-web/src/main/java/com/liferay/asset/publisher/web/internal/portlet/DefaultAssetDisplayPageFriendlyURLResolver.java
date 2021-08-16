@@ -112,6 +112,7 @@ public class DefaultAssetDisplayPageFriendlyURLResolver
 
 			themeDisplay.setScopeGroupId(groupId);
 			themeDisplay.setSiteGroupId(groupId);
+			themeDisplay.setRequest(httpServletRequest);
 
 			String assetFriendlyURL =
 				_assetDisplayPageFriendlyURLProvider.getFriendlyURL(
