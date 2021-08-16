@@ -25,8 +25,6 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
-import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -115,8 +113,8 @@ public class AssetDisplayPageFriendlyURLProviderImpl
 			return null;
 		}
 
-		themeDisplay.setLayout(
-			_layoutLocalService.getLayout(layoutPageTemplateEntry.getPlid()));
+		themeDisplay = _getThemeDisplay(
+			locale, themeDisplay, layoutPageTemplateEntry.getPlid());
 
 		StringBundler sb = new StringBundler(3);
 
@@ -127,31 +125,6 @@ public class AssetDisplayPageFriendlyURLProviderImpl
 		return sb.toString();
 	}
 
-	private String _getGroupFriendlyURL(
-			long groupId, Locale locale, ThemeDisplay themeDisplay)
-		throws PortalException {
-
-		Group group = _groupLocalService.getGroup(groupId);
-
-		if (locale != null) {
-			try {
-				ThemeDisplay clonedThemeDisplay =
-					(ThemeDisplay)themeDisplay.clone();
-
-				_setThemeDisplayI18n(clonedThemeDisplay, locale);
-
-				return _portal.getGroupFriendlyURL(
-					group.getPublicLayoutSet(), clonedThemeDisplay);
-			}
-			catch (CloneNotSupportedException cloneNotSupportedException) {
-				throw new PortalException(cloneNotSupportedException);
-			}
-		}
-
-		return _portal.getGroupFriendlyURL(
-			group.getPublicLayoutSet(), themeDisplay);
-	}
-
 	private String _getI18nPath(Locale locale) {
 		Locale defaultLocale = _language.getLocale(locale.getLanguage());
 
@@ -160,6 +133,24 @@ public class AssetDisplayPageFriendlyURLProviderImpl
 		}
 
 		return StringPool.SLASH + locale.toLanguageTag();
+	}
+
+	private ThemeDisplay _getThemeDisplay(
+			Locale locale, ThemeDisplay themeDisplay, long plid)
+		throws PortalException {
+
+		try {
+			themeDisplay = (ThemeDisplay)themeDisplay.clone();
+
+			_setThemeDisplayI18n(themeDisplay, locale);
+
+			themeDisplay.setLayout(_layoutLocalService.getLayout(plid));
+		}
+		catch (CloneNotSupportedException cloneNotSupportedException) {
+			throw new PortalException(cloneNotSupportedException);
+		}
+
+		return themeDisplay;
 	}
 
 	private void _setThemeDisplayI18n(
@@ -182,9 +173,6 @@ public class AssetDisplayPageFriendlyURLProviderImpl
 		themeDisplay.setLanguageId(LocaleUtil.toLanguageId(locale));
 		themeDisplay.setLocale(locale);
 	}
-
-	@Reference
-	private GroupLocalService _groupLocalService;
 
 	@Reference
 	private Language _language;
