@@ -251,6 +251,8 @@ public class FileEntryInfoDisplayContributorTest {
 
 		mockHttpServletRequest.setAttribute(
 			WebKeys.THEME_DISPLAY, themeDisplay);
+		mockHttpServletRequest.setRequestURI(
+			"/web/" + StringUtil.lowerCase(_group.getGroupKey()));
 
 		themeDisplay.setRequest(mockHttpServletRequest);
 
