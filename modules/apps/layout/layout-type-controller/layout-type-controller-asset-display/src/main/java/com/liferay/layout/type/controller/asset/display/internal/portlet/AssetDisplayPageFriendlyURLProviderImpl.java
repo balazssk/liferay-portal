@@ -35,6 +35,8 @@ import com.liferay.portal.util.PropsValues;
 import java.util.Locale;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -112,7 +114,9 @@ public class AssetDisplayPageFriendlyURLProviderImpl
 		}
 
 		return StringBundler.concat(
-			_getGroupFriendlyURL(groupId, locale, themeDisplay),
+			_removeGroupNameIfNotNeeded(
+				_getGroupFriendlyURL(groupId, locale, themeDisplay),
+				themeDisplay),
 			layoutDisplayPageProvider.getURLSeparator(),
 			layoutDisplayPageObjectProvider.getURLTitle(locale));
 	}
@@ -150,6 +154,23 @@ public class AssetDisplayPageFriendlyURLProviderImpl
 		}
 
 		return StringPool.SLASH + locale.toLanguageTag();
+	}
+
+	private String _removeGroupNameIfNotNeeded(
+		String friendlyURL, ThemeDisplay themeDisplay) {
+
+		HttpServletRequest httpServletRequest = themeDisplay.getRequest();
+
+		httpServletRequest = _portal.getOriginalServletRequest(
+			httpServletRequest);
+
+		String requestURI = httpServletRequest.getRequestURI();
+
+		if (!requestURI.contains("/web/")) {
+			friendlyURL = friendlyURL.split("/web/")[0];
+		}
+
+		return friendlyURL;
 	}
 
 	private void _setThemeDisplayI18n(
