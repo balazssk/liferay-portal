@@ -169,7 +169,7 @@ public class AssetDisplayPageFriendlyURLProviderImpl
 
 		String requestURI = httpServletRequest.getRequestURI();
 
-		if (!requestURI.contains("/web/")) {
+		if (!requestURI.contains("/group/") && !requestURI.contains("/web/")) {
 			friendlyURL = friendlyURL.split("/web/")[0];
 		}
 
