@@ -43,6 +43,7 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
@@ -57,6 +58,8 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import org.springframework.mock.web.MockHttpServletRequest;
 
 /**
  * @author Alejandro Tardín
@@ -95,18 +98,12 @@ public class FileEntryInfoDisplayContributorTest {
 						StringUtil.lowerCase(_group.getGroupKey()), "/d/",
 						fileEntry.getFileEntryId());
 
-					ThemeDisplay themeDisplay = new ThemeDisplay();
-
-					themeDisplay.setLocale(locale);
-					themeDisplay.setScopeGroupId(_group.getGroupId());
-					themeDisplay.setServerName("localhost");
-					themeDisplay.setSiteGroupId(_group.getGroupId());
-
 					Assert.assertEquals(
 						expectedURL,
 						_assetDisplayPageFriendlyURLProvider.getFriendlyURL(
 							FileEntry.class.getName(),
-							fileEntry.getFileEntryId(), themeDisplay));
+							fileEntry.getFileEntryId(),
+							_getThemeDisplay(locale)));
 				});
 		}
 		finally {
@@ -133,18 +130,12 @@ public class FileEntryInfoDisplayContributorTest {
 						"/web/", StringUtil.lowerCase(_group.getGroupKey()),
 						"/d/", fileEntry.getFileEntryId());
 
-					ThemeDisplay themeDisplay = new ThemeDisplay();
-
-					themeDisplay.setLocale(locale);
-					themeDisplay.setScopeGroupId(_group.getGroupId());
-					themeDisplay.setServerName("localhost");
-					themeDisplay.setSiteGroupId(_group.getGroupId());
-
 					Assert.assertEquals(
 						expectedURL,
 						_assetDisplayPageFriendlyURLProvider.getFriendlyURL(
 							FileEntry.class.getName(),
-							fileEntry.getFileEntryId(), themeDisplay));
+							fileEntry.getFileEntryId(),
+							_getThemeDisplay(locale)));
 				});
 		}
 		finally {
@@ -172,18 +163,12 @@ public class FileEntryInfoDisplayContributorTest {
 						StringUtil.lowerCase(_group.getGroupKey()), "/d/",
 						fileEntry.getFileEntryId());
 
-					ThemeDisplay themeDisplay = new ThemeDisplay();
-
-					themeDisplay.setLocale(locale);
-					themeDisplay.setScopeGroupId(_group.getGroupId());
-					themeDisplay.setServerName("localhost");
-					themeDisplay.setSiteGroupId(_group.getGroupId());
-
 					Assert.assertEquals(
 						expectedURL,
 						_assetDisplayPageFriendlyURLProvider.getFriendlyURL(
 							FileEntry.class.getName(),
-							fileEntry.getFileEntryId(), themeDisplay));
+							fileEntry.getFileEntryId(),
+							_getThemeDisplay(locale)));
 				});
 		}
 		finally {
@@ -210,18 +195,12 @@ public class FileEntryInfoDisplayContributorTest {
 						"/web/", StringUtil.lowerCase(_group.getGroupKey()),
 						"/d/", fileEntry.getFileEntryId());
 
-					ThemeDisplay themeDisplay = new ThemeDisplay();
-
-					themeDisplay.setLocale(locale);
-					themeDisplay.setScopeGroupId(_group.getGroupId());
-					themeDisplay.setServerName("localhost");
-					themeDisplay.setSiteGroupId(_group.getGroupId());
-
 					Assert.assertEquals(
 						expectedURL,
 						_assetDisplayPageFriendlyURLProvider.getFriendlyURL(
 							FileEntry.class.getName(),
-							fileEntry.getFileEntryId(), themeDisplay));
+							fileEntry.getFileEntryId(),
+							_getThemeDisplay(locale)));
 				});
 		}
 		finally {
@@ -257,6 +236,27 @@ public class FileEntryInfoDisplayContributorTest {
 			dlFileEntry.getFileEntryId(),
 			layoutPageTemplateEntry.getLayoutPageTemplateEntryId(),
 			AssetDisplayPageConstants.TYPE_SPECIFIC, serviceContext);
+	}
+
+	private ThemeDisplay _getThemeDisplay(Locale locale) {
+		ThemeDisplay themeDisplay = new ThemeDisplay();
+
+		themeDisplay.setLocale(locale);
+		themeDisplay.setScopeGroupId(_group.getGroupId());
+		themeDisplay.setServerName("localhost");
+		themeDisplay.setSiteGroupId(_group.getGroupId());
+
+		MockHttpServletRequest mockHttpServletRequest =
+			new MockHttpServletRequest();
+
+		mockHttpServletRequest.setAttribute(
+			WebKeys.THEME_DISPLAY, themeDisplay);
+		mockHttpServletRequest.setRequestURI(
+			"/web/" + StringUtil.lowerCase(_group.getGroupKey()));
+
+		themeDisplay.setRequest(mockHttpServletRequest);
+
+		return themeDisplay;
 	}
 
 	private void _withAndWithoutAssetEntry(
