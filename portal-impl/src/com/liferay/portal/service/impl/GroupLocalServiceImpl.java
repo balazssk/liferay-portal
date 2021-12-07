@@ -14,7 +14,10 @@
 
 package com.liferay.portal.service.impl;
 
+import com.liferay.asset.kernel.model.AssetCategory;
 import com.liferay.asset.kernel.model.AssetEntry;
+import com.liferay.asset.kernel.model.AssetVocabulary;
+import com.liferay.asset.kernel.service.AssetCategoryLocalService;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.asset.kernel.service.AssetTagLocalService;
 import com.liferay.asset.kernel.service.AssetVocabularyLocalService;
@@ -184,6 +187,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -507,7 +511,8 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 
 			if (serviceContext != null) {
 				updateAsset(
-					userId, group, serviceContext.getAssetCategoryIds(),
+					userId, group,
+					_getCategoryIds(group.getGroupId(), serviceContext),
 					serviceContext.getAssetTagNames());
 			}
 		}
@@ -5296,6 +5301,41 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		return filteredGroups;
 	}
 
+	private long[] _getCategoryIds(long groupId, ServiceContext serviceContext)
+		throws PortalException {
+
+		List<Long> missingAssetCategoryIds = new LinkedList<>();
+
+		for (AssetVocabulary assetVocabulary :
+				_assetVocabularyLocalService.getGroupsVocabularies(
+					PortalUtil.getCurrentAndAncestorSiteGroupIds(groupId))) {
+
+			if (assetVocabulary.isAssociatedToClassNameIdAndClassTypePK(
+					_classNameLocalService.getClassNameId(Group.class),
+					groupId) &&
+				assetVocabulary.isMissingRequiredCategory(
+					_classNameLocalService.getClassNameId(Group.class), groupId,
+					serviceContext.getAssetCategoryIds())) {
+
+				List<AssetCategory> categories =
+					_assetCategoryLocalService.getVocabularyCategories(
+						assetVocabulary.getVocabularyId(), QueryUtil.ALL_POS,
+						QueryUtil.ALL_POS, null);
+
+				if (!categories.isEmpty()) {
+					AssetCategory defaultCategory = categories.get(0);
+
+					missingAssetCategoryIds.add(
+						defaultCategory.getCategoryId());
+				}
+			}
+		}
+
+		return ArrayUtil.append(
+			serviceContext.getAssetCategoryIds(),
+			ArrayUtil.toLongArray(missingAssetCategoryIds));
+	}
+
 	private Map<Locale, String> _normalizeNameMap(Map<Locale, String> nameMap) {
 		Map<Locale, String> normalizedNameMap = new HashMap<>();
 
@@ -5357,6 +5397,9 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		ServiceProxyFactory.newServiceTrackedInstance(
 			ReindexerBridge.class, GroupLocalServiceImpl.class,
 			"_reindexerBridge", false);
+
+	@BeanReference(type = AssetCategoryLocalService.class)
+	private AssetCategoryLocalService _assetCategoryLocalService;
 
 	@BeanReference(type = AssetEntryLocalService.class)
 	private AssetEntryLocalService _assetEntryLocalService;
