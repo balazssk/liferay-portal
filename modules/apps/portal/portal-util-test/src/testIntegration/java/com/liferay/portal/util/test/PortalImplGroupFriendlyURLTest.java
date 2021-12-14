@@ -25,6 +25,7 @@ import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.GroupLocalService;
+import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.CompanyTestUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
@@ -37,6 +38,7 @@ import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.util.PropsValues;
 
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -105,7 +107,8 @@ public class PortalImplGroupFriendlyURLTest {
 				_group.getFriendlyURL();
 
 		_testGroupFriendlyURL(
-			_PRIVATE_LAYOUT_HOSTNAME, expectedURL, _group, _privateLayout);
+			_company, _PRIVATE_LAYOUT_HOSTNAME, expectedURL, _group,
+			_privateLayout);
 	}
 
 	@Test
@@ -113,7 +116,8 @@ public class PortalImplGroupFriendlyURLTest {
 		String expectedURL = StringPool.BLANK;
 
 		_testGroupFriendlyURL(
-			_PUBLIC_LAYOUT_HOSTNAME, expectedURL, _group, _publicLayout);
+			_company, _PUBLIC_LAYOUT_HOSTNAME, expectedURL, _group,
+			_publicLayout);
 	}
 
 	@Test
@@ -121,7 +125,7 @@ public class PortalImplGroupFriendlyURLTest {
 		throws Exception {
 
 		_testGroupFriendlyURL(
-			_company.getVirtualHostname(), StringPool.BLANK, _group,
+			_company, _company.getVirtualHostname(), StringPool.BLANK, _group,
 			_publicLayout);
 
 		User user = UserTestUtil.getAdminUser(_company.getCompanyId());
@@ -132,10 +136,29 @@ public class PortalImplGroupFriendlyURLTest {
 		Layout layout = LayoutTestUtil.addLayout(group);
 
 		_testGroupFriendlyURL(
-			_company.getVirtualHostname(),
+			_company, _company.getVirtualHostname(),
 			PropsValues.LAYOUT_FRIENDLY_URL_PUBLIC_SERVLET_MAPPING +
 				group.getFriendlyURL(),
 			group, layout);
+	}
+
+	@Test
+	public void testGetGroupFriendlyURLFromPublicLayoutDefaultSite()
+		throws Exception {
+
+		Company company = _companyLocalService.getCompanyByVirtualHost(
+			"localhost");
+
+		Group group = _groupLocalService.getGroup(
+			company.getCompanyId(),
+			PropsValues.VIRTUAL_HOSTS_DEFAULT_SITE_NAME);
+
+		List<Layout> publicLayouts = _layoutLocalService.getLayouts(
+			group.getGroupId(), false);
+
+		_testGroupFriendlyURL(
+			company, company.getVirtualHostname(), StringPool.BLANK, group,
+			publicLayouts.get(0));
 	}
 
 	private static void _updateLayoutSetVirtualHostname(
@@ -154,13 +177,13 @@ public class PortalImplGroupFriendlyURLTest {
 	}
 
 	private void _testGroupFriendlyURL(
-			String virtualHostname, String expectedURL, Group group,
-			Layout layout)
+			Company company, String virtualHostname, String expectedURL,
+			Group group, Layout layout)
 		throws Exception {
 
 		ThemeDisplay themeDisplay = new ThemeDisplay();
 
-		themeDisplay.setCompany(_company);
+		themeDisplay.setCompany(company);
 		themeDisplay.setLayout(layout);
 		themeDisplay.setLayoutSet(layout.getLayoutSet());
 		themeDisplay.setPortalDomain(virtualHostname);
@@ -189,6 +212,9 @@ public class PortalImplGroupFriendlyURLTest {
 
 	@Inject
 	private static GroupLocalService _groupLocalService;
+
+	@Inject
+	private static LayoutLocalService _layoutLocalService;
 
 	private static Layout _privateLayout;
 	private static Layout _publicLayout;
