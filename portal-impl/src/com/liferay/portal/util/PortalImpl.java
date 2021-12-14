@@ -8601,9 +8601,11 @@ public class PortalImpl implements Portal {
 
 			sb.append(group.getFriendlyURL());
 		}
-		else if (!StringUtil.equals(
-					group.getGroupKey(),
-					PropsValues.VIRTUAL_HOSTS_DEFAULT_SITE_NAME)) {
+		else if (!(StringUtil.equalsIgnoreCase(
+					themeDisplay.getServerName(), defaultVirtualHostName) &&
+				   StringUtil.equals(
+					   group.getGroupKey(),
+					   PropsValues.VIRTUAL_HOSTS_DEFAULT_SITE_NAME))) {
 
 			sb.append(_PUBLIC_GROUP_SERVLET_MAPPING);
 			sb.append(group.getFriendlyURL());
