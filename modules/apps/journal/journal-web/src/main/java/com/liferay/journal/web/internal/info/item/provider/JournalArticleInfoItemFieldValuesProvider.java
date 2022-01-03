@@ -26,6 +26,7 @@ import com.liferay.info.display.request.attributes.contributor.InfoDisplayReques
 import com.liferay.info.exception.NoSuchInfoItemException;
 import com.liferay.info.field.InfoField;
 import com.liferay.info.field.InfoFieldValue;
+import com.liferay.info.field.type.ImageInfoFieldType;
 import com.liferay.info.field.type.TextInfoFieldType;
 import com.liferay.info.item.InfoItemFieldValues;
 import com.liferay.info.item.InfoItemReference;
@@ -226,50 +227,18 @@ public class JournalArticleInfoItemFieldValuesProvider
 				}
 			}
 
-			User user = _getLastVersionUser(journalArticle);
+			_setUserInfoFields(
+				journalArticleFieldValues,
+				JournalArticleInfoItemFields.authorNameInfoField,
+				JournalArticleInfoItemFields.authorProfileImageInfoField,
+				themeDisplay, _getLastVersionUser(journalArticle));
 
-			if (user != null) {
-				journalArticleFieldValues.add(
-					new InfoFieldValue<>(
-						JournalArticleInfoItemFields.authorNameInfoField,
-						user.getFullName()));
-
-				if (themeDisplay != null) {
-					WebImage webImage = new WebImage(
-						user.getPortraitURL(themeDisplay));
-
-					webImage.setAlt(user.getFullName());
-
-					journalArticleFieldValues.add(
-						new InfoFieldValue<>(
-							JournalArticleInfoItemFields.
-								authorProfileImageInfoField,
-							webImage));
-				}
-			}
-
-			User lastEditorUser = _userLocalService.fetchUser(
-				journalArticle.getUserId());
-
-			if (lastEditorUser != null) {
-				journalArticleFieldValues.add(
-					new InfoFieldValue<>(
-						JournalArticleInfoItemFields.lastEditorNameInfoField,
-						lastEditorUser.getFullName()));
-
-				if (themeDisplay != null) {
-					WebImage webImage = new WebImage(
-						lastEditorUser.getPortraitURL(themeDisplay));
-
-					webImage.setAlt(lastEditorUser.getFullName());
-
-					journalArticleFieldValues.add(
-						new InfoFieldValue<>(
-							JournalArticleInfoItemFields.
-								lastEditorProfileImageInfoField,
-							webImage));
-				}
-			}
+			_setUserInfoFields(
+				journalArticleFieldValues,
+				JournalArticleInfoItemFields.lastEditorNameInfoField,
+				JournalArticleInfoItemFields.lastEditorProfileImageInfoField,
+				themeDisplay,
+				_userLocalService.fetchUser(journalArticle.getUserId()));
 
 			journalArticleFieldValues.add(
 				new InfoFieldValue<>(
@@ -406,6 +375,29 @@ public class JournalArticleInfoItemFieldValuesProvider
 		}
 
 		return null;
+	}
+
+	private void _setUserInfoFields(
+			List<InfoFieldValue<Object>> fieldValues,
+			InfoField<TextInfoFieldType> nameInfoField,
+			InfoField<ImageInfoFieldType> profileImageInfoField,
+			ThemeDisplay themeDisplay, User user)
+		throws PortalException {
+
+		if (user != null) {
+			fieldValues.add(
+				new InfoFieldValue<>(nameInfoField, user.getFullName()));
+
+			if (themeDisplay != null) {
+				WebImage webImage = new WebImage(
+					user.getPortraitURL(themeDisplay));
+
+				webImage.setAlt(user.getFullName());
+
+				fieldValues.add(
+					new InfoFieldValue<>(profileImageInfoField, webImage));
+			}
+		}
 	}
 
 	@Reference
