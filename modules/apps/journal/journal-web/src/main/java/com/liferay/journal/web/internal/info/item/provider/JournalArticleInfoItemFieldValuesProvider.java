@@ -44,7 +44,9 @@ import com.liferay.journal.util.JournalConverter;
 import com.liferay.journal.util.comparator.ArticleVersionComparator;
 import com.liferay.journal.web.internal.asset.JournalArticleDDMFormValuesReader;
 import com.liferay.journal.web.internal.info.item.JournalArticleInfoItemFields;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.PortletRequestModel;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -384,20 +386,32 @@ public class JournalArticleInfoItemFieldValuesProvider
 			ThemeDisplay themeDisplay, User user)
 		throws PortalException {
 
+		String fullName = LanguageUtil.get(
+			LocaleUtil.fromLanguageId("en_US"), "deleted-user");
+		String portraitURL = StringPool.BLANK;
+
+		if (themeDisplay != null) {
+			fullName = LanguageUtil.get(
+				themeDisplay.getLocale(), "deleted-user");
+			portraitURL =
+				themeDisplay.getPathThemeImages() + "/clay/icons.svg#user";
+		}
+
 		if (user != null) {
-			fieldValues.add(
-				new InfoFieldValue<>(nameInfoField, user.getFullName()));
+			fullName = user.getFullName();
 
 			if (themeDisplay != null) {
-				WebImage webImage = new WebImage(
-					user.getPortraitURL(themeDisplay));
-
-				webImage.setAlt(user.getFullName());
-
-				fieldValues.add(
-					new InfoFieldValue<>(profileImageInfoField, webImage));
+				portraitURL = user.getPortraitURL(themeDisplay);
 			}
 		}
+
+		fieldValues.add(new InfoFieldValue<>(nameInfoField, fullName));
+
+		WebImage webImage = new WebImage(portraitURL);
+
+		webImage.setAlt(fullName);
+
+		fieldValues.add(new InfoFieldValue<>(profileImageInfoField, webImage));
 	}
 
 	@Reference
