@@ -20,20 +20,16 @@ import com.liferay.blogs.model.BlogsEntry;
 import com.liferay.blogs.web.internal.info.item.BlogsEntryInfoItemFields;
 import com.liferay.expando.info.item.provider.ExpandoInfoItemFieldSetProvider;
 import com.liferay.info.exception.NoSuchInfoItemException;
-import com.liferay.info.field.InfoField;
 import com.liferay.info.field.InfoFieldValue;
-import com.liferay.info.field.type.ImageInfoFieldType;
-import com.liferay.info.field.type.TextInfoFieldType;
 import com.liferay.info.item.ClassPKInfoItemIdentifier;
 import com.liferay.info.item.InfoItemFieldValues;
 import com.liferay.info.item.InfoItemReference;
 import com.liferay.info.item.field.reader.InfoItemFieldReaderFieldSetProvider;
 import com.liferay.info.item.provider.InfoItemFieldValuesProvider;
+import com.liferay.info.item.provider.InfoItemFieldValuesProviderHelper;
 import com.liferay.info.type.WebImage;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
@@ -44,6 +40,7 @@ import com.liferay.template.info.item.provider.TemplateInfoItemFieldSetProvider;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Component;
@@ -153,12 +150,19 @@ public class BlogsEntryInfoItemFieldValuesProvider
 					BlogsEntryInfoItemFields.coverImageCaptionInfoField,
 					blogsEntry.getCoverImageCaption()));
 
-			_setUserInfoFields(
+			Locale locale = LocaleUtil.fromLanguageId("en_US");
+			String pathImage = StringPool.BLANK;
+
+			if (themeDisplay != null) {
+				locale = themeDisplay.getLocale();
+				pathImage = themeDisplay.getPathImage();
+			}
+
+			_infoItemFieldValuesProviderHelper.setUserPortraitInfoFields(
 				blogsEntryFieldValues,
 				BlogsEntryInfoItemFields.authorNameInfoField,
-				BlogsEntryInfoItemFields.authorProfileImageInfoField,
-				themeDisplay,
-				_userLocalService.fetchUser(blogsEntry.getUserId()));
+				BlogsEntryInfoItemFields.authorProfileImageInfoField, locale,
+				pathImage, _userLocalService.fetchUser(blogsEntry.getUserId()));
 
 			blogsEntryFieldValues.add(
 				new InfoFieldValue<>(
@@ -207,41 +211,6 @@ public class BlogsEntryInfoItemFieldValuesProvider
 		return null;
 	}
 
-	private void _setUserInfoFields(
-			List<InfoFieldValue<Object>> fieldValues,
-			InfoField<TextInfoFieldType> nameInfoField,
-			InfoField<ImageInfoFieldType> profileImageInfoField,
-			ThemeDisplay themeDisplay, User user)
-		throws PortalException {
-
-		String fullName = LanguageUtil.get(
-			LocaleUtil.fromLanguageId("en_US"), "deleted-user");
-		String portraitURL = StringPool.BLANK;
-
-		if (themeDisplay != null) {
-			fullName = LanguageUtil.get(
-				themeDisplay.getLocale(), "deleted-user");
-			portraitURL =
-				themeDisplay.getPathThemeImages() + "/clay/icons.svg#user";
-		}
-
-		if (user != null) {
-			fullName = user.getFullName();
-
-			if (themeDisplay != null) {
-				portraitURL = user.getPortraitURL(themeDisplay);
-			}
-		}
-
-		fieldValues.add(new InfoFieldValue<>(nameInfoField, fullName));
-
-		WebImage webImage = new WebImage(portraitURL);
-
-		webImage.setAlt(fullName);
-
-		fieldValues.add(new InfoFieldValue<>(profileImageInfoField, webImage));
-	}
-
 	@Reference
 	private AssetDisplayPageFriendlyURLProvider
 		_assetDisplayPageFriendlyURLProvider;
@@ -256,6 +225,10 @@ public class BlogsEntryInfoItemFieldValuesProvider
 	@Reference
 	private InfoItemFieldReaderFieldSetProvider
 		_infoItemFieldReaderFieldSetProvider;
+
+	@Reference
+	private InfoItemFieldValuesProviderHelper
+		_infoItemFieldValuesProviderHelper;
 
 	@Reference
 	private TemplateInfoItemFieldSetProvider _templateInfoItemFieldSetProvider;

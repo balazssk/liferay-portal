@@ -24,6 +24,7 @@ import com.liferay.info.item.field.reader.InfoItemFieldReaderFieldSetProvider;
 import com.liferay.info.item.provider.InfoItemCapabilitiesProvider;
 import com.liferay.info.item.provider.InfoItemDetailsProvider;
 import com.liferay.info.item.provider.InfoItemFieldValuesProvider;
+import com.liferay.info.item.provider.InfoItemFieldValuesProviderHelper;
 import com.liferay.info.item.provider.InfoItemFormProvider;
 import com.liferay.info.item.provider.InfoItemObjectProvider;
 import com.liferay.info.item.renderer.InfoItemRenderer;
@@ -134,7 +135,8 @@ public class ObjectDefinitionDeployerImpl implements ObjectDefinitionDeployer {
 				InfoItemFieldValuesProvider.class,
 				new ObjectEntryInfoItemFieldValuesProvider(
 					_assetDisplayPageFriendlyURLProvider,
-					_infoItemFieldReaderFieldSetProvider, _jsonFactory,
+					_infoItemFieldReaderFieldSetProvider,
+					_infoItemFieldValuesProviderHelper, _jsonFactory,
 					_listTypeEntryLocalService, _objectEntryLocalService,
 					_objectFieldLocalService, _templateInfoItemFieldSetProvider,
 					_userLocalService),
@@ -336,6 +338,10 @@ public class ObjectDefinitionDeployerImpl implements ObjectDefinitionDeployer {
 	@Reference
 	private InfoItemFieldReaderFieldSetProvider
 		_infoItemFieldReaderFieldSetProvider;
+
+	@Reference
+	private InfoItemFieldValuesProviderHelper
+		_infoItemFieldValuesProviderHelper;
 
 	@Reference
 	private InfoItemRendererTracker _infoItemRendererTracker;

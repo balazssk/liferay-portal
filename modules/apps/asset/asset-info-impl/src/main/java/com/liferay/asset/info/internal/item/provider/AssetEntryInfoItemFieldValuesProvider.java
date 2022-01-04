@@ -18,27 +18,21 @@ import com.liferay.asset.display.page.portlet.AssetDisplayPageFriendlyURLProvide
 import com.liferay.asset.info.internal.item.AssetEntryInfoItemFields;
 import com.liferay.asset.info.item.provider.AssetEntryInfoItemFieldSetProvider;
 import com.liferay.asset.kernel.model.AssetEntry;
-import com.liferay.info.field.InfoField;
 import com.liferay.info.field.InfoFieldValue;
-import com.liferay.info.field.type.ImageInfoFieldType;
-import com.liferay.info.field.type.TextInfoFieldType;
 import com.liferay.info.item.InfoItemFieldValues;
 import com.liferay.info.item.InfoItemReference;
 import com.liferay.info.item.provider.InfoItemFieldValuesProvider;
-import com.liferay.info.type.WebImage;
+import com.liferay.info.item.provider.InfoItemFieldValuesProviderHelper;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
-import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.template.info.item.provider.TemplateInfoItemFieldSetProvider;
 
@@ -121,12 +115,18 @@ public class AssetEntryInfoItemFieldValuesProvider
 					AssetEntryInfoItemFields.urlInfoField,
 					assetEntry.getUrl()));
 
-			_setUserInfoFields(
+			String pathImage = StringPool.BLANK;
+			ThemeDisplay themeDisplay = _getThemeDisplay();
+
+			if (themeDisplay != null) {
+				pathImage = themeDisplay.getPathImage();
+			}
+
+			_infoItemFieldValuesProviderHelper.setUserPortraitInfoFields(
 				assetEntryFieldValues,
 				AssetEntryInfoItemFields.userNameInfoField,
-				AssetEntryInfoItemFields.userProfileImageInfoField,
-				_getThemeDisplay(),
-				_userLocalService.fetchUser(assetEntry.getUserId()));
+				AssetEntryInfoItemFields.userProfileImageInfoField, locale,
+				pathImage, _userLocalService.fetchUser(assetEntry.getUserId()));
 
 			return assetEntryFieldValues;
 		}
@@ -180,41 +180,6 @@ public class AssetEntryInfoItemFieldValuesProvider
 		return null;
 	}
 
-	private void _setUserInfoFields(
-			List<InfoFieldValue<Object>> fieldValues,
-			InfoField<TextInfoFieldType> nameInfoField,
-			InfoField<ImageInfoFieldType> profileImageInfoField,
-			ThemeDisplay themeDisplay, User user)
-		throws PortalException {
-
-		String fullName = LanguageUtil.get(
-			LocaleUtil.fromLanguageId("en_US"), "deleted-user");
-		String portraitURL = StringPool.BLANK;
-
-		if (themeDisplay != null) {
-			fullName = LanguageUtil.get(
-				themeDisplay.getLocale(), "deleted-user");
-			portraitURL =
-				themeDisplay.getPathThemeImages() + "/clay/icons.svg#user";
-		}
-
-		if (user != null) {
-			fullName = user.getFullName();
-
-			if (themeDisplay != null) {
-				portraitURL = user.getPortraitURL(themeDisplay);
-			}
-		}
-
-		fieldValues.add(new InfoFieldValue<>(nameInfoField, fullName));
-
-		WebImage webImage = new WebImage(portraitURL);
-
-		webImage.setAlt(fullName);
-
-		fieldValues.add(new InfoFieldValue<>(profileImageInfoField, webImage));
-	}
-
 	private static final Log _log = LogFactoryUtil.getLog(
 		AssetEntryInfoItemFieldValuesProvider.class);
 
@@ -225,6 +190,10 @@ public class AssetEntryInfoItemFieldValuesProvider
 	@Reference
 	private AssetEntryInfoItemFieldSetProvider
 		_assetEntryInfoItemFieldSetProvider;
+
+	@Reference
+	private InfoItemFieldValuesProviderHelper
+		_infoItemFieldValuesProviderHelper;
 
 	@Reference
 	private Portal _portal;

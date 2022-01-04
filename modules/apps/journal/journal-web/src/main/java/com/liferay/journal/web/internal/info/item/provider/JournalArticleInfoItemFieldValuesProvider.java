@@ -26,7 +26,6 @@ import com.liferay.info.display.request.attributes.contributor.InfoDisplayReques
 import com.liferay.info.exception.NoSuchInfoItemException;
 import com.liferay.info.field.InfoField;
 import com.liferay.info.field.InfoFieldValue;
-import com.liferay.info.field.type.ImageInfoFieldType;
 import com.liferay.info.field.type.TextInfoFieldType;
 import com.liferay.info.item.InfoItemFieldValues;
 import com.liferay.info.item.InfoItemReference;
@@ -34,6 +33,7 @@ import com.liferay.info.item.InfoItemServiceTracker;
 import com.liferay.info.item.field.reader.InfoItemFieldReaderFieldSetProvider;
 import com.liferay.info.item.provider.InfoItemDetailsProvider;
 import com.liferay.info.item.provider.InfoItemFieldValuesProvider;
+import com.liferay.info.item.provider.InfoItemFieldValuesProviderHelper;
 import com.liferay.info.localized.InfoLocalizedValue;
 import com.liferay.info.type.WebImage;
 import com.liferay.journal.model.JournalArticle;
@@ -46,7 +46,6 @@ import com.liferay.journal.web.internal.asset.JournalArticleDDMFormValuesReader;
 import com.liferay.journal.web.internal.info.item.JournalArticleInfoItemFields;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.PortletRequestModel;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -229,17 +228,25 @@ public class JournalArticleInfoItemFieldValuesProvider
 				}
 			}
 
-			_setUserInfoFields(
+			Locale locale = LocaleUtil.fromLanguageId("en_US");
+			String pathImage = StringPool.BLANK;
+
+			if (themeDisplay != null) {
+				locale = themeDisplay.getLocale();
+				pathImage = themeDisplay.getPathImage();
+			}
+
+			_infoItemFieldValuesProviderHelper.setUserPortraitInfoFields(
 				journalArticleFieldValues,
 				JournalArticleInfoItemFields.authorNameInfoField,
 				JournalArticleInfoItemFields.authorProfileImageInfoField,
-				themeDisplay, _getLastVersionUser(journalArticle));
+				locale, pathImage, _getLastVersionUser(journalArticle));
 
-			_setUserInfoFields(
+			_infoItemFieldValuesProviderHelper.setUserPortraitInfoFields(
 				journalArticleFieldValues,
 				JournalArticleInfoItemFields.lastEditorNameInfoField,
 				JournalArticleInfoItemFields.lastEditorProfileImageInfoField,
-				themeDisplay,
+				locale, pathImage,
 				_userLocalService.fetchUser(journalArticle.getUserId()));
 
 			journalArticleFieldValues.add(
@@ -379,41 +386,6 @@ public class JournalArticleInfoItemFieldValuesProvider
 		return null;
 	}
 
-	private void _setUserInfoFields(
-			List<InfoFieldValue<Object>> fieldValues,
-			InfoField<TextInfoFieldType> nameInfoField,
-			InfoField<ImageInfoFieldType> profileImageInfoField,
-			ThemeDisplay themeDisplay, User user)
-		throws PortalException {
-
-		String fullName = LanguageUtil.get(
-			LocaleUtil.fromLanguageId("en_US"), "deleted-user");
-		String portraitURL = StringPool.BLANK;
-
-		if (themeDisplay != null) {
-			fullName = LanguageUtil.get(
-				themeDisplay.getLocale(), "deleted-user");
-			portraitURL =
-				themeDisplay.getPathThemeImages() + "/clay/icons.svg#user";
-		}
-
-		if (user != null) {
-			fullName = user.getFullName();
-
-			if (themeDisplay != null) {
-				portraitURL = user.getPortraitURL(themeDisplay);
-			}
-		}
-
-		fieldValues.add(new InfoFieldValue<>(nameInfoField, fullName));
-
-		WebImage webImage = new WebImage(portraitURL);
-
-		webImage.setAlt(fullName);
-
-		fieldValues.add(new InfoFieldValue<>(profileImageInfoField, webImage));
-	}
-
 	@Reference
 	private AssetDisplayPageFriendlyURLProvider
 		_assetDisplayPageFriendlyURLProvider;
@@ -439,6 +411,10 @@ public class JournalArticleInfoItemFieldValuesProvider
 	@Reference
 	private InfoItemFieldReaderFieldSetProvider
 		_infoItemFieldReaderFieldSetProvider;
+
+	@Reference
+	private InfoItemFieldValuesProviderHelper
+		_infoItemFieldValuesProviderHelper;
 
 	@Reference
 	private InfoItemServiceTracker _infoItemServiceTracker;

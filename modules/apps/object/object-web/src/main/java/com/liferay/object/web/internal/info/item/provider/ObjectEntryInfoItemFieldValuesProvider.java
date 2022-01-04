@@ -27,6 +27,7 @@ import com.liferay.info.item.InfoItemFieldValues;
 import com.liferay.info.item.InfoItemReference;
 import com.liferay.info.item.field.reader.InfoItemFieldReaderFieldSetProvider;
 import com.liferay.info.item.provider.InfoItemFieldValuesProvider;
+import com.liferay.info.item.provider.InfoItemFieldValuesProviderHelper;
 import com.liferay.info.localized.InfoLocalizedValue;
 import com.liferay.info.type.WebImage;
 import com.liferay.list.type.model.ListTypeEntry;
@@ -40,8 +41,6 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
-import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.UserLocalService;
@@ -59,6 +58,7 @@ import java.text.Format;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
@@ -71,6 +71,7 @@ public class ObjectEntryInfoItemFieldValuesProvider
 	public ObjectEntryInfoItemFieldValuesProvider(
 		AssetDisplayPageFriendlyURLProvider assetDisplayPageFriendlyURLProvider,
 		InfoItemFieldReaderFieldSetProvider infoItemFieldReaderFieldSetProvider,
+		InfoItemFieldValuesProviderHelper infoItemFieldValuesProviderHelper,
 		JSONFactory jsonFactory,
 		ListTypeEntryLocalService listTypeEntryLocalService,
 		ObjectEntryLocalService objectEntryLocalService,
@@ -82,6 +83,7 @@ public class ObjectEntryInfoItemFieldValuesProvider
 			assetDisplayPageFriendlyURLProvider;
 		_infoItemFieldReaderFieldSetProvider =
 			infoItemFieldReaderFieldSetProvider;
+		_infoItemFieldValuesProviderHelper = infoItemFieldValuesProviderHelper;
 		_jsonFactory = jsonFactory;
 		_listTypeEntryLocalService = listTypeEntryLocalService;
 		_objectEntryLocalService = objectEntryLocalService;
@@ -167,11 +169,19 @@ public class ObjectEntryInfoItemFieldValuesProvider
 
 			ThemeDisplay themeDisplay = _getThemeDisplay();
 
-			_setUserInfoFields(
+			Locale locale = LocaleUtil.fromLanguageId("en_US");
+			String pathImage = StringPool.BLANK;
+
+			if (themeDisplay != null) {
+				locale = themeDisplay.getLocale();
+				pathImage = themeDisplay.getPathImage();
+			}
+
+			_infoItemFieldValuesProviderHelper.setUserPortraitInfoFields(
 				objectEntryFieldValues,
 				ObjectEntryInfoItemFields.userNameInfoField,
-				ObjectEntryInfoItemFields.userProfileImageInfoField,
-				themeDisplay,
+				ObjectEntryInfoItemFields.userProfileImageInfoField, locale,
+				pathImage,
 				_userLocalService.fetchUser(objectEntry.getUserId()));
 
 			if (themeDisplay != null) {
@@ -273,45 +283,12 @@ public class ObjectEntryInfoItemFieldValuesProvider
 		return values.get(objectField.getName());
 	}
 
-	private void _setUserInfoFields(
-			List<InfoFieldValue<Object>> fieldValues,
-			InfoField<TextInfoFieldType> nameInfoField,
-			InfoField<ImageInfoFieldType> profileImageInfoField,
-			ThemeDisplay themeDisplay, User user)
-		throws PortalException {
-
-		String fullName = LanguageUtil.get(
-			LocaleUtil.fromLanguageId("en_US"), "deleted-user");
-		String portraitURL = StringPool.BLANK;
-
-		if (themeDisplay != null) {
-			fullName = LanguageUtil.get(
-				themeDisplay.getLocale(), "deleted-user");
-			portraitURL =
-				themeDisplay.getPathThemeImages() + "/clay/icons.svg#user";
-		}
-
-		if (user != null) {
-			fullName = user.getFullName();
-
-			if (themeDisplay != null) {
-				portraitURL = user.getPortraitURL(themeDisplay);
-			}
-		}
-
-		fieldValues.add(new InfoFieldValue<>(nameInfoField, fullName));
-
-		WebImage webImage = new WebImage(portraitURL);
-
-		webImage.setAlt(fullName);
-
-		fieldValues.add(new InfoFieldValue<>(profileImageInfoField, webImage));
-	}
-
 	private final AssetDisplayPageFriendlyURLProvider
 		_assetDisplayPageFriendlyURLProvider;
 	private final InfoItemFieldReaderFieldSetProvider
 		_infoItemFieldReaderFieldSetProvider;
+	private final InfoItemFieldValuesProviderHelper
+		_infoItemFieldValuesProviderHelper;
 	private final JSONFactory _jsonFactory;
 	private final ListTypeEntryLocalService _listTypeEntryLocalService;
 	private final ObjectEntryLocalService _objectEntryLocalService;
