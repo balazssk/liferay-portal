@@ -39,7 +39,7 @@ import com.liferay.template.info.item.provider.TemplateInfoItemFieldSetProvider;
 
 import java.text.Format;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -75,39 +75,60 @@ public class AssetEntryInfoItemFieldValuesProvider
 
 		Locale locale = LocaleThreadLocal.getThemeDisplayLocale();
 
-		return Arrays.asList(
-			new InfoFieldValue<>(
-				AssetEntryInfoItemFields.titleInfoField,
-				assetEntry.getTitle(locale)),
-			new InfoFieldValue<>(
-				AssetEntryInfoItemFields.descriptionInfoField,
-				assetEntry.getDescription(locale)),
-			new InfoFieldValue<>(
-				AssetEntryInfoItemFields.summaryInfoField,
-				assetEntry.getSummary(locale)),
-			new InfoFieldValue<>(
-				AssetEntryInfoItemFields.userNameInfoField,
-				assetEntry.getUserName()),
-			new InfoFieldValue<>(
-				AssetEntryInfoItemFields.createDateInfoField,
-				_getDateValue(assetEntry.getCreateDate())),
-			new InfoFieldValue<>(
-				AssetEntryInfoItemFields.modifiedDateInfoField,
-				_getDateValue(assetEntry.getModifiedDate())),
-			new InfoFieldValue<>(
-				AssetEntryInfoItemFields.expirationDateInfoField,
-				_getDateValue(assetEntry.getExpirationDate())),
-			new InfoFieldValue<>(
-				AssetEntryInfoItemFields.viewCountInfoField,
-				assetEntry::getViewCount),
-			new InfoFieldValue<>(
-				AssetEntryInfoItemFields.displayPageURLInfoField,
-				_getDisplayPageURL(assetEntry)),
-			new InfoFieldValue<>(
-				AssetEntryInfoItemFields.urlInfoField, assetEntry.getUrl()),
-			new InfoFieldValue<>(
-				AssetEntryInfoItemFields.userProfileImageInfoField,
-				_getUserNameProfileImage(assetEntry.getUserId())));
+		try {
+			List<InfoFieldValue<Object>> assetEntryFieldValues =
+				new ArrayList<>();
+
+			assetEntryFieldValues.add(
+				new InfoFieldValue<>(
+					AssetEntryInfoItemFields.titleInfoField,
+					assetEntry.getTitle(locale)));
+			assetEntryFieldValues.add(
+				new InfoFieldValue<>(
+					AssetEntryInfoItemFields.descriptionInfoField,
+					assetEntry.getDescription(locale)));
+			assetEntryFieldValues.add(
+				new InfoFieldValue<>(
+					AssetEntryInfoItemFields.summaryInfoField,
+					assetEntry.getSummary(locale)));
+			assetEntryFieldValues.add(
+				new InfoFieldValue<>(
+					AssetEntryInfoItemFields.userNameInfoField,
+					assetEntry.getUserName()));
+			assetEntryFieldValues.add(
+				new InfoFieldValue<>(
+					AssetEntryInfoItemFields.createDateInfoField,
+					_getDateValue(assetEntry.getCreateDate())));
+			assetEntryFieldValues.add(
+				new InfoFieldValue<>(
+					AssetEntryInfoItemFields.modifiedDateInfoField,
+					_getDateValue(assetEntry.getModifiedDate())));
+			assetEntryFieldValues.add(
+				new InfoFieldValue<>(
+					AssetEntryInfoItemFields.expirationDateInfoField,
+					_getDateValue(assetEntry.getExpirationDate())));
+			assetEntryFieldValues.add(
+				new InfoFieldValue<>(
+					AssetEntryInfoItemFields.viewCountInfoField,
+					assetEntry::getViewCount));
+			assetEntryFieldValues.add(
+				new InfoFieldValue<>(
+					AssetEntryInfoItemFields.displayPageURLInfoField,
+					_getDisplayPageURL(assetEntry)));
+			assetEntryFieldValues.add(
+				new InfoFieldValue<>(
+					AssetEntryInfoItemFields.urlInfoField,
+					assetEntry.getUrl()));
+			assetEntryFieldValues.add(
+				new InfoFieldValue<>(
+					AssetEntryInfoItemFields.userProfileImageInfoField,
+					_getUserNameProfileImage(assetEntry.getUserId())));
+
+			return assetEntryFieldValues;
+		}
+		catch (PortalException portalException) {
+			throw new RuntimeException(portalException);
+		}
 	}
 
 	private String _getDateValue(Date date) {
