@@ -40,12 +40,14 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.vulcan.util.TransformUtil;
 import com.liferay.template.info.item.provider.TemplateInfoItemFieldSetProvider;
@@ -162,16 +164,15 @@ public class ObjectEntryInfoItemFieldValuesProvider
 				new InfoFieldValue<>(
 					ObjectEntryInfoItemFields.publishDateInfoField,
 					objectEntry.getLastPublishDate()));
-			objectEntryFieldValues.add(
-				new InfoFieldValue<>(
-					ObjectEntryInfoItemFields.userNameInfoField,
-					objectEntry.getUserName()));
-			objectEntryFieldValues.add(
-				new InfoFieldValue<>(
-					ObjectEntryInfoItemFields.userProfileImageInfoField,
-					_getWebImage(objectEntry.getUserId())));
 
 			ThemeDisplay themeDisplay = _getThemeDisplay();
+
+			_setUserInfoFields(
+				objectEntryFieldValues,
+				ObjectEntryInfoItemFields.userNameInfoField,
+				ObjectEntryInfoItemFields.userProfileImageInfoField,
+				themeDisplay,
+				_userLocalService.fetchUser(objectEntry.getUserId()));
 
 			if (themeDisplay != null) {
 				objectEntryFieldValues.add(
@@ -272,24 +273,39 @@ public class ObjectEntryInfoItemFieldValuesProvider
 		return values.get(objectField.getName());
 	}
 
-	private WebImage _getWebImage(long userId) throws PortalException {
-		User user = _userLocalService.fetchUser(userId);
+	private void _setUserInfoFields(
+			List<InfoFieldValue<Object>> fieldValues,
+			InfoField<TextInfoFieldType> nameInfoField,
+			InfoField<ImageInfoFieldType> profileImageInfoField,
+			ThemeDisplay themeDisplay, User user)
+		throws PortalException {
 
-		if (user == null) {
-			return null;
-		}
-
-		ThemeDisplay themeDisplay = _getThemeDisplay();
+		String fullName = LanguageUtil.get(
+			LocaleUtil.fromLanguageId("en_US"), "deleted-user");
+		String portraitURL = StringPool.BLANK;
 
 		if (themeDisplay != null) {
-			WebImage webImage = new WebImage(user.getPortraitURL(themeDisplay));
-
-			webImage.setAlt(user.getFullName());
-
-			return webImage;
+			fullName = LanguageUtil.get(
+				themeDisplay.getLocale(), "deleted-user");
+			portraitURL =
+				themeDisplay.getPathThemeImages() + "/clay/icons.svg#user";
 		}
 
-		return null;
+		if (user != null) {
+			fullName = user.getFullName();
+
+			if (themeDisplay != null) {
+				portraitURL = user.getPortraitURL(themeDisplay);
+			}
+		}
+
+		fieldValues.add(new InfoFieldValue<>(nameInfoField, fullName));
+
+		WebImage webImage = new WebImage(portraitURL);
+
+		webImage.setAlt(fullName);
+
+		fieldValues.add(new InfoFieldValue<>(profileImageInfoField, webImage));
 	}
 
 	private final AssetDisplayPageFriendlyURLProvider

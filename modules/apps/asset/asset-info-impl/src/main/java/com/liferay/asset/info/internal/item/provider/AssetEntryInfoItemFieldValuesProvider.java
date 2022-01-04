@@ -18,13 +18,17 @@ import com.liferay.asset.display.page.portlet.AssetDisplayPageFriendlyURLProvide
 import com.liferay.asset.info.internal.item.AssetEntryInfoItemFields;
 import com.liferay.asset.info.item.provider.AssetEntryInfoItemFieldSetProvider;
 import com.liferay.asset.kernel.model.AssetEntry;
+import com.liferay.info.field.InfoField;
 import com.liferay.info.field.InfoFieldValue;
+import com.liferay.info.field.type.ImageInfoFieldType;
+import com.liferay.info.field.type.TextInfoFieldType;
 import com.liferay.info.item.InfoItemFieldValues;
 import com.liferay.info.item.InfoItemReference;
 import com.liferay.info.item.provider.InfoItemFieldValuesProvider;
 import com.liferay.info.type.WebImage;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.User;
@@ -34,6 +38,7 @@ import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.template.info.item.provider.TemplateInfoItemFieldSetProvider;
 
@@ -93,10 +98,6 @@ public class AssetEntryInfoItemFieldValuesProvider
 					assetEntry.getSummary(locale)));
 			assetEntryFieldValues.add(
 				new InfoFieldValue<>(
-					AssetEntryInfoItemFields.userNameInfoField,
-					assetEntry.getUserName()));
-			assetEntryFieldValues.add(
-				new InfoFieldValue<>(
 					AssetEntryInfoItemFields.createDateInfoField,
 					_getDateValue(assetEntry.getCreateDate())));
 			assetEntryFieldValues.add(
@@ -119,10 +120,13 @@ public class AssetEntryInfoItemFieldValuesProvider
 				new InfoFieldValue<>(
 					AssetEntryInfoItemFields.urlInfoField,
 					assetEntry.getUrl()));
-			assetEntryFieldValues.add(
-				new InfoFieldValue<>(
-					AssetEntryInfoItemFields.userProfileImageInfoField,
-					_getUserNameProfileImage(assetEntry.getUserId())));
+
+			_setUserInfoFields(
+				assetEntryFieldValues,
+				AssetEntryInfoItemFields.userNameInfoField,
+				AssetEntryInfoItemFields.userProfileImageInfoField,
+				_getThemeDisplay(),
+				_userLocalService.fetchUser(assetEntry.getUserId()));
 
 			return assetEntryFieldValues;
 		}
@@ -176,32 +180,39 @@ public class AssetEntryInfoItemFieldValuesProvider
 		return null;
 	}
 
-	private Object _getUserNameProfileImage(long userId) {
-		User user = _userLocalService.fetchUser(userId);
+	private void _setUserInfoFields(
+			List<InfoFieldValue<Object>> fieldValues,
+			InfoField<TextInfoFieldType> nameInfoField,
+			InfoField<ImageInfoFieldType> profileImageInfoField,
+			ThemeDisplay themeDisplay, User user)
+		throws PortalException {
 
-		if (user == null) {
-			return null;
-		}
-
-		ThemeDisplay themeDisplay = _getThemeDisplay();
+		String fullName = LanguageUtil.get(
+			LocaleUtil.fromLanguageId("en_US"), "deleted-user");
+		String portraitURL = StringPool.BLANK;
 
 		if (themeDisplay != null) {
-			try {
-				WebImage webImage = new WebImage(
-					user.getPortraitURL(themeDisplay));
+			fullName = LanguageUtil.get(
+				themeDisplay.getLocale(), "deleted-user");
+			portraitURL =
+				themeDisplay.getPathThemeImages() + "/clay/icons.svg#user";
+		}
 
-				webImage.setAlt(user.getFullName());
+		if (user != null) {
+			fullName = user.getFullName();
 
-				return webImage;
-			}
-			catch (PortalException portalException) {
-				if (_log.isDebugEnabled()) {
-					_log.debug(portalException, portalException);
-				}
+			if (themeDisplay != null) {
+				portraitURL = user.getPortraitURL(themeDisplay);
 			}
 		}
 
-		return null;
+		fieldValues.add(new InfoFieldValue<>(nameInfoField, fullName));
+
+		WebImage webImage = new WebImage(portraitURL);
+
+		webImage.setAlt(fullName);
+
+		fieldValues.add(new InfoFieldValue<>(profileImageInfoField, webImage));
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
