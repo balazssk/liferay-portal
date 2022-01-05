@@ -8457,6 +8457,11 @@ public class PortalImpl implements Portal {
 		}
 
 		if (canonicalURL ||
+			(StringUtil.equalsIgnoreCase(
+				themeDisplay.getServerName(), defaultVirtualHostName) &&
+			 StringUtil.equals(
+				 group.getGroupKey(),
+				 PropsValues.VIRTUAL_HOSTS_DEFAULT_SITE_NAME)) ||
 			!StringUtil.equalsIgnoreCase(
 				themeDisplay.getServerName(), defaultVirtualHostName)) {
 
@@ -8485,6 +8490,10 @@ public class PortalImpl implements Portal {
 
 			if (!virtualHostnames.isEmpty() &&
 				(canonicalURL ||
+				 (virtualHostnames.containsKey(defaultVirtualHostName) &&
+				  StringUtil.equals(
+					  group.getGroupKey(),
+					  PropsValues.VIRTUAL_HOSTS_DEFAULT_SITE_NAME)) ||
 				 !virtualHostnames.containsKey(defaultVirtualHostName))) {
 
 				if (!controlPanel || !privateLayoutSet) {
