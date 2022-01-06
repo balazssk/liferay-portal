@@ -15,6 +15,7 @@
 package com.liferay.portal.util.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.exportimport.kernel.service.StagingLocalService;
 import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -23,9 +24,13 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutSet;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
+import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
+import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.CompanyTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
@@ -105,6 +110,69 @@ public class PortalImplGroupFriendlyURLTest {
 			_PUBLIC_LAYOUT_HOSTNAME, expectedURL, _group, _publicLayout);
 	}
 
+	@Test
+	public void testGetGroupFriendlyURLFromPublicLayoutLocalhost()
+		throws Exception {
+
+		Company company = _companyLocalService.fetchCompanyByVirtualHost(
+			"localhost");
+
+		Group group = _groupLocalService.fetchGroup(
+			company.getCompanyId(),
+			PropsValues.VIRTUAL_HOSTS_DEFAULT_SITE_NAME);
+
+		Layout publicLayout = _layoutLocalService.fetchDefaultLayout(
+			group.getGroupId(), false);
+
+		_testGroupFriendlyURL(
+			"localhost", StringPool.BLANK, group, publicLayout);
+	}
+
+	@Test
+	public void testGetGroupFriendlyURLFromStagingPublicLayoutLocalhost()
+		throws Exception {
+
+		PermissionChecker originalPermissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
+
+		PermissionThreadLocal.setPermissionChecker(
+			PermissionCheckerFactoryUtil.create(TestPropsValues.getUser()));
+
+		Company company = _companyLocalService.fetchCompanyByVirtualHost(
+			"localhost");
+
+		Group group = _groupLocalService.fetchGroup(
+			company.getCompanyId(),
+			PropsValues.VIRTUAL_HOSTS_DEFAULT_SITE_NAME);
+
+		Layout publicLiveLayout = _layoutLocalService.fetchDefaultLayout(
+			group.getGroupId(), false);
+
+		_stagingLocalService.enableLocalStaging(
+			TestPropsValues.getUserId(), group, false, false,
+			new ServiceContext());
+
+		_updateLayoutSetVirtualHostname(publicLiveLayout, "www.live.com");
+
+		_testGroupFriendlyURL(
+			"www.live.com", StringPool.BLANK, group, publicLiveLayout);
+
+		Group stagingGroup = _groupLocalService.getStagingGroup(
+			group.getGroupId());
+
+		Layout publicStagingLayout = _layoutLocalService.fetchDefaultLayout(
+			stagingGroup.getGroupId(), false);
+
+		_updateLayoutSetVirtualHostname(publicStagingLayout, "www.staging.com");
+
+		_testGroupFriendlyURL(
+			"www.staging.com", StringPool.BLANK, group, publicStagingLayout);
+
+		_stagingLocalService.disableStaging(group, new ServiceContext());
+
+		PermissionThreadLocal.setPermissionChecker(originalPermissionChecker);
+	}
+
 	private static void _updateLayoutSetVirtualHostname(
 		Layout layout, String layoutHostname) {
 
@@ -165,5 +233,8 @@ public class PortalImplGroupFriendlyURLTest {
 
 	@Inject
 	private Portal _portal;
+
+	@Inject
+	private StagingLocalService _stagingLocalService;
 
 }
