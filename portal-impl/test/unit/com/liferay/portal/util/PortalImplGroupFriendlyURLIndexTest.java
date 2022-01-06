@@ -24,7 +24,7 @@ import org.junit.Test;
 /**
  * @author Sergio González
  */
-public class PortalImplGroupFriendlyURLTest {
+public class PortalImplGroupFriendlyURLIndexTest {
 
 	@ClassRule
 	@Rule
