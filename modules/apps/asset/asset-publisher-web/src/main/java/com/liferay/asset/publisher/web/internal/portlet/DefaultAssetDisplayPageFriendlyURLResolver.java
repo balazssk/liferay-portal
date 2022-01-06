@@ -112,8 +112,15 @@ public class DefaultAssetDisplayPageFriendlyURLResolver
 
 			ThemeDisplay themeDisplay = new ThemeDisplay();
 
+			themeDisplay.setCompany(_portal.getCompany(httpServletRequest));
+			themeDisplay.setLocale(_portal.getLocale(httpServletRequest));
+			themeDisplay.setPortalDomain(_http.getDomain(_portal.getPortalURL(httpServletRequest)));
 			themeDisplay.setScopeGroupId(groupId);
 			themeDisplay.setSiteGroupId(groupId);
+			themeDisplay.setServerName(
+				_portal.getForwardedHost(httpServletRequest));
+			themeDisplay.setServerPort(
+				_portal.getForwardedPort(httpServletRequest));
 
 			String assetFriendlyURL =
 				_assetDisplayPageFriendlyURLProvider.getFriendlyURL(
