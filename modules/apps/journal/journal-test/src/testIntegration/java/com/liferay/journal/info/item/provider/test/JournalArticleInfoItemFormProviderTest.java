@@ -306,7 +306,7 @@ public class JournalArticleInfoItemFormProviderTest {
 			infoItemFieldValues.getInfoFieldValues();
 
 		Assert.assertEquals(
-			infoFieldValues.toString(), 19, infoFieldValues.size());
+			infoFieldValues.toString(), 21, infoFieldValues.size());
 
 		InfoFieldValue<Object> descriptionInfoFieldValue =
 			infoItemFieldValues.getInfoFieldValue("description");
