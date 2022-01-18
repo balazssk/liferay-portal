@@ -30,6 +30,7 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.Language;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.JSONPortletResponseUtil;
@@ -259,19 +260,25 @@ public class GetContentDashboardItemInfoMVCResourceCommand
 		ContentDashboardItem contentDashboardItem, Locale locale) {
 
 		String authorProfileImage = null;
+		String name = LanguageUtil.get(locale, "deleted-user");
 
 		WebImage webImage = (WebImage)contentDashboardItem.getDisplayFieldValue(
 			"authorProfileImage", locale);
 
-		long portraitId = GetterUtil.getLong(
-			_http.getParameter(HtmlUtil.escape(webImage.getUrl()), "img_id"));
+		if (webImage != null) {
+			name = webImage.getAlt();
 
-		if (portraitId > 0) {
-			authorProfileImage = webImage.getUrl();
+			long portraitId = GetterUtil.getLong(
+				_http.getParameter(
+					HtmlUtil.escape(webImage.getUrl()), "img_id"));
+
+			if (portraitId > 0) {
+				authorProfileImage = webImage.getUrl();
+			}
 		}
 
 		return JSONUtil.put(
-			"name", webImage.getAlt()
+			"name", name
 		).put(
 			"url", authorProfileImage
 		).put(
