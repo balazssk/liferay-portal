@@ -29,6 +29,8 @@ import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.language.Language;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.servlet.BrowserSnifferUtil;
@@ -83,6 +85,8 @@ public class GetContentDashboardItemInfoMVCResourceCommandTest {
 		PortalUtil portalUtil = new PortalUtil();
 
 		portalUtil.setPortal(new PortalImpl());
+
+		_setUpLanguageUtil();
 	}
 
 	@Test
@@ -185,6 +189,19 @@ public class GetContentDashboardItemInfoMVCResourceCommandTest {
 		Assert.assertEquals(
 			expectedVersionJSONObject.toString(),
 			actualVersionJSONObject.toString());
+	}
+
+	private static void _setUpLanguageUtil() {
+		LanguageUtil languageUtil = new LanguageUtil();
+
+		languageUtil.setLanguage(Mockito.mock(Language.class));
+
+		Mockito.when(
+			LanguageUtil.get(
+				Mockito.any(Locale.class), Mockito.eq("deleted-user"))
+		).thenReturn(
+			"Deleted User"
+		);
 	}
 
 	private ContentDashboardItem _getContentDashboardItem(
