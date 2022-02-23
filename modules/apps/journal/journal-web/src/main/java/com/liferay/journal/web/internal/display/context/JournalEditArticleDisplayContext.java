@@ -48,6 +48,9 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
+import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalServiceUtil;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -82,8 +85,10 @@ import javax.servlet.http.HttpServletRequest;
 public class JournalEditArticleDisplayContext {
 
 	public JournalEditArticleDisplayContext(
-		HttpServletRequest httpServletRequest,
-		LiferayPortletResponse liferayPortletResponse, JournalArticle article) {
+			HttpServletRequest httpServletRequest,
+			LiferayPortletResponse liferayPortletResponse,
+			JournalArticle article)
+		throws PortalException {
 
 		_httpServletRequest = httpServletRequest;
 		_liferayPortletResponse = liferayPortletResponse;
@@ -98,6 +103,20 @@ public class JournalEditArticleDisplayContext {
 			WebKeys.THEME_DISPLAY);
 
 		_setViewAttributes();
+
+		if (getClassNameId() == PortalUtil.getClassNameId(DDMStructure.class)) {
+			DDMStructure ddmStructure = getDDMStructure();
+
+			Group group = GroupLocalServiceUtil.getGroup(
+				ddmStructure.getGroupId());
+
+			if (group.isCompany()) {
+				ServiceContext serviceContext =
+					ServiceContextThreadLocal.getServiceContext();
+
+				serviceContext.setAttribute("globalStructure", Boolean.TRUE);
+			}
+		}
 	}
 
 	public String getArticleId() {

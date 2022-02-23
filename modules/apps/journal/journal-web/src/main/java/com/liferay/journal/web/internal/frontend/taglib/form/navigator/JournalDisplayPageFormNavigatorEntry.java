@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.GetterUtil;
 
 import javax.servlet.ServletContext;
 
@@ -46,7 +47,9 @@ public class JournalDisplayPageFormNavigatorEntry
 
 	@Override
 	public boolean isVisible(User user, JournalArticle article) {
-		if (isGlobalScopeArticle(article) || _isDepotArticle(article)) {
+		if (_isGlobalStructure() || isGlobalScopeArticle(article) ||
+			_isDepotArticle(article)) {
+
 			return false;
 		}
 
@@ -93,6 +96,19 @@ public class JournalDisplayPageFormNavigatorEntry
 		Group group = _getGroup(article);
 
 		if ((group != null) && group.isDepot()) {
+			return true;
+		}
+
+		return false;
+	}
+
+	private boolean _isGlobalStructure() {
+		ServiceContext serviceContext =
+			ServiceContextThreadLocal.getServiceContext();
+
+		if (GetterUtil.getBoolean(
+				serviceContext.getAttribute("globalStructure"))) {
+
 			return true;
 		}
 
