@@ -6925,6 +6925,9 @@ public class PortalImpl implements Portal {
 		return new String[] {url, anchor};
 	}
 
+	public void testBaseline() {
+	}
+
 	@Override
 	public String transformCustomSQL(String sql) {
 		if ((_customSqlKeys == null) || (_customSqlValues == null)) {

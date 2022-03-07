@@ -1262,6 +1262,8 @@ public interface Portal {
 
 	public String[] stripURLAnchor(String url, String separator);
 
+	public void testBaseline();
+
 	public String transformCustomSQL(String sql);
 
 	public String transformSQL(String sql);
