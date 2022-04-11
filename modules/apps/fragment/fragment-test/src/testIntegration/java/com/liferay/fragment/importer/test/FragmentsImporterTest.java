@@ -423,6 +423,9 @@ public class FragmentsImporterTest {
 	private File _generateZipFile(String path) throws Exception {
 		ZipWriter zipWriter = ZipWriterFactoryUtil.getZipWriter();
 
+		_addZipWriterEntry(
+			zipWriter, path + "resources/demo-fragments", "image.png");
+
 		URL collectionURL = _bundle.getEntry(
 			path + FragmentExportImportConstants.FILE_NAME_COLLECTION);
 
