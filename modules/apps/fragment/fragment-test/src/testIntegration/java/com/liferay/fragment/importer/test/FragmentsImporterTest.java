@@ -98,7 +98,7 @@ public class FragmentsImporterTest {
 
 		_user = TestPropsValues.getUser();
 
-		_file = _generateZipFile(_FRAGMENTS_PATH);
+		_file = _generateZipFile(_FRAGMENTS_PATH + _FRAGMENT_COLLECTION);
 	}
 
 	@After
@@ -457,15 +457,14 @@ public class FragmentsImporterTest {
 	private File _generateZipFile(String path) throws Exception {
 		ZipWriter zipWriter = ZipWriterFactoryUtil.getZipWriter();
 
-		_addZipWriterEntry(
-			zipWriter, path + "resources/demo-fragments", "image.png");
+		_addZipWriterEntry(zipWriter, path + "resources", "image.png");
 
 		URL collectionURL = _bundle.getEntry(
 			path + FragmentExportImportConstants.FILE_NAME_COLLECTION);
 
-		zipWriter.addEntry(
-			FragmentExportImportConstants.FILE_NAME_COLLECTION,
-			collectionURL.openStream());
+		_addZipWriterEntry(
+			zipWriter, FileUtil.getPath(collectionURL.getPath()),
+			FragmentExportImportConstants.FILE_NAME_COLLECTION);
 
 		Enumeration<URL> enumeration = _bundle.findEntries(
 			path, FragmentExportImportConstants.FILE_NAME_FRAGMENT, true);
@@ -603,8 +602,10 @@ public class FragmentsImporterTest {
 		Assert.assertTrue(html, html.contains(resourceReference));
 	}
 
+	private static final String _FRAGMENT_COLLECTION = "fragment-collection/";
+
 	private static final String _FRAGMENTS_PATH =
-		"com/liferay/fragment/dependencies/fragments/";
+		"com/liferay/fragment/dependencies/fragments/import/";
 
 	private Bundle _bundle;
 
