@@ -95,19 +95,19 @@ public class RenderFragmentEntryStrutsActionTest {
 			"groupId", String.valueOf(_group.getGroupId()));
 
 		URL htmlURL = _bundle.getEntry(
-			_RESOURCES_PATH + "fragments/card/index.html");
+			_RESOURCES_PATH + _FRAGMENT_COLLECTION_PATH + "card/index.html");
 
 		mockHttpServletRequest.setParameter(
 			"html", StringUtil.read(htmlURL.openStream()));
 
 		URL cssURL = _bundle.getEntry(
-			_RESOURCES_PATH + "fragments/card/index.css");
+			_RESOURCES_PATH + _FRAGMENT_COLLECTION_PATH + "card/index.css");
 
 		mockHttpServletRequest.setParameter(
 			"css", StringUtil.read(cssURL.openStream()));
 
 		URL jsURL = _bundle.getEntry(
-			_RESOURCES_PATH + "fragments/card/index.js");
+			_RESOURCES_PATH + _FRAGMENT_COLLECTION_PATH + "card/index.js");
 
 		mockHttpServletRequest.setParameter(
 			"js", StringUtil.read(jsURL.openStream()));
@@ -200,6 +200,9 @@ public class RenderFragmentEntryStrutsActionTest {
 
 		return htmlString.replaceAll("\\s+<", "<");
 	}
+
+	private static final String _FRAGMENT_COLLECTION_PATH =
+		"import/fragment-collection/";
 
 	private static final String _RESOURCES_PATH =
 		"com/liferay/fragment/dependencies/fragments/";
