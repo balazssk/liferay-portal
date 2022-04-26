@@ -402,24 +402,10 @@ public class FriendlyURLServletTest {
 	}
 
 	@Test
-	public void testServiceRedirectWithMatchingLocalizedPermanentRedirectEntry()
-		throws Exception {
-
-		_testServiceRedirect("hu/path", true, 301);
-	}
-
-	@Test
-	public void testServiceRedirectWithMatchingPermanentRedirectEntry()
-		throws Exception {
-
-		_testServiceRedirect("path", true, 301);
-	}
-
-	@Test
-	public void testServiceRedirectWithMatchingTemporaryRedirectEntry()
-		throws Exception {
-
-		_testServiceRedirect("path", false, 302);
+	public void testServiceRedirectWithRedirectEntry() throws Exception {
+		_testServiceRedirectWithRedirectEntry("hu/path", true, 301);
+		_testServiceRedirectWithRedirectEntry("path", true, 301);
+		_testServiceRedirectWithRedirectEntry("path", false, 302);
 	}
 
 	protected String getI18nLanguageId(HttpServletRequest httpServletRequest) {
@@ -534,7 +520,7 @@ public class FriendlyURLServletTest {
 			expectedRedirect);
 	}
 
-	private void _testServiceRedirect(
+	private void _testServiceRedirectWithRedirectEntry(
 			String sourceURL, boolean permanent, int expectedStatus)
 		throws Exception {
 
