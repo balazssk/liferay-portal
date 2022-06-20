@@ -14,6 +14,8 @@
 
 package com.liferay.fragment.internal.renderer;
 
+import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
+import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.renderer.FragmentRenderer;
 import com.liferay.fragment.renderer.FragmentRendererContext;
@@ -35,17 +37,32 @@ import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Portlet;
+import com.liferay.portal.kernel.portlet.InvokerPortlet;
+import com.liferay.portal.kernel.portlet.LiferayRenderRequest;
+import com.liferay.portal.kernel.portlet.PortletConfigFactoryUtil;
+import com.liferay.portal.kernel.portlet.PortletInstanceFactoryUtil;
+import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.service.PortletLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.Tuple;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portlet.RenderRequestFactory;
+import com.liferay.portlet.RenderResponseFactory;
 
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.ResourceBundle;
+
+import javax.portlet.PortletConfig;
+import javax.portlet.PortletMode;
+import javax.portlet.PortletRequest;
+import javax.portlet.WindowState;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -172,6 +189,52 @@ public class ContentObjectFragmentRenderer implements FragmentRenderer {
 				"you-do-not-have-permission-to-access-the-requested-resource");
 
 			return;
+		}
+
+		AssetRendererFactory<?> assetRendererFactory =
+			AssetRendererFactoryRegistryUtil.getAssetRendererFactoryByClassName(
+				className);
+
+		PortletRequest portletRequest =
+			(PortletRequest)httpServletRequest.getAttribute(
+				JavaConstants.JAVAX_PORTLET_REQUEST);
+
+		if ((portletRequest == null) && (assetRendererFactory != null)) {
+			Portlet portlet = _portletLocalService.getPortletById(
+				assetRendererFactory.getPortletId());
+
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)httpServletRequest.getAttribute(
+					WebKeys.THEME_DISPLAY);
+
+			try {
+				InvokerPortlet invokerPortlet =
+					PortletInstanceFactoryUtil.create(
+						portlet, httpServletRequest.getServletContext());
+
+				PortletConfig portletConfig = PortletConfigFactoryUtil.create(
+					portlet, httpServletRequest.getServletContext());
+
+				LiferayRenderRequest liferayRenderRequest =
+					RenderRequestFactory.create(
+						httpServletRequest, portlet, invokerPortlet,
+						portletConfig.getPortletContext(), WindowState.NORMAL,
+						PortletMode.VIEW,
+						PortletPreferencesFactoryUtil.fromDefaultXML(
+							portlet.getDefaultPreferences()),
+						themeDisplay.getPlid());
+
+				httpServletRequest.setAttribute(
+					JavaConstants.JAVAX_PORTLET_REQUEST, liferayRenderRequest);
+
+				httpServletRequest.setAttribute(
+					JavaConstants.JAVAX_PORTLET_RESPONSE,
+					RenderResponseFactory.create(
+						themeDisplay.getResponse(), liferayRenderRequest));
+			}
+			catch (Exception exception) {
+				_log.error(exception);
+			}
 		}
 
 		if (infoItemRenderer instanceof InfoItemTemplatedRenderer) {
@@ -343,5 +406,8 @@ public class ContentObjectFragmentRenderer implements FragmentRenderer {
 
 	@Reference
 	private InfoItemServiceTracker _infoItemServiceTracker;
+
+	@Reference
+	private PortletLocalService _portletLocalService;
 
 }
