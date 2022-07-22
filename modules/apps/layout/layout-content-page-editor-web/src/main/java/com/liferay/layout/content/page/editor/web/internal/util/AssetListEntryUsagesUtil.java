@@ -64,6 +64,9 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.segments.manager.SegmentsExperienceManager;
+import com.liferay.segments.service.SegmentsExperienceLocalService;
+import com.liferay.segments.service.SegmentsExperienceLocalServiceUtil;
 import com.liferay.taglib.security.PermissionsURLTag;
 
 import java.util.HashSet;
@@ -432,9 +435,24 @@ public class AssetListEntryUsagesUtil {
 			(ThemeDisplay)httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
+		long segmentsExperienceId = ParamUtil.getLong(
+			PortalUtil.getOriginalServletRequest(httpServletRequest),
+			"segmentsExperienceId", -1);
+
+		if (segmentsExperienceId == -1) {
+			SegmentsExperienceLocalService segmentsExperienceLocalService =
+				SegmentsExperienceLocalServiceUtil.getService();
+
+			SegmentsExperienceManager segmentsExperienceManager =
+				new SegmentsExperienceManager(segmentsExperienceLocalService);
+
+			segmentsExperienceId =
+				segmentsExperienceManager.getSegmentsExperienceId(
+					httpServletRequest);
+		}
+
 		return LayoutStructureUtil.getLayoutStructure(
-			themeDisplay.getScopeGroupId(), plid,
-			ParamUtil.getLong(httpServletRequest, "segmentsExperienceId"));
+			themeDisplay.getScopeGroupId(), plid, segmentsExperienceId);
 	}
 
 	private static JSONObject _getPageContentJSONObject(
