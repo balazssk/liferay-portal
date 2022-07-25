@@ -625,6 +625,10 @@ public class AssetListEntryUsagesUtil {
 			layoutStructure.getLayoutStructureItemByFragmentEntryLinkId(
 				fragmentEntryLink.getFragmentEntryLinkId());
 
+		if (layoutStructureItem == null) {
+			return true;
+		}
+
 		if (layoutStructure.isItemMarkedForDeletion(
 				layoutStructureItem.getItemId())) {
 
