@@ -24,9 +24,11 @@ import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserNotificationDeliveryConstants;
 import com.liferay.portal.kernel.portlet.ControlPanelEntry;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.PortletLocalService;
 import com.liferay.portal.kernel.service.UserNotificationEventLocalService;
+import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -148,6 +150,18 @@ public abstract class BasePanelApp implements PanelApp {
 
 		if (!portlet.isActive()) {
 			return false;
+		}
+
+		String controlPanelEntryCategory =
+			portlet.getControlPanelEntryCategory();
+
+		if (Validator.isNotNull(controlPanelEntryCategory) &&
+			!controlPanelEntryCategory.startsWith(
+				PortletCategoryKeys.SITE_ADMINISTRATION)) {
+
+			return PortletPermissionUtil.contains(
+				permissionChecker, getPortletId(),
+				ActionKeys.ACCESS_IN_CONTROL_PANEL);
 		}
 
 		try {
