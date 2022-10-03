@@ -157,6 +157,13 @@ public class LayoutModelDocumentContributor
 			return;
 		}
 
+		_addContent(document, layout, layoutPageTemplateStructure);
+	}
+
+	private void _addContent(
+		Document document, Layout layout,
+		LayoutPageTemplateStructure layoutPageTemplateStructure) {
+
 		Set<Locale> locales = _language.getAvailableLocales(
 			layout.getGroupId());
 
