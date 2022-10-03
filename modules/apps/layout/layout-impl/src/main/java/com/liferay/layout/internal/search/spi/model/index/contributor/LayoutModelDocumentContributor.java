@@ -61,6 +61,7 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
+import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -77,6 +78,7 @@ import java.security.Principal;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -168,8 +170,11 @@ public class LayoutModelDocumentContributor
 			layout.getGroupId());
 
 		if (_isUseLayoutCrawler(layout)) {
-			for (Locale locale : locales) {
+			Iterator<Locale> iterator = locales.iterator();
+
+			while (iterator.hasNext()) {
 				String content = StringPool.BLANK;
+				Locale locale = iterator.next();
 
 				try {
 					content = _layoutCrawler.getLayoutContent(layout, locale);
@@ -180,10 +185,16 @@ public class LayoutModelDocumentContributor
 					}
 				}
 
-				_addLocalizedContentField(content, document, locale);
+				if (Validator.isNotNull(content)) {
+					iterator.remove();
+
+					_addLocalizedContentField(content, document, locale);
+				}
 			}
 
-			return;
+			if (SetUtil.isEmpty(locales)) {
+				return;
+			}
 		}
 
 		HttpServletRequest httpServletRequest = null;
