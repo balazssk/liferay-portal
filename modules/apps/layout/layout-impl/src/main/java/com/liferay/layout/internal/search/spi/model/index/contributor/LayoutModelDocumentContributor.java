@@ -78,6 +78,7 @@ import java.security.Principal;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
@@ -166,8 +167,8 @@ public class LayoutModelDocumentContributor
 		Document document, Layout layout,
 		LayoutPageTemplateStructure layoutPageTemplateStructure) {
 
-		Set<Locale> locales = _language.getAvailableLocales(
-			layout.getGroupId());
+		Set<Locale> locales = new HashSet<>(
+			_language.getAvailableLocales(layout.getGroupId()));
 
 		if (_isUseLayoutCrawler(layout)) {
 			Iterator<Locale> iterator = locales.iterator();
