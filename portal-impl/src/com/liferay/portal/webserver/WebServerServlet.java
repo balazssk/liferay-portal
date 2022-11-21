@@ -1374,6 +1374,19 @@ public class WebServerServlet extends HttpServlet {
 
 			// Unable to check with UUID because of multiple repositories
 
+			// Check if it is a folderId and not a UUID
+
+			long groupId = GetterUtil.getLong(pathArray[0], -1L);
+			long folderId = GetterUtil.getLong(pathArray[1], -1L);
+
+			if ((groupId > -1) && (folderId > -1)) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(
+						"Trying to access a Folder, folderId=" + folderId);
+				}
+
+				throw new NoSuchFileEntryException();
+			}
 		}
 		else if (pathArray.length == 3) {
 			long groupId = GetterUtil.getLong(pathArray[0]);
