@@ -87,6 +87,8 @@ public class SQLServerDB extends BaseDB {
 
 		dropIndexes(connection, tableName, columnName);
 
+		_dropDefaultConstraint(tableName, columnName);
+
 		super.alterTableDropColumn(connection, tableName, columnName);
 	}
 
@@ -280,6 +282,15 @@ public class SQLServerDB extends BaseDB {
 
 			return sb.toString();
 		}
+	}
+
+	private void _dropDefaultConstraint(String tableName, String columnName)
+		throws Exception {
+
+		runSQL(
+			StringBundler.concat(
+				"alter table", tableName, "alter column", columnName,
+				"drop default"));
 	}
 
 	private static final String[] _SQL_SERVER = {
