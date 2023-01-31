@@ -58,7 +58,10 @@ public class ConfigurationFileInstaller implements FileInstaller {
 
 	@Override
 	public boolean canTransformURL(File file) {
-		if (!Objects.equals(_configsDirPath, file.getParent())) {
+		if (!Objects.equals(
+				_configsDirPath,
+				Util.getFilePathWithoutTrailingSlash(file.getParent()))) {
+
 			return false;
 		}
 
