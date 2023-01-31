@@ -14,6 +14,7 @@
 
 package com.liferay.portal.file.install.internal;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 
@@ -55,6 +56,16 @@ public class Util {
 		uri = uri.normalize();
 
 		return uri.getPath();
+	}
+
+	public static String getFilePathWithoutTrailingSlash(String dir) {
+		dir = getFilePath(dir);
+
+		if (dir.endsWith(StringPool.SLASH)) {
+			dir = dir.substring(0, dir.length() - 1);
+		}
+
+		return dir;
 	}
 
 	public static long loadChecksum(

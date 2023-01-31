@@ -52,15 +52,8 @@ public class ConfigurationFileInstaller implements FileInstaller {
 		_configurationAdmin = configurationAdmin;
 		_encoding = encoding;
 
-		String configsDirPath = Util.getFilePath(
+		_configsDirPath = Util.getFilePathWithoutTrailingSlash(
 			PropsValues.MODULE_FRAMEWORK_CONFIGS_DIR);
-
-		if (configsDirPath.endsWith(StringPool.SLASH)) {
-			configsDirPath = configsDirPath.substring(
-				0, configsDirPath.length() - 1);
-		}
-
-		_configsDirPath = configsDirPath;
 	}
 
 	@Override
