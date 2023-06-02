@@ -192,7 +192,7 @@ public class SegmentsExperimentSegmentsExperienceRequestProcessorTest {
 
 			mockHttpServletRequest.setCookies(
 				new Cookie(
-					"ab_test_variant_id",
+					"ab_test_variant_id_" + _layout.getPlid(),
 					segmentsExperiment.getSegmentsExperienceKey()));
 
 			long[] segmentsExperienceIds =
