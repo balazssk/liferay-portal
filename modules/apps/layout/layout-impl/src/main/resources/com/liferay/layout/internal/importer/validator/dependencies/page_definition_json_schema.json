@@ -2350,6 +2350,65 @@
 					"title": "The css Schema",
 					"type": "string"
 				},
+				"favIcon": {
+					"properties": {
+						"externalReferenceCode": {
+							"title": "The externalReferenceCode Schema",
+							"type": "string"
+						},
+						"name": {
+							"title": "The name Schema",
+							"type": "string"
+						}
+					},
+					"required": [
+						"externalReferenceCode"
+					],
+					"title": "The favIcon Schema",
+					"type": "object"
+				},
+				"globalCSSClientExtensions": {
+					"items": {
+						"additionalProperties": false,
+						"properties": {
+							"externalReferenceCode": {
+								"title": "The externalReferenceCode Schema",
+								"type": "string"
+							},
+							"name": {
+								"title": "The name Schema",
+								"type": "string"
+							}
+						},
+						"required": [
+							"externalReferenceCode"
+						],
+						"type": "object"
+					},
+					"title": "The globalCSSClientExtensions Schema",
+					"type": "array"
+				},
+				"globalJSClientExtensions": {
+					"items": {
+						"additionalProperties": false,
+						"properties": {
+							"externalReferenceCode": {
+								"title": "The externalReferenceCode Schema",
+								"type": "string"
+							},
+							"name": {
+								"title": "The name Schema",
+								"type": "string"
+							}
+						},
+						"required": [
+							"externalReferenceCode"
+						],
+						"type": "object"
+					},
+					"title": "The globalJSClientExtensions Schema",
+					"type": "array"
+				},
 				"javascript": {
 					"title": "The javascript Schema",
 					"type": "string"
@@ -2388,6 +2447,23 @@
 						"key"
 					],
 					"title": "The styleBook Schema",
+					"type": "object"
+				},
+				"themeCSSClientExtension": {
+					"properties": {
+						"externalReferenceCode": {
+							"title": "The externalReferenceCode Schema",
+							"type": "string"
+						},
+						"name": {
+							"title": "The name Schema",
+							"type": "string"
+						}
+					},
+					"required": [
+						"externalReferenceCode"
+					],
+					"title": "The themeCSSClientExtension Schema",
 					"type": "object"
 				},
 				"themeName": {
