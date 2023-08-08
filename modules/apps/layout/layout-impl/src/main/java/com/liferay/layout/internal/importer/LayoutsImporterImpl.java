@@ -16,10 +16,14 @@ package com.liferay.layout.internal.importer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import com.liferay.client.extension.constants.ClientExtensionEntryConstants;
+import com.liferay.client.extension.model.ClientExtensionEntryRel;
+import com.liferay.client.extension.service.ClientExtensionEntryRelLocalService;
 import com.liferay.fragment.listener.FragmentEntryLinkListener;
 import com.liferay.fragment.listener.FragmentEntryLinkListenerRegistry;
 import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.service.FragmentEntryLinkLocalService;
+import com.liferay.headless.delivery.dto.v1_0.ClientExtension;
 import com.liferay.headless.delivery.dto.v1_0.ContentSubtype;
 import com.liferay.headless.delivery.dto.v1_0.ContentType;
 import com.liferay.headless.delivery.dto.v1_0.DisplayPageTemplate;
@@ -82,6 +86,7 @@ import com.liferay.portal.kernel.model.Repository;
 import com.liferay.portal.kernel.model.Theme;
 import com.liferay.portal.kernel.portletfilerepository.PortletFileRepository;
 import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.PortletPreferencesLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -99,6 +104,7 @@ import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
+import com.liferay.portal.kernel.util.UnicodePropertiesBuilder;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.segments.service.SegmentsExperienceLocalService;
@@ -241,6 +247,36 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 	@Deactivate
 	protected void deactivate() {
 		_serviceTrackerMap.close();
+	}
+
+	private void _addClientExtensionEntryRel(
+			String cetExternalReferenceCode, Layout layout, String type,
+			long userId, ServiceContext serviceContext)
+		throws Exception {
+
+		if (Validator.isNotNull(cetExternalReferenceCode)) {
+			ClientExtensionEntryRel clientExtensionEntryRel =
+				_clientExtensionEntryRelLocalService.
+					fetchClientExtensionEntryRelByExternalReferenceCode(
+						cetExternalReferenceCode, layout.getCompanyId());
+
+			if (clientExtensionEntryRel == null) {
+				_clientExtensionEntryRelLocalService.
+					deleteClientExtensionEntryRels(
+						_portal.getClassNameId(Layout.class), layout.getPlid(),
+						type);
+
+				_clientExtensionEntryRelLocalService.addClientExtensionEntryRel(
+					userId, layout.getGroupId(),
+					_portal.getClassNameId(Layout.class), layout.getPlid(),
+					cetExternalReferenceCode, type, StringPool.BLANK,
+					serviceContext);
+			}
+		}
+		else {
+			_clientExtensionEntryRelLocalService.deleteClientExtensionEntryRels(
+				_portal.getClassNameId(Layout.class), layout.getPlid(), type);
+		}
 	}
 
 	private void _deleteExistingPortletPreferences(long plid) {
@@ -1373,6 +1409,8 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 
 			layout = _layoutLocalService.fetchLayout(layout.getPlid());
 
+			_updateLayoutClientExtensions(layout, settings);
+
 			_updateLayoutSettings(layout, settings);
 		}
 
@@ -1511,6 +1549,76 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 		}
 
 		return null;
+	}
+
+	private void _updateLayoutClientExtensions(Layout layout, Settings settings)
+		throws Exception {
+
+		_clientExtensionEntryRelLocalService.deleteClientExtensionEntryRels(
+			_portal.getClassNameId(Layout.class), layout.getPlid(),
+			ClientExtensionEntryConstants.TYPE_GLOBAL_CSS);
+
+		ClientExtension[] globalCSSClientExtensions =
+			settings.getGlobalCSSClientExtensions();
+
+		if (globalCSSClientExtensions != null) {
+			for (ClientExtension globalCSSClientExtension :
+					globalCSSClientExtensions) {
+
+				_clientExtensionEntryRelLocalService.addClientExtensionEntryRel(
+					PrincipalThreadLocal.getUserId(), layout.getGroupId(),
+					_portal.getClassNameId(Layout.class), layout.getPlid(),
+					globalCSSClientExtension.getExternalReferenceCode(),
+					ClientExtensionEntryConstants.TYPE_GLOBAL_CSS,
+					StringPool.BLANK,
+					ServiceContextThreadLocal.getServiceContext());
+			}
+		}
+
+		_clientExtensionEntryRelLocalService.deleteClientExtensionEntryRels(
+			_portal.getClassNameId(Layout.class), layout.getPlid(),
+			ClientExtensionEntryConstants.TYPE_GLOBAL_JS);
+
+		ClientExtension[] globalJSClientExtensions =
+			settings.getGlobalJSClientExtensions();
+
+		if (globalJSClientExtensions != null) {
+			for (ClientExtension globalJSClientExtension :
+					globalJSClientExtensions) {
+
+				String[] typeSettings = StringUtil.split(
+					globalJSClientExtension.getExternalReferenceCode(),
+					StringPool.UNDERLINE);
+
+				UnicodeProperties typeSettingsUnicodeProperties =
+					UnicodePropertiesBuilder.create(
+						true
+					).put(
+						"loadType", typeSettings[1]
+					).put(
+						"scriptLocation", typeSettings[2]
+					).build();
+
+				_clientExtensionEntryRelLocalService.addClientExtensionEntryRel(
+					PrincipalThreadLocal.getUserId(), layout.getGroupId(),
+					_portal.getClassNameId(Layout.class), layout.getPlid(),
+					typeSettings[0],
+					ClientExtensionEntryConstants.TYPE_GLOBAL_JS,
+					typeSettingsUnicodeProperties.toString(),
+					ServiceContextThreadLocal.getServiceContext());
+			}
+		}
+
+		ClientExtension themeCSSClientExtension =
+			settings.getThemeCSSClientExtension();
+
+		if (themeCSSClientExtension != null) {
+			_addClientExtensionEntryRel(
+				themeCSSClientExtension.getExternalReferenceCode(), layout,
+				ClientExtensionEntryConstants.TYPE_THEME_CSS,
+				PrincipalThreadLocal.getUserId(),
+				ServiceContextThreadLocal.getServiceContext());
+		}
 	}
 
 	private void _updateLayoutPageTemplateStructure(
@@ -1674,6 +1782,10 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 	private static final TransactionConfig _transactionConfig =
 		TransactionConfig.Factory.create(
 			Propagation.REQUIRED, new Class<?>[] {Exception.class});
+
+	@Reference
+	private ClientExtensionEntryRelLocalService
+		_clientExtensionEntryRelLocalService;
 
 	@Reference
 	private FragmentEntryLinkListenerRegistry
