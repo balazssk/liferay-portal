@@ -817,7 +817,7 @@ public class ContentPageEditorDisplayContext {
 
 	public String getPublishURL() {
 		return getFragmentEntryActionURL(
-			"/layout_content_page_editor/publish_layout");
+			"/layout_content_page_editor/publish_layout", null, Constants.VIEW);
 	}
 
 	public String getSaveVariantSegmentsExperienceURL() {
@@ -889,10 +889,16 @@ public class ContentPageEditorDisplayContext {
 	}
 
 	protected String getFragmentEntryActionURL(String action) {
-		return getFragmentEntryActionURL(action, null);
+		return getFragmentEntryActionURL(action, null, Constants.EDIT);
 	}
 
 	protected String getFragmentEntryActionURL(String action, String command) {
+		return getFragmentEntryActionURL(action, command, Constants.EDIT);
+	}
+
+	protected String getFragmentEntryActionURL(
+		String action, String command, String mode) {
+
 		return HttpComponentsUtil.addParameter(
 			PortletURLBuilder.createActionURL(
 				renderResponse
@@ -911,7 +917,7 @@ public class ContentPageEditorDisplayContext {
 					portal.getOriginalServletRequest(httpServletRequest),
 					"p_l_back_url", themeDisplay.getURLCurrent())
 			).buildString(),
-			"p_l_mode", Constants.EDIT);
+			"p_l_mode", mode);
 	}
 
 	protected long getGroupId() {
