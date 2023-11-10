@@ -701,6 +701,12 @@ public class LayoutServiceContextHelperImpl
 							return themeDisplay.getLayout();
 						}
 
+						if (Objects.equals(
+								name, "liferay-portlet:runtime:skipUnwrap")) {
+
+							return true;
+						}
+
 						if (Objects.equals(name, WebKeys.THEME_DISPLAY)) {
 							return themeDisplay;
 						}
