@@ -693,6 +693,10 @@ public class LayoutServiceContextHelperImpl
 
 					@Override
 					public Object getAttribute(String name) {
+						if (Objects.equals(name, "RUNTIMETAG_SKIP_UNWRAP")) {
+							return true;
+						}
+
 						if (Objects.equals(name, WebKeys.COMPANY_ID)) {
 							return _company.getCompanyId();
 						}

@@ -183,8 +183,15 @@ public class RuntimeTag extends TagSupport implements DirectTag {
 			}
 		}
 
-		HttpServletRequest originalHttpServletRequest =
-			PortalUtil.getOriginalServletRequest(httpServletRequest);
+		HttpServletRequest originalHttpServletRequest = httpServletRequest;
+
+		Boolean skipUnwrap = (Boolean)httpServletRequest.getAttribute(
+			"RUNTIMETAG_SKIP_UNWRAP");
+
+		if (skipUnwrap == null || !skipUnwrap) {
+			originalHttpServletRequest = PortalUtil.getOriginalServletRequest(
+				httpServletRequest);
+		}
 
 		RestrictPortletServletRequest restrictPortletServletRequest =
 			new RestrictPortletServletRequest(originalHttpServletRequest);
