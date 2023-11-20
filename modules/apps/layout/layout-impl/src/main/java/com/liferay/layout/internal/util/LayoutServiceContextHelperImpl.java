@@ -71,7 +71,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionContext;
@@ -131,6 +130,34 @@ public class LayoutServiceContextHelperImpl
 	private UserLocalService _userLocalService;
 
 	private class MockHttpServletRequest implements HttpServletRequest {
+
+		public MockHttpServletRequest() {
+			_attributes = ConcurrentHashMapBuilder.<String, Object>put(
+				WebKeys.CTX,
+				ServletContextPool.get(_portal.getServletContextName())
+			).build();
+		}
+
+		public MockHttpServletRequest(HttpServletRequest httpServletRequest) {
+			ConcurrentHashMapBuilder.ConcurrentHashMapWrapper
+				concurrentHashMapWrapper =
+					new ConcurrentHashMapBuilder.ConcurrentHashMapWrapper<>();
+			Enumeration<String> enumeration =
+				httpServletRequest.getAttributeNames();
+
+			while (enumeration.hasMoreElements()) {
+				String currentElem = enumeration.nextElement();
+
+				concurrentHashMapWrapper.put(
+					currentElem, httpServletRequest.getAttribute(currentElem));
+			}
+
+			concurrentHashMapWrapper.put(
+				WebKeys.CTX,
+				ServletContextPool.get(_portal.getServletContextName()));
+
+			_attributes = concurrentHashMapWrapper.build();
+		}
 
 		@Override
 		public boolean authenticate(HttpServletResponse httpServletResponse)
@@ -488,11 +515,7 @@ public class LayoutServiceContextHelperImpl
 			return null;
 		}
 
-		private final Map<String, Object> _attributes =
-			ConcurrentHashMapBuilder.<String, Object>put(
-				WebKeys.CTX,
-				ServletContextPool.get(_portal.getServletContextName())
-			).build();
+		private final Map<String, Object> _attributes;
 
 		private final HttpSession _httpSession = new HttpSession() {
 
@@ -610,12 +633,14 @@ public class LayoutServiceContextHelperImpl
 					_originalServiceContext.getThemeDisplay();
 
 				if (_originalServiceContext.getRequest() != null) {
-					_httpServletRequest = _originalServiceContext.getRequest();
+					_httpServletRequest = new MockHttpServletRequest(
+						_originalServiceContext.getRequest());
 				}
 				else if ((themeDisplay != null) &&
 						 (themeDisplay.getRequest() != null)) {
 
-					_httpServletRequest = themeDisplay.getRequest();
+					_httpServletRequest = new MockHttpServletRequest(
+						themeDisplay.getRequest());
 				}
 				else {
 					_httpServletRequest = new MockHttpServletRequest();
@@ -688,41 +713,20 @@ public class LayoutServiceContextHelperImpl
 			ThemeDisplay themeDisplay = _getThemeDisplay(
 				_company, permissionChecker, user);
 
-			HttpServletRequest companyHttpServletRequest =
-				new HttpServletRequestWrapper(_httpServletRequest) {
+			_httpServletRequest.setAttribute(
+				WebKeys.COMPANY_ID, _company.getCompanyId());
+			_httpServletRequest.setAttribute(
+				WebKeys.LAYOUT, themeDisplay.getLayout());
+			_httpServletRequest.setAttribute(
+				WebKeys.THEME_DISPLAY, themeDisplay);
+			_httpServletRequest.setAttribute(WebKeys.USER, user);
+			_httpServletRequest.setAttribute(WebKeys.USER_ID, user.getUserId());
 
-					@Override
-					public Object getAttribute(String name) {
-						if (Objects.equals(name, WebKeys.COMPANY_ID)) {
-							return _company.getCompanyId();
-						}
-
-						if (Objects.equals(name, WebKeys.LAYOUT)) {
-							return themeDisplay.getLayout();
-						}
-
-						if (Objects.equals(name, WebKeys.THEME_DISPLAY)) {
-							return themeDisplay;
-						}
-
-						if (Objects.equals(name, WebKeys.USER)) {
-							return user;
-						}
-
-						if (Objects.equals(name, WebKeys.USER_ID)) {
-							return user.getUserId();
-						}
-
-						return super.getAttribute(name);
-					}
-
-				};
-
-			themeDisplay.setRequest(companyHttpServletRequest);
+			themeDisplay.setRequest(_httpServletRequest);
 
 			themeDisplay.setResponse(_httpServletResponse);
 
-			return companyHttpServletRequest;
+			return _httpServletRequest;
 		}
 
 		private ThemeDisplay _getThemeDisplay(
