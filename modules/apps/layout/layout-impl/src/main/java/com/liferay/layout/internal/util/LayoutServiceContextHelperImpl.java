@@ -71,7 +71,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionContext;
@@ -688,41 +687,20 @@ public class LayoutServiceContextHelperImpl
 			ThemeDisplay themeDisplay = _getThemeDisplay(
 				_company, permissionChecker, user);
 
-			HttpServletRequest companyHttpServletRequest =
-				new HttpServletRequestWrapper(_httpServletRequest) {
+			_httpServletRequest.setAttribute(
+				WebKeys.COMPANY_ID, _company.getCompanyId());
+			_httpServletRequest.setAttribute(
+				WebKeys.LAYOUT, themeDisplay.getLayout());
+			_httpServletRequest.setAttribute(
+				WebKeys.THEME_DISPLAY, themeDisplay);
+			_httpServletRequest.setAttribute(WebKeys.USER, user);
+			_httpServletRequest.setAttribute(WebKeys.USER_ID, user.getUserId());
 
-					@Override
-					public Object getAttribute(String name) {
-						if (Objects.equals(name, WebKeys.COMPANY_ID)) {
-							return _company.getCompanyId();
-						}
-
-						if (Objects.equals(name, WebKeys.LAYOUT)) {
-							return themeDisplay.getLayout();
-						}
-
-						if (Objects.equals(name, WebKeys.THEME_DISPLAY)) {
-							return themeDisplay;
-						}
-
-						if (Objects.equals(name, WebKeys.USER)) {
-							return user;
-						}
-
-						if (Objects.equals(name, WebKeys.USER_ID)) {
-							return user.getUserId();
-						}
-
-						return super.getAttribute(name);
-					}
-
-				};
-
-			themeDisplay.setRequest(companyHttpServletRequest);
+			themeDisplay.setRequest(_httpServletRequest);
 
 			themeDisplay.setResponse(_httpServletResponse);
 
-			return companyHttpServletRequest;
+			return _httpServletRequest;
 		}
 
 		private ThemeDisplay _getThemeDisplay(
