@@ -5,7 +5,10 @@
 
 package com.liferay.journal.internal.upgrade.v6_1_1;
 
+import com.liferay.asset.kernel.model.AssetEntry;
+import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.asset.publisher.constants.AssetPublisherPortletKeys;
+import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.journal.constants.JournalContentPortletKeys;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
@@ -38,8 +41,13 @@ public class JournalArticleLayoutClassedModelUsageUpgradeProcess
 	extends UpgradeProcess {
 
 	public JournalArticleLayoutClassedModelUsageUpgradeProcess(
-		ClassNameLocalService classNameLocalService) {
+		ClassNameLocalService classNameLocalService,
+		AssetEntryLocalService assetEntryLocalService) {
 
+		_assetEntryLocalService = assetEntryLocalService;
+
+		_fragmentEntryLinkClassNameId = classNameLocalService.getClassNameId(
+			FragmentEntryLink.class.getName());
 		_journalArticleClassNameId = classNameLocalService.getClassNameId(
 			JournalArticle.class.getName());
 		_portletClassNameId = classNameLocalService.getClassNameId(
@@ -61,6 +69,9 @@ public class JournalArticleLayoutClassedModelUsageUpgradeProcess
 				layoutClassedModelUsageTypes, resourcePrimKeysMap);
 
 			_addJournalContentPortletPreferencesLayoutClassedModelUsages(
+				layoutClassedModelUsageTypes, resourcePrimKeysMap);
+
+			_addFragmentEntryLinkLayoutClassedModelUsages(
 				layoutClassedModelUsageTypes, resourcePrimKeysMap);
 
 			_addDefaultLayoutClassedModelUsages(resourcePrimKeysMap);
@@ -171,6 +182,63 @@ public class JournalArticleLayoutClassedModelUsageUpgradeProcess
 			}
 
 			preparedStatement.executeBatch();
+		}
+	}
+
+	private void _addFragmentEntryLinkLayoutClassedModelUsages(
+			Map<Long, Integer> layoutClassedModelUsageTypes,
+			Map<Long, Map<Long, Long>> resourcePrimKeysMap)
+		throws Exception {
+
+		String sql = StringBundler.concat(
+			"SELECT FragmentEntryLink.groupId, FragmentEntryLink.companyId, ",
+			"FragmentEntryLink.fragmentEntryLinkId, FragmentEntryLink.plid, ",
+			"FragmentEntryLink.editableValues FROM FragmentEntryLink WHERE ",
+			"editableValues LIKE '%\"classNameId\":\"",
+			_journalArticleClassNameId, "\"%'");
+
+		try (PreparedStatement preparedStatement1 = connection.prepareStatement(
+				sql);
+			PreparedStatement preparedStatement2 =
+				AutoBatchPreparedStatementUtil.concurrentAutoBatch(
+					connection,
+					StringBundler.concat(
+						"insert into LayoutClassedModelUsage (uuid_, ",
+						"layoutClassedModelUsageId, groupId, companyId, ",
+						"createDate, modifiedDate, classNameId, classPK, ",
+						"containerKey, containerType, plid, type_ ) values ",
+						"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+			ResultSet resultSet = preparedStatement1.executeQuery()) {
+
+			while (resultSet.next()) {
+				long groupId = resultSet.getLong("groupId");
+				long companyId = resultSet.getLong("companyId");
+				String fragmentEntryLinkId = resultSet.getString(
+					"fragmentEntryLinkId");
+				long plid = resultSet.getLong("plid");
+
+				String editableValues = resultSet.getString("editableValues");
+
+				String[] classPKs = editableValues.split("classPk:\",\"");
+
+				for (int i = 1; i < classPKs.length; i++) {
+					long classPK = Long.valueOf(classPKs[i].split("\"")[0]);
+
+					AssetEntry assetEntry = _assetEntryLocalService.fetchEntry(
+						_journalArticleClassNameId, classPK);
+
+					if ((assetEntry != null) && assetEntry.isVisible()) {
+						_addLayoutClassedModelUsage(
+							groupId, companyId, _journalArticleClassNameId,
+							classPK, fragmentEntryLinkId,
+							_fragmentEntryLinkClassNameId, plid,
+							layoutClassedModelUsageTypes, preparedStatement2,
+							resourcePrimKeysMap);
+					}
+				}
+			}
+
+			preparedStatement2.executeBatch();
 		}
 	}
 
@@ -398,6 +466,8 @@ public class JournalArticleLayoutClassedModelUsageUpgradeProcess
 		}
 	}
 
+	private final AssetEntryLocalService _assetEntryLocalService;
+	private final long _fragmentEntryLinkClassNameId;
 	private final long _journalArticleClassNameId;
 	private final long _portletClassNameId;
 

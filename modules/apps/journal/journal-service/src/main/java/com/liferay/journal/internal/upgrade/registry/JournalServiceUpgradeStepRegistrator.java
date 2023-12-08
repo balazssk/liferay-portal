@@ -392,7 +392,7 @@ public class JournalServiceUpgradeStepRegistrator
 		registry.register(
 			"6.1.0", "6.1.1",
 			new JournalArticleLayoutClassedModelUsageUpgradeProcess(
-				_classNameLocalService));
+				_classNameLocalService, _assetEntryLocalService));
 	}
 
 	private void _deleteTempImages() throws Exception {
