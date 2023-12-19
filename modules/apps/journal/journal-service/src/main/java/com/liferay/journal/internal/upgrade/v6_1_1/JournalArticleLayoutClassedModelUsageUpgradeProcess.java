@@ -138,13 +138,7 @@ public class JournalArticleLayoutClassedModelUsageUpgradeProcess
 		try (LoggingTimer loggingTimer = new LoggingTimer();
 			PreparedStatement preparedStatement =
 				AutoBatchPreparedStatementUtil.concurrentAutoBatch(
-					connection,
-					StringBundler.concat(
-						"insert into LayoutClassedModelUsage (uuid_, ",
-						"layoutClassedModelUsageId, groupId, companyId, ",
-						"createDate, modifiedDate, classNameId, classPK, ",
-						"containerKey, containerType, plid, type_ ) values ",
-						"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"))) {
+					connection, _INSERT_INTO_LAYOUTCLASSEDMODELUSAGE_SQL)) {
 
 			for (Map.Entry<Long, Map<Long, Long>> companyResourcePrimKeysEntry :
 					resourcePrimKeysMap.entrySet()) {
@@ -201,13 +195,7 @@ public class JournalArticleLayoutClassedModelUsageUpgradeProcess
 				sql);
 			PreparedStatement preparedStatement2 =
 				AutoBatchPreparedStatementUtil.concurrentAutoBatch(
-					connection,
-					StringBundler.concat(
-						"insert into LayoutClassedModelUsage (uuid_, ",
-						"layoutClassedModelUsageId, groupId, companyId, ",
-						"createDate, modifiedDate, classNameId, classPK, ",
-						"containerKey, containerType, plid, type_ ) values ",
-						"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+					connection, _INSERT_INTO_LAYOUTCLASSEDMODELUSAGE_SQL);
 			ResultSet resultSet = preparedStatement1.executeQuery()) {
 
 			while (resultSet.next()) {
@@ -305,13 +293,7 @@ public class JournalArticleLayoutClassedModelUsageUpgradeProcess
 
 		try (LoggingTimer loggingTimer = new LoggingTimer()) {
 			processConcurrently(
-				sql,
-				StringBundler.concat(
-					"insert into LayoutClassedModelUsage (uuid_, ",
-					"layoutClassedModelUsageId, groupId, companyId, ",
-					"createDate, modifiedDate, classNameId, classPK, ",
-					"containerKey, containerType, plid, type_ ) values (?, ?, ",
-					"?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"),
+				sql, _INSERT_INTO_LAYOUTCLASSEDMODELUSAGE_SQL,
 				resultSet -> new Object[] {
 					resultSet.getLong("resourcePrimKey"),
 					resultSet.getLong("groupId"),
@@ -392,12 +374,7 @@ public class JournalArticleLayoutClassedModelUsageUpgradeProcess
 
 			processConcurrently(
 				SQLTransformer.transform(sql),
-				StringBundler.concat(
-					"insert into LayoutClassedModelUsage (uuid_, ",
-					"layoutClassedModelUsageId, groupId, companyId, ",
-					"createDate, modifiedDate, classNameId, classPK, ",
-					"containerKey, containerType, plid, type_ ) values (?, ?, ",
-					"?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"),
+				_INSERT_INTO_LAYOUTCLASSEDMODELUSAGE_SQL,
 				resultSet -> new Object[] {
 					resultSet.getLong("groupId"),
 					resultSet.getLong("companyId"),
@@ -465,6 +442,13 @@ public class JournalArticleLayoutClassedModelUsageUpgradeProcess
 			}
 		}
 	}
+
+	private static final String _INSERT_INTO_LAYOUTCLASSEDMODELUSAGE_SQL =
+		StringBundler.concat(
+			"insert into LayoutClassedModelUsage (uuid_, ",
+			"layoutClassedModelUsageId, groupId, companyId, createDate, ",
+			"modifiedDate, classNameId, classPK, containerKey, containerType, ",
+			"plid, type_ ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
 	private final AssetEntryLocalService _assetEntryLocalService;
 	private final long _fragmentEntryLinkClassNameId;
