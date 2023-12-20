@@ -185,6 +185,19 @@ public class JournalArticleLayoutClassedModelUsageUpgradeProcess
 		throws Exception {
 
 		String sql = StringBundler.concat(
+			"DELETE FROM LayoutClassedModelUsage WHERE ",
+			"LayoutClassedModelUsage.classNameId = ",
+			_journalArticleClassNameId,
+			" AND LayoutClassedModelUsage.containerType = ",
+			_fragmentEntryLinkClassNameId);
+
+		try (PreparedStatement preparedStatement = connection.prepareStatement(
+				sql)) {
+
+			preparedStatement.executeUpdate();
+		}
+
+		sql = StringBundler.concat(
 			"SELECT FragmentEntryLink.groupId, FragmentEntryLink.companyId, ",
 			"FragmentEntryLink.fragmentEntryLinkId, FragmentEntryLink.plid, ",
 			"FragmentEntryLink.editableValues FROM FragmentEntryLink WHERE ",
