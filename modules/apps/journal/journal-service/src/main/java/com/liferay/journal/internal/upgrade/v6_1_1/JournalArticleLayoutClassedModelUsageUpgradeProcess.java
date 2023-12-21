@@ -8,7 +8,6 @@ package com.liferay.journal.internal.upgrade.v6_1_1;
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.asset.publisher.constants.AssetPublisherPortletKeys;
-import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.journal.constants.JournalContentPortletKeys;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
@@ -47,7 +46,7 @@ public class JournalArticleLayoutClassedModelUsageUpgradeProcess
 		_assetEntryLocalService = assetEntryLocalService;
 
 		_fragmentEntryLinkClassNameId = classNameLocalService.getClassNameId(
-			FragmentEntryLink.class.getName());
+			"com.liferay.fragment.model.FragmentEntryLink");
 		_journalArticleClassNameId = classNameLocalService.getClassNameId(
 			JournalArticle.class.getName());
 		_portletClassNameId = classNameLocalService.getClassNameId(
