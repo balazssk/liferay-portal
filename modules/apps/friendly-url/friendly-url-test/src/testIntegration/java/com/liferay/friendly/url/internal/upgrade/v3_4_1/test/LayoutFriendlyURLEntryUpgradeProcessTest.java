@@ -6,14 +6,18 @@
 package com.liferay.friendly.url.internal.upgrade.v3_4_1.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.change.tracking.model.CTCollection;
+import com.liferay.change.tracking.service.CTCollectionLocalService;
 import com.liferay.friendly.url.model.FriendlyURLEntry;
 import com.liferay.friendly.url.model.FriendlyURLEntryLocalization;
 import com.liferay.friendly.url.service.FriendlyURLEntryLocalService;
 import com.liferay.friendly.url.service.persistence.FriendlyURLEntryLocalizationPersistence;
 import com.liferay.friendly.url.service.persistence.FriendlyURLEntryMappingPersistence;
 import com.liferay.layout.test.util.LayoutTestUtil;
+import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.cache.MultiVMPool;
+import com.liferay.portal.kernel.change.tracking.CTCollectionThreadLocal;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
@@ -21,9 +25,12 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.security.permission.ResourceActions;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
+import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
+import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -166,6 +173,54 @@ public class LayoutFriendlyURLEntryUpgradeProcessTest {
 		Layout draftLayout2 = layout2.fetchDraftLayout();
 
 		_deleteFriendlyURLEntryMappings(draftLayout2, layout2);
+
+		_assertUpgrade(draftLayout1, draftLayout2, layout1, layout2);
+	}
+
+	@Test
+	public void testUpgradeProcessWithCTCollection() throws Exception {
+		Layout layout1 = LayoutTestUtil.addTypeContentLayout(_group);
+
+		Layout draftLayout1 = layout1.fetchDraftLayout();
+
+		_assertFriendlyURLEntries(draftLayout1, layout1);
+
+		Layout layout2 = LayoutTestUtil.addTypeContentLayout(_group);
+
+		Layout draftLayout2 = layout2.fetchDraftLayout();
+
+		CTCollection ctCollection = _ctCollectionLocalService.addCTCollection(
+			null, TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
+			0, RandomTestUtil.randomString(), RandomTestUtil.randomString());
+
+		try (SafeCloseable safeCloseable =
+				CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
+					ctCollection.getCtCollectionId())) {
+
+			Layout ctLayout1 = _layoutLocalService.updateName(
+				layout1, ctCollection.getName(),
+				layout1.getDefaultLanguageId());
+
+			Layout ctDraftLayout1 = layout1.fetchDraftLayout();
+
+			_assertFriendlyURLEntries(ctDraftLayout1, ctLayout1);
+
+			Layout ctLayout2 = _layoutLocalService.updateName(
+				layout2, ctCollection.getName(),
+				layout2.getDefaultLanguageId());
+
+			Layout ctDraftLayout2 = layout2.fetchDraftLayout();
+
+			_deleteFriendlyURLEntries(ctDraftLayout2, ctLayout2);
+
+			_assertUpgrade(
+				ctDraftLayout1, ctDraftLayout2, ctLayout1, ctLayout2);
+		}
+		catch (Exception exception) {
+			throw exception;
+		}
+
+		_deleteFriendlyURLEntries(draftLayout2, layout2);
 
 		_assertUpgrade(draftLayout1, draftLayout2, layout1, layout2);
 	}
@@ -355,6 +410,9 @@ public class LayoutFriendlyURLEntryUpgradeProcessTest {
 	private ClassNameLocalService _classNameLocalService;
 
 	@Inject
+	private CTCollectionLocalService _ctCollectionLocalService;
+
+	@Inject
 	private FriendlyURLEntryLocalizationPersistence
 		_friendlyURLEntryLocalizationPersistence;
 
@@ -367,6 +425,9 @@ public class LayoutFriendlyURLEntryUpgradeProcessTest {
 
 	@DeleteAfterTestRun
 	private Group _group;
+
+	@Inject
+	private LayoutLocalService _layoutLocalService;
 
 	@Inject
 	private MultiVMPool _multiVMPool;
