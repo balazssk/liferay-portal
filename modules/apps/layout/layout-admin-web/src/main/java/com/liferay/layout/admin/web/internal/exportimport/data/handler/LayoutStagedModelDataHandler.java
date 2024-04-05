@@ -716,16 +716,24 @@ public class LayoutStagedModelDataHandler
 			"master-layout-uuid");
 
 		if (Validator.isNotNull(masterLayoutUuid)) {
-			Element masterLayoutElement =
-				portletDataContext.getReferenceDataElement(
-					layout, Layout.class, layout.getGroupId(),
-					masterLayoutUuid);
-
-			StagedModelDataHandlerUtil.importStagedModel(
-				portletDataContext, masterLayoutElement);
-
 			long masterLayoutPlid = GetterUtil.getLong(
 				layoutElement.attributeValue("master-layout-plid"));
+
+			Element masterLayoutElement =
+				portletDataContext.getReferenceElement(
+					layout, Layout.class.getName(), masterLayoutPlid);
+
+			if (portletDataContext.isMissingReference(masterLayoutElement)) {
+				doImportMissingReference(
+					portletDataContext, masterLayoutElement);
+			}
+			else {
+				StagedModelDataHandlerUtil.importStagedModel(
+					portletDataContext,
+					portletDataContext.getReferenceDataElement(
+						layout, Layout.class, layout.getGroupId(),
+						masterLayoutUuid));
+			}
 
 			long importedMasterLayoutPlid = MapUtil.getLong(
 				layoutPlids, masterLayoutPlid, masterLayoutPlid);
