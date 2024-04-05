@@ -92,6 +92,7 @@ import com.liferay.portal.kernel.zip.ZipWriter;
 import com.liferay.portal.kernel.zip.ZipWriterFactory;
 import com.liferay.portal.model.impl.LayoutImpl;
 import com.liferay.staging.configuration.StagingConfiguration;
+import com.liferay.staging.constants.StagingReferredLayoutPublicationModeKeys;
 
 import java.io.File;
 import java.io.InputStream;
@@ -719,6 +720,28 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 	public boolean isAlwaysIncludeReference(
 		PortletDataContext portletDataContext, StagedModel referenceStagedModel,
 		String rootPortletId) {
+
+		if ((referenceStagedModel instanceof Layout) &&
+			ExportImportThreadLocal.isStagingInProcess()) {
+
+			String referredLayoutPublicationMode =
+				_getReferredLayoutPublicationMode(portletDataContext);
+
+			Layout layout = (Layout)referenceStagedModel;
+
+			if ((referredLayoutPublicationMode.equals(
+					StagingReferredLayoutPublicationModeKeys.SELECTED_ONLY) ||
+				 (referredLayoutPublicationMode.equals(
+					 StagingReferredLayoutPublicationModeKeys.
+						 SELECTED_AND_MODIFIED) &&
+				  !portletDataContext.isWithinDateRange(
+					  referenceStagedModel.getModifiedDate()))) &&
+				!ArrayUtil.contains(
+					portletDataContext.getLayoutIds(), layout.getLayoutId())) {
+
+				return false;
+			}
+		}
 
 		Portlet portlet = _portletLocalService.getPortletById(rootPortletId);
 
@@ -1393,6 +1416,24 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		}
 
 		return importPortletSetupControlsMap;
+	}
+
+	private String _getReferredLayoutPublicationMode(
+		PortletDataContext portletDataContext) {
+
+		try {
+			_stagingConfiguration =
+				_configurationProvider.getCompanyConfiguration(
+					StagingConfiguration.class,
+					portletDataContext.getCompanyId());
+
+			return _stagingConfiguration.publishReferredLayoutsMode();
+		}
+		catch (Exception exception) {
+			_log.error(exception);
+
+			return StagingReferredLayoutPublicationModeKeys.ALL;
+		}
 	}
 
 	private String _getZipWriterFileName(String id) {
