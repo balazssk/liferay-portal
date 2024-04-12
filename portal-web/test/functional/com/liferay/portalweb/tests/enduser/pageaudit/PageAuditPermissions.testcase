@@ -31,7 +31,7 @@ definition {
 				roleTitle = "Page Audit Test Role");
 		}
 
-		task ("Create an User") {
+		task ("Create a User") {
 			JSONUser.addUser(
 				userEmailAddress = "userea@liferay.com",
 				userFirstName = "userfn",
