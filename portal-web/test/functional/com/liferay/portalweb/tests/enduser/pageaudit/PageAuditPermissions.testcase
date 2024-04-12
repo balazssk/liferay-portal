@@ -289,13 +289,20 @@ definition {
 		}
 	}
 
-    @description = "LPS-132234 Given the page audit panel detail view and a user with permissions for editing the page When there is no title for the page Then the users will see a text with a link to the configuration section: Add a title from the Configuration section of this page."
+	@description = "LPS-132234 Given the page audit panel detail view and a user with permissions for editing the page When there is no title for the page Then the users will see a text with a link to the configuration section: Add a title from the Configuration section of this page."
 	@priority = 4
 	@uitest
 	test CheckMissingTitleElement {
 		property portal.acceptance = "true";
 		property test.liferay.virtual.instance = "false";
 		property test.run.type = "single";
+
+		task ("Add permissions to Role") {
+			Permissions.definePermissionViaJSONAPI(
+				resourceAction = "UPDATE",
+				resourceName = "com.liferay.portal.kernel.model.Layout",
+				roleTitle = "Page Audit Test Role");
+		}
 
 		task ("Set a custom page as canonical URL to have data already loaded") {
 			PageAudit.setSEOcanonicalURL(url = "https://liferay-echo.github.io/liferay-portal/page-audit-test");
@@ -305,6 +312,12 @@ definition {
 			Navigator.openWithAppendToBaseURL(urlAppend = "web/test-site-name/content-page");
 
 			PageAudit.setAPIViaSiteSettings();
+		}
+
+		task ("Login with new user") {
+			User.logoutAndLoginPG(
+				userLoginEmailAddress = "userea@liferay.com",
+				userLoginFullName = "userfn userln");
 		}
 
 		task ("Open Page Audit panel and navigate to the second level of an issue") {
