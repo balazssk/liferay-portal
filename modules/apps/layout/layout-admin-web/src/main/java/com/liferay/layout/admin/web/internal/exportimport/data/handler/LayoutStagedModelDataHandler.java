@@ -684,25 +684,22 @@ public class LayoutStagedModelDataHandler
 			"draft-layout-uuid");
 
 		if (Validator.isNotNull(draftLayoutUuid)) {
-			Element draftLayoutElement =
-				portletDataContext.getReferenceDataElement(
-					layout, Layout.class, layout.getGroupId(), draftLayoutUuid);
+			long draftLayoutPlid = GetterUtil.getLong(
+				layoutElement.attributeValue("draft-layout-plid"));
 
 			long originalPlid = portletDataContext.getPlid();
 
 			try {
-				StagedModelDataHandlerUtil.importStagedModel(
-					portletDataContext, draftLayoutElement);
+				_importLayoutReference(
+					portletDataContext, layout, draftLayoutPlid,
+					draftLayoutUuid);
 			}
 			finally {
 				portletDataContext.setPlid(originalPlid);
 			}
 
-			long draftLayoutPlid = layoutPlids.get(
-				GetterUtil.getLong(
-					layoutElement.attributeValue("draft-layout-plid")));
-
-			Layout draftLayout = _layoutLocalService.getLayout(draftLayoutPlid);
+			Layout draftLayout = _layoutLocalService.getLayout(
+				layoutPlids.get(draftLayoutPlid));
 
 			draftLayout.setClassNameId(_portal.getClassNameId(Layout.class));
 			draftLayout.setClassPK(importedLayout.getPlid());
@@ -719,21 +716,8 @@ public class LayoutStagedModelDataHandler
 			long masterLayoutPlid = GetterUtil.getLong(
 				layoutElement.attributeValue("master-layout-plid"));
 
-			Element masterLayoutElement =
-				portletDataContext.getReferenceElement(
-					layout, Layout.class.getName(), masterLayoutPlid);
-
-			if (portletDataContext.isMissingReference(masterLayoutElement)) {
-				doImportMissingReference(
-					portletDataContext, masterLayoutElement);
-			}
-			else {
-				StagedModelDataHandlerUtil.importStagedModel(
-					portletDataContext,
-					portletDataContext.getReferenceDataElement(
-						layout, Layout.class, layout.getGroupId(),
-						masterLayoutUuid));
-			}
+			_importLayoutReference(
+				portletDataContext, layout, masterLayoutPlid, masterLayoutUuid);
 
 			long importedMasterLayoutPlid = MapUtil.getLong(
 				layoutPlids, masterLayoutPlid, masterLayoutPlid);
@@ -2473,6 +2457,26 @@ public class LayoutStagedModelDataHandler
 
 		portletDataContext.setPlid(originalPlid);
 		portletDataContext.setPortletId(originalPortletId);
+	}
+
+	private void _importLayoutReference(
+			PortletDataContext portletDataContext, Layout layout, long plid,
+			String uuid)
+		throws PortletDataException {
+
+		Element layoutReferenceElement = portletDataContext.getReferenceElement(
+			layout, Layout.class.getName(), plid);
+
+		if (portletDataContext.isMissingReference(layoutReferenceElement)) {
+			doImportMissingReference(
+				portletDataContext, layoutReferenceElement);
+		}
+		else {
+			StagedModelDataHandlerUtil.importStagedModel(
+				portletDataContext,
+				portletDataContext.getReferenceDataElement(
+					layout, Layout.class, layout.getGroupId(), uuid));
+		}
 	}
 
 	private void _importLayoutSEOEntries(
