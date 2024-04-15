@@ -758,50 +758,64 @@ public class LayoutStagedModelDataHandler
 		long parentPlid = layout.getParentPlid();
 		long parentLayoutId = layout.getParentLayoutId();
 
-		String parentLayoutUuid = GetterUtil.getString(
-			layoutElement.attributeValue("parent-layout-uuid"));
+		if (parentLayoutId != LayoutConstants.DEFAULT_PARENT_LAYOUT_ID) {
+			Element parentLayoutElement =
+				portletDataContext.getReferenceElement(
+					layout, Layout.class.getName(), parentPlid);
 
-		Element parentLayoutElement =
-			portletDataContext.getReferenceDataElement(
-				layout, Layout.class, layout.getGroupId(), parentLayoutUuid);
+			if (parentLayoutElement != null) {
+				String parentLayoutUuid = GetterUtil.getString(
+					layoutElement.attributeValue("parent-layout-uuid"));
 
-		if ((parentLayoutId != LayoutConstants.DEFAULT_PARENT_LAYOUT_ID) &&
-			(parentLayoutElement != null)) {
-
-			String action = GetterUtil.getString(
-				parentLayoutElement.attributeValue("action"));
-
-			if (!action.equals(Constants.SKIP)) {
 				long originalPlid = portletDataContext.getPlid();
 
 				try {
-					StagedModelDataHandlerUtil.importStagedModel(
-						portletDataContext, parentLayoutElement);
+					if (portletDataContext.isMissingReference(
+							parentLayoutElement)) {
+
+						doImportMissingReference(
+							portletDataContext, parentLayoutElement);
+					}
+					else {
+						parentLayoutElement =
+							portletDataContext.getReferenceDataElement(
+								layout, Layout.class, layout.getGroupId(),
+								parentLayoutUuid);
+
+						String action = GetterUtil.getString(
+							parentLayoutElement.attributeValue("action"));
+
+						if (!action.equals(Constants.SKIP)) {
+							StagedModelDataHandlerUtil.importStagedModel(
+								portletDataContext, parentLayoutElement);
+						}
+					}
 				}
 				finally {
 					portletDataContext.setPlid(originalPlid);
 				}
+
+				Layout importedParentLayout =
+					_layoutLocalService.fetchLayoutByUuidAndGroupId(
+						parentLayoutUuid, groupId, privateLayout);
+
+				if (importedParentLayout == null) {
+					String parentLayoutFriendlyURL = GetterUtil.getString(
+						layoutElement.attributeValue(
+							"parent-layout-friendly-url"));
+
+					importedParentLayout =
+						_layoutLocalService.fetchLayoutByFriendlyURL(
+							groupId, privateLayout, parentLayoutFriendlyURL);
+				}
+
+				if (importedParentLayout == null) {
+					importedParentLayout = layouts.get(parentLayoutId);
+				}
+
+				parentPlid = importedParentLayout.getPlid();
+				parentLayoutId = importedParentLayout.getLayoutId();
 			}
-
-			Layout importedParentLayout =
-				_layoutLocalService.fetchLayoutByUuidAndGroupId(
-					parentLayoutUuid, groupId, privateLayout);
-
-			if (importedParentLayout == null) {
-				String parentLayoutFriendlyURL = GetterUtil.getString(
-					layoutElement.attributeValue("parent-layout-friendly-url"));
-
-				importedParentLayout =
-					_layoutLocalService.fetchLayoutByFriendlyURL(
-						groupId, privateLayout, parentLayoutFriendlyURL);
-			}
-
-			if (importedParentLayout == null) {
-				importedParentLayout = layouts.get(parentLayoutId);
-			}
-
-			parentPlid = importedParentLayout.getPlid();
-			parentLayoutId = importedParentLayout.getLayoutId();
 		}
 
 		if (_log.isDebugEnabled()) {
