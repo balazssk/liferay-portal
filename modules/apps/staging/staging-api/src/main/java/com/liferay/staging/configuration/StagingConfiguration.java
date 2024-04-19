@@ -8,6 +8,7 @@ package com.liferay.staging.configuration;
 import aQute.bnd.annotation.metatype.Meta;
 
 import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClassDefinition;
+import com.liferay.staging.constants.StagingReferredLayoutPublicationModeKeys;
 
 /**
  * @author Tamas Molnar
@@ -22,6 +23,19 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
 	localization = "content/Language", name = "staging-configuration-name"
 )
 public interface StagingConfiguration {
+
+	@Meta.AD(
+		deflt = StagingReferredLayoutPublicationModeKeys.ALL,
+		description = "publish-referred-layouts-mode-help",
+		name = "publish-referred-layouts-mode",
+		optionValues = {
+			StagingReferredLayoutPublicationModeKeys.ALL,
+			StagingReferredLayoutPublicationModeKeys.SELECTED_AND_MODIFIED,
+			StagingReferredLayoutPublicationModeKeys.SELECTED_ONLY
+		},
+		required = false
+	)
+	public String publishReferredLayoutsMode();
 
 	@Meta.AD(
 		deflt = "true", description = "publish-parent-layouts-by-default-help",
