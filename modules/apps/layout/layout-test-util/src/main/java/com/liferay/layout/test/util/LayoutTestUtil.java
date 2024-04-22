@@ -135,6 +135,24 @@ public class LayoutTestUtil {
 		return newPortletId;
 	}
 
+	public static Layout addTypeContentChildLayout(
+			Layout parentLayout, long masterLayoutPlid)
+		throws Exception {
+
+		return LayoutLocalServiceUtil.addLayout(
+			TestPropsValues.getUserId(), parentLayout.getGroupId(),
+			parentLayout.isPrivateLayout(), parentLayout.getLayoutId(), 0, 0,
+			HashMapBuilder.put(
+				LocaleUtil.US, RandomTestUtil.randomString()
+			).build(),
+			Collections.emptyMap(), Collections.emptyMap(),
+			Collections.emptyMap(), Collections.emptyMap(),
+			LayoutConstants.TYPE_CONTENT, StringPool.BLANK, false,
+			parentLayout.isSystem(), Collections.emptyMap(), masterLayoutPlid,
+			ServiceContextTestUtil.getServiceContext(
+				parentLayout.getGroupId(), TestPropsValues.getUserId()));
+	}
+
 	public static Layout addTypeContentLayout(Group group) throws Exception {
 		return LayoutLocalServiceUtil.addLayout(
 			TestPropsValues.getUserId(), group.getGroupId(), false,
