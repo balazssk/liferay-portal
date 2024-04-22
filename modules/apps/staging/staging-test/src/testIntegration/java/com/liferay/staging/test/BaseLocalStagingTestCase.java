@@ -22,6 +22,7 @@ import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
+import com.liferay.portal.kernel.util.FileUtil;
 
 import java.io.Serializable;
 
@@ -105,6 +106,11 @@ public abstract class BaseLocalStagingTestCase {
 			liveLayout.getPlid(), portletId,
 			ExportImportConfigurationParameterMapFactoryUtil.
 				buildParameterMap());
+	}
+
+	protected String read(String fileName) throws Exception {
+		return new String(
+			FileUtil.getBytes(getClass(), "dependencies/" + fileName));
 	}
 
 	protected void setPortletStagingEnabled(

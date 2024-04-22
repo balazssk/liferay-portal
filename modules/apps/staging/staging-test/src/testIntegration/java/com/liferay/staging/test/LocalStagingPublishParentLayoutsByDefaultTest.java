@@ -36,7 +36,6 @@ import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.Sync;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -103,7 +102,7 @@ public class LocalStagingPublishParentLayoutsByDefaultTest
 			stagingGroup, parentLayout.getPlid());
 
 		String content = StringUtil.replace(
-			_read("journal_article_content.xml"),
+			read("journal_article_content.xml"),
 			new String[] {"[$GROUP_NAME$]", "[$LAYOUT_FRIENDLY_URL$]"},
 			new String[] {
 				StringUtil.toLowerCase(stagingGroup.getName("en_US")),
@@ -113,7 +112,7 @@ public class LocalStagingPublishParentLayoutsByDefaultTest
 		DataDefinition dataDefinition =
 			DataDefinitionTestUtil.addDataDefinition(
 				"journal", _dataDefinitionResourceFactory,
-				stagingGroup.getGroupId(), _read("data_definition.json"),
+				stagingGroup.getGroupId(), read("data_definition.json"),
 				TestPropsValues.getUser());
 
 		JournalArticle journalArticle =
@@ -509,11 +508,6 @@ public class LocalStagingPublishParentLayoutsByDefaultTest
 		themeDisplay.setUser(TestPropsValues.getUser());
 
 		return themeDisplay;
-	}
-
-	private String _read(String fileName) throws Exception {
-		return new String(
-			FileUtil.getBytes(getClass(), "dependencies/" + fileName));
 	}
 
 	@Inject
