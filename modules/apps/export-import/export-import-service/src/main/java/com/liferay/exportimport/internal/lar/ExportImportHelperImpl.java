@@ -736,8 +736,9 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 						 SELECTED_AND_MODIFIED) &&
 				  !portletDataContext.isWithinDateRange(
 					  referenceStagedModel.getModifiedDate()))) &&
-				!ArrayUtil.contains(
-					portletDataContext.getLayoutIds(), layout.getLayoutId())) {
+				(!ArrayUtil.contains(
+					portletDataContext.getLayoutIds(), layout.getLayoutId()) ||
+				 layout.isSystem())) {
 
 				return false;
 			}
