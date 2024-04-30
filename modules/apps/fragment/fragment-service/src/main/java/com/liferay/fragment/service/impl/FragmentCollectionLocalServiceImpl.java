@@ -300,13 +300,20 @@ public class FragmentCollectionLocalServiceImpl
 			fragmentCollectionPersistence.findByPrimaryKey(
 				fragmentCollectionId);
 
-		_validate(name);
+		return _updateFragmentCollection(fragmentCollection, name, description);
+	}
 
-		fragmentCollection.setModifiedDate(new Date());
-		fragmentCollection.setName(name);
-		fragmentCollection.setDescription(description);
+	@Override
+	public FragmentCollection updateFragmentCollection(
+			String externalReferenceCode, long groupId, String name,
+			String description)
+		throws PortalException {
 
-		return fragmentCollectionPersistence.update(fragmentCollection);
+		FragmentCollection fragmentCollection =
+			fragmentCollectionPersistence.findByERC_G(
+				externalReferenceCode, groupId);
+
+		return _updateFragmentCollection(fragmentCollection, name, description);
 	}
 
 	private String _getFragmentCollectionKey(String fragmentCollectionKey) {
@@ -317,6 +324,20 @@ public class FragmentCollectionLocalServiceImpl
 		}
 
 		return StringPool.BLANK;
+	}
+
+	private FragmentCollection _updateFragmentCollection(
+			FragmentCollection fragmentCollection, String name,
+			String description)
+		throws PortalException {
+
+		_validate(name);
+
+		fragmentCollection.setModifiedDate(new Date());
+		fragmentCollection.setName(name);
+		fragmentCollection.setDescription(description);
+
+		return fragmentCollectionPersistence.update(fragmentCollection);
 	}
 
 	private void _validate(String name) throws PortalException {

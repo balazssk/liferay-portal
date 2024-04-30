@@ -315,6 +315,24 @@ public class FragmentCollectionServiceImpl
 			fragmentCollectionId, name, description);
 	}
 
+	@Override
+	public FragmentCollection updateFragmentCollection(
+			String externalReferenceCode, long groupId, String name,
+			String description)
+		throws PortalException {
+
+		FragmentCollection fragmentCollection =
+			fragmentCollectionLocalService.fetchFragmentCollection(
+				externalReferenceCode, groupId);
+
+		_portletResourcePermission.check(
+			getPermissionChecker(), fragmentCollection.getGroupId(),
+			FragmentActionKeys.MANAGE_FRAGMENT_ENTRIES);
+
+		return fragmentCollectionLocalService.updateFragmentCollection(
+			externalReferenceCode, groupId, name, description);
+	}
+
 	private long[] _getGroupIds(long groupId, boolean includeSystem) {
 		long[] groupIds = {groupId};
 
