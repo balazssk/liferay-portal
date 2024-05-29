@@ -195,12 +195,12 @@ public class FriendlyURLEntryStagedModelRepository
 
 			FriendlyURLEntry existingFriendlyURLEntry =
 				_friendlyURLEntryLocalService.fetchFriendlyURLEntry(
-					friendlyURLEntry.getGroupId(),
+					portletDataContext.getScopeGroupId(),
 					friendlyURLEntry.getClassNameId(), urlTitle);
 
 			if (existingFriendlyURLEntry != null) {
 				urlTitle = _friendlyURLEntryLocalService.getUniqueUrlTitle(
-					friendlyURLEntry.getGroupId(),
+					portletDataContext.getScopeGroupId(),
 					friendlyURLEntry.getClassNameId(),
 					friendlyURLEntry.getClassPK(), urlTitle, null);
 			}
