@@ -190,6 +190,13 @@ public class FriendlyURLEntryStagedModelRepository
 
 		long classNameId = _classNameLocalService.getClassNameId(className);
 
+		Map<Long, Long> newPrimaryKeysMap =
+			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(className);
+
+		long classPk = MapUtil.getLong(
+			newPrimaryKeysMap, friendlyURLEntry.getClassPK(),
+			friendlyURLEntry.getClassPK());
+
 		String modelPath = FriendlyURLExportImportPathUtil.getModelPath(
 			portletDataContext, friendlyURLEntry);
 
@@ -211,8 +218,8 @@ public class FriendlyURLEntryStagedModelRepository
 
 			if (existingFriendlyURLEntry != null) {
 				urlTitle = _friendlyURLEntryLocalService.getUniqueUrlTitle(
-					portletDataContext.getScopeGroupId(), classNameId,
-					friendlyURLEntry.getClassPK(), urlTitle, null);
+					portletDataContext.getScopeGroupId(), classNameId, classPk,
+					urlTitle, null);
 			}
 
 			languageIdLocalizationMap.put(
