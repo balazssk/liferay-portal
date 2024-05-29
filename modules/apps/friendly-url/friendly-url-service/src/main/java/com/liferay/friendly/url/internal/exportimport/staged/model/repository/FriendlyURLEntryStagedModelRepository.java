@@ -15,9 +15,11 @@ import com.liferay.friendly.url.service.FriendlyURLEntryLocalService;
 import com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
+import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.Localization;
 import com.liferay.portal.kernel.util.MapUtil;
+import com.liferay.portal.kernel.xml.Element;
 
 import java.util.HashMap;
 import java.util.List;
@@ -179,6 +181,15 @@ public class FriendlyURLEntryStagedModelRepository
 		PortletDataContext portletDataContext,
 		FriendlyURLEntry friendlyURLEntry) {
 
+		Element friendlyURLEntryElement =
+			portletDataContext.getImportDataStagedModelElement(
+				friendlyURLEntry);
+
+		String className = friendlyURLEntryElement.attributeValue(
+			"resource-class-name");
+
+		long classNameId = _classNameLocalService.getClassNameId(className);
+
 		String modelPath = FriendlyURLExportImportPathUtil.getModelPath(
 			portletDataContext, friendlyURLEntry);
 
@@ -195,13 +206,12 @@ public class FriendlyURLEntryStagedModelRepository
 
 			FriendlyURLEntry existingFriendlyURLEntry =
 				_friendlyURLEntryLocalService.fetchFriendlyURLEntry(
-					portletDataContext.getScopeGroupId(),
-					friendlyURLEntry.getClassNameId(), urlTitle);
+					portletDataContext.getScopeGroupId(), classNameId,
+					urlTitle);
 
 			if (existingFriendlyURLEntry != null) {
 				urlTitle = _friendlyURLEntryLocalService.getUniqueUrlTitle(
-					portletDataContext.getScopeGroupId(),
-					friendlyURLEntry.getClassNameId(),
+					portletDataContext.getScopeGroupId(), classNameId,
 					friendlyURLEntry.getClassPK(), urlTitle, null);
 			}
 
@@ -211,6 +221,9 @@ public class FriendlyURLEntryStagedModelRepository
 
 		return languageIdLocalizationMap;
 	}
+
+	@Reference
+	private ClassNameLocalService _classNameLocalService;
 
 	@Reference
 	private FriendlyURLEntryLocalService _friendlyURLEntryLocalService;
