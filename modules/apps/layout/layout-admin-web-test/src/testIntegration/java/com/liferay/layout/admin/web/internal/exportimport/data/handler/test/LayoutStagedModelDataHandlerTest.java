@@ -373,7 +373,7 @@ public class LayoutStagedModelDataHandlerTest
 	}
 
 	@Test
-	public void testStyleBooksEntry() throws Exception {
+	public void testStyleBookEntry() throws Exception {
 		initExport();
 
 		StyleBookEntry styleBookEntry =
