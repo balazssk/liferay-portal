@@ -1326,12 +1326,17 @@ public class LayoutStagedModelDataHandler
 				portletDataContext, layout, draftLayout,
 				PortletDataContext.REFERENCE_TYPE_PARENT);
 
-			layoutElement.addAttribute(
-				"draft-layout-uuid", draftLayout.getUuid());
-			layoutElement.addAttribute(
-				"draft-layout-id", String.valueOf(draftLayout.getLayoutId()));
-			layoutElement.addAttribute(
-				"draft-layout-plid", String.valueOf(draftLayout.getPlid()));
+			if (portletDataContext.getMissingReferenceElement(draftLayout) ==
+					null) {
+
+				layoutElement.addAttribute(
+					"draft-layout-uuid", draftLayout.getUuid());
+				layoutElement.addAttribute(
+					"draft-layout-id",
+					String.valueOf(draftLayout.getLayoutId()));
+				layoutElement.addAttribute(
+					"draft-layout-plid", String.valueOf(draftLayout.getPlid()));
+			}
 		}
 	}
 
