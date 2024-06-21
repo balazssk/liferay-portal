@@ -722,7 +722,8 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		String rootPortletId) {
 
 		if ((referenceStagedModel instanceof Layout) &&
-			ExportImportThreadLocal.isStagingInProcess()) {
+			ExportImportThreadLocal.isStagingInProcess() &&
+			!ExportImportThreadLocal.isInitialLayoutStagingInProcess()) {
 
 			String referredLayoutPublicationMode =
 				_getReferredLayoutPublicationMode(portletDataContext);
