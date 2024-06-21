@@ -85,6 +85,10 @@ public class LayoutUtilityPageEntryStagedModelDataHandler
 			LayoutUtilityPageEntry layoutUtilityPageEntry)
 		throws Exception {
 
+		StagedModelDataHandlerUtil.importReferenceStagedModel(
+			portletDataContext, layoutUtilityPageEntry, Layout.class.getName(),
+			layoutUtilityPageEntry.getPlid());
+
 		Map<Long, Long> plids =
 			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
 				Layout.class);
