@@ -721,28 +721,8 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		PortletDataContext portletDataContext, StagedModel referenceStagedModel,
 		String rootPortletId) {
 
-		if ((referenceStagedModel instanceof Layout) &&
-			ExportImportThreadLocal.isStagingInProcess() &&
-			!ExportImportThreadLocal.isInitialLayoutStagingInProcess()) {
-
-			String referredLayoutPublicationMode =
-				_getReferredLayoutPublicationMode(portletDataContext);
-
-			Layout layout = (Layout)referenceStagedModel;
-
-			if ((referredLayoutPublicationMode.equals(
-					StagingReferredLayoutPublicationModeKeys.SELECTED_ONLY) ||
-				 (referredLayoutPublicationMode.equals(
-					 StagingReferredLayoutPublicationModeKeys.
-						 SELECTED_AND_MODIFIED) &&
-				  !portletDataContext.isWithinDateRange(
-					  referenceStagedModel.getModifiedDate()))) &&
-				(!ArrayUtil.contains(
-					portletDataContext.getLayoutIds(), layout.getLayoutId()) ||
-				 layout.isSystem())) {
-
-				return false;
-			}
+		if (_excludeLayoutReference(portletDataContext, referenceStagedModel)) {
+			return false;
 		}
 
 		Portlet portlet = _portletLocalService.getPortletById(rootPortletId);
@@ -1300,6 +1280,54 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		return _createPortletConfigurablePortletSetupControlsMap(
 			parameterMap, portletConfiguration, portletArchivedSetupKey,
 			portletSetupKey, portletUserPreferencesKey);
+	}
+
+	private boolean _excludeLayoutReference(
+		PortletDataContext portletDataContext,
+		StagedModel referenceStagedModel) {
+
+		if (!(referenceStagedModel instanceof Layout) ||
+			!ExportImportThreadLocal.isStagingInProcess() ||
+			ExportImportThreadLocal.isInitialLayoutStagingInProcess()) {
+
+			return false;
+		}
+
+		String referredLayoutPublicationMode =
+			_getReferredLayoutPublicationMode(portletDataContext);
+
+		if (referredLayoutPublicationMode.equals(
+				StagingReferredLayoutPublicationModeKeys.ALL)) {
+
+			return false;
+		}
+
+		Layout layout = (Layout)referenceStagedModel;
+
+		if (layout.isSystem()) {
+			if (portletDataContext.isWithinDateRange(
+					layout.getModifiedDate())) {
+
+				return false;
+			}
+
+			return true;
+		}
+
+		if ((referredLayoutPublicationMode.equals(
+				StagingReferredLayoutPublicationModeKeys.SELECTED_ONLY) ||
+			 (referredLayoutPublicationMode.equals(
+				 StagingReferredLayoutPublicationModeKeys.
+					 SELECTED_AND_MODIFIED) &&
+			  !portletDataContext.isWithinDateRange(
+				  layout.getModifiedDate()))) &&
+			!ArrayUtil.contains(
+				portletDataContext.getLayoutIds(), layout.getLayoutId())) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	private boolean _getExportPortletData(
