@@ -258,6 +258,10 @@ public class LayoutPageTemplateEntryStagedModelDataHandler
 				structureIds, classTypeId, classTypeId);
 		}
 
+		StagedModelDataHandlerUtil.importReferenceStagedModel(
+			portletDataContext, layoutPageTemplateEntry, Layout.class.getName(),
+			layoutPageTemplateEntry.getPlid());
+
 		Map<Long, Long> plids =
 			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
 				Layout.class);
