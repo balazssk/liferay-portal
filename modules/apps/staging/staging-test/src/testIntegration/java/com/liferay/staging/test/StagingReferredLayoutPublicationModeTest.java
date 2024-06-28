@@ -267,6 +267,35 @@ public class StagingReferredLayoutPublicationModeTest
 	}
 
 	@Test
+	public void testSelectedOnlyPagesNewMasterPage() throws Exception {
+		_setStagingReferredLayoutPublicationMode(
+			StagingReferredLayoutPublicationModeKeys.SELECTED_ONLY);
+
+		LayoutPageTemplateEntry masterLayoutPageTemplateEntry =
+			_layoutPageTemplateEntryLocalService.addLayoutPageTemplateEntry(
+				null, TestPropsValues.getUserId(), stagingGroup.getGroupId(), 0,
+				RandomTestUtil.randomString(),
+				LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT, 0,
+				WorkflowConstants.STATUS_APPROVED,
+				ServiceContextTestUtil.getServiceContext(
+					stagingGroup.getGroupId()));
+
+		Layout newMasterLayout = _layoutLocalService.fetchLayout(
+			masterLayoutPageTemplateEntry.getPlid());
+
+		Layout newLayout = LayoutTestUtil.addTypeContentLayout(
+			stagingGroup, false, false, newMasterLayout.getPlid());
+
+		publishLayouts(new long[] {newLayout.getLayoutId()});
+
+		_assertLayoutWasModifiedOnLiveAfterPublication(
+			"A new layout", newLayout);
+
+		_assertLayoutWasModifiedOnLiveAfterPublication(
+			"A master page of a new layout", newMasterLayout);
+	}
+
+	@Test
 	public void testSelectedOnlyPagesNewPages() throws Exception {
 		_setStagingReferredLayoutPublicationMode(
 			StagingReferredLayoutPublicationModeKeys.SELECTED_ONLY);
