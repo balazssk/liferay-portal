@@ -66,7 +66,7 @@ public class DLVideoFFMPEGVideoConverter implements VideoConverter {
 					_getVideoBitRate(videoProperties, containerType)),
 				"-vf",
 				String.format(
-					"scale=min(%d\\,iw):-2",
+					"\"scale=min(%d\\,iw):-2\"",
 					GetterUtil.getInteger(
 						PropsValues.DL_FILE_ENTRY_PREVIEW_VIDEO_WIDTH)),
 				"-r",
