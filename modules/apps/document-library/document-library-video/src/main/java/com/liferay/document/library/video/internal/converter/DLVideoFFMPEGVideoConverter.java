@@ -136,15 +136,23 @@ public class DLVideoFFMPEGVideoConverter implements VideoConverter {
 				DLVideoFFMPEGVideoConverterConfiguration.class, properties);
 	}
 
-	private void _consumeProcessInputStream(InputStream inputStream)
+	private String _consumeProcessInputStream(InputStream inputStream)
 		throws IOException {
 
 		BufferedReader bufferedReader = new BufferedReader(
 			new InputStreamReader(inputStream));
 
+		StringBundler sb = new StringBundler();
+
 		while (bufferedReader.ready()) {
-			bufferedReader.readLine();
+			String s = bufferedReader.readLine();
+
+			if (_log.isDebugEnabled()) {
+				sb.append(s);
+			}
 		}
+
+		return sb.toString();
 	}
 
 	private int _getVideoBitRate(
@@ -195,9 +203,19 @@ public class DLVideoFFMPEGVideoConverter implements VideoConverter {
 
 		InputStream inputStream = process.getInputStream();
 
+		StringBundler sb = new StringBundler();
+
+		if (_log.isDebugEnabled()) {
+			sb.append("\n");
+		}
+
 		while (true) {
 			try {
-				_consumeProcessInputStream(inputStream);
+				String s = _consumeProcessInputStream(inputStream);
+
+				if (_log.isDebugEnabled()) {
+					sb.append(s);
+				}
 
 				if (!process.waitFor(5, TimeUnit.SECONDS)) {
 					continue;
@@ -208,7 +226,8 @@ public class DLVideoFFMPEGVideoConverter implements VideoConverter {
 						StringBundler.concat(
 							"FFMPEG command ",
 							StringUtil.merge(ffmpegCommand, StringPool.SPACE),
-							" failed with exit status ", process.exitValue()));
+							" failed with exit status ", process.exitValue(),
+							sb.toString()));
 				}
 
 				return;
