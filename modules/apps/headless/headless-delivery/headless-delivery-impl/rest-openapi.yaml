@@ -6667,6 +6667,37 @@ paths:
                                 type: array
             tags: ["DocumentFolder"]
     "/asset-libraries/{assetLibraryId}/document-metadata-sets":
+        post:
+            parameters:
+                - in: path
+                  name: assetLibraryId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "../../../data-engine/data-engine-rest-impl/rest-openapi.yaml#DataDefinition"
+                    application/xml:
+                        schema:
+                            $ref: "../../../data-engine/data-engine-rest-impl/rest-openapi.yaml#DataDefinition"
+
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                items:
+                                    $ref: "#/components/schemas/DocumentMetadataSet"
+                                type: array
+                        application/xml:
+                            schema:
+                                items:
+                                    $ref: "#/components/schemas/DocumentMetadataSet"
+                                type: array
+            tags: ["DocumentMetadataSet"]
         get:
             operationId: getAssetLibraryDocumentMetadataSetsPage
             parameters:
@@ -13117,6 +13148,37 @@ paths:
                                 type: array
             tags: ["DocumentFolder"]
     "/sites/{siteId}/document-metadata-sets":
+        post:
+            parameters:
+                - in: path
+                  name: siteId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "../../../data-engine/data-engine-rest-impl/rest-openapi.yaml#DataDefinition"
+                    application/xml:
+                        schema:
+                            $ref: "../../../data-engine/data-engine-rest-impl/rest-openapi.yaml#DataDefinition"
+
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                items:
+                                    $ref: "#/components/schemas/DocumentMetadataSet"
+                                type: array
+                        application/xml:
+                            schema:
+                                items:
+                                    $ref: "#/components/schemas/DocumentMetadataSet"
+                                type: array
+            tags: ["DocumentMetadataSet"]
         get:
             operationId: getSiteDocumentMetadataSetsPage
             parameters:
