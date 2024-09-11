@@ -6668,6 +6668,7 @@ paths:
             tags: ["DocumentFolder"]
     "/asset-libraries/{assetLibraryId}/document-metadata-sets":
         post:
+            operationId: postAssetLibraryDocumentMetadataSetsPage
             parameters:
                 - in: path
                   name: assetLibraryId
@@ -13149,6 +13150,7 @@ paths:
             tags: ["DocumentFolder"]
     "/sites/{siteId}/document-metadata-sets":
         post:
+            operationId: postSiteDocumentMetadataSetsPage
             parameters:
                 - in: path
                   name: siteId
