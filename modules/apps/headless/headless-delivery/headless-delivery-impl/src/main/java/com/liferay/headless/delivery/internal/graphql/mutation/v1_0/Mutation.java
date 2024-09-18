@@ -10,6 +10,7 @@ import com.liferay.headless.delivery.dto.v1_0.BlogPostingImage;
 import com.liferay.headless.delivery.dto.v1_0.Comment;
 import com.liferay.headless.delivery.dto.v1_0.Document;
 import com.liferay.headless.delivery.dto.v1_0.DocumentFolder;
+import com.liferay.headless.delivery.dto.v1_0.DocumentMetadataSet;
 import com.liferay.headless.delivery.dto.v1_0.DocumentShortcut;
 import com.liferay.headless.delivery.dto.v1_0.KnowledgeBaseArticle;
 import com.liferay.headless.delivery.dto.v1_0.KnowledgeBaseAttachment;
@@ -2110,6 +2111,37 @@ public class Mutation {
 	}
 
 	@GraphQLField
+	public DocumentMetadataSet createAssetLibraryDocumentMetadataSet(
+			@GraphQLName("assetLibraryId") @NotEmpty String assetLibraryId,
+			@GraphQLName("documentMetadataSet") DocumentMetadataSet
+				documentMetadataSet)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_documentMetadataSetResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			documentMetadataSetResource ->
+				documentMetadataSetResource.postAssetLibraryDocumentMetadataSet(
+					Long.valueOf(assetLibraryId), documentMetadataSet));
+	}
+
+	@GraphQLField
+	public Response createAssetLibraryDocumentMetadataSetBatch(
+			@GraphQLName("assetLibraryId") @NotEmpty String assetLibraryId,
+			@GraphQLName("callbackURL") String callbackURL,
+			@GraphQLName("object") Object object)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_documentMetadataSetResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			documentMetadataSetResource ->
+				documentMetadataSetResource.
+					postAssetLibraryDocumentMetadataSetBatch(
+						Long.valueOf(assetLibraryId), callbackURL, object));
+	}
+
+	@GraphQLField
 	public Response createSiteDocumentMetadataSetsPageExportBatch(
 			@GraphQLName("siteKey") @NotEmpty String siteKey,
 			@GraphQLName("callbackURL") String callbackURL,
@@ -2125,6 +2157,36 @@ public class Mutation {
 					postSiteDocumentMetadataSetsPageExportBatch(
 						Long.valueOf(siteKey), callbackURL, contentType,
 						fieldNames));
+	}
+
+	@GraphQLField
+	public DocumentMetadataSet createSiteDocumentMetadataSet(
+			@GraphQLName("siteKey") @NotEmpty String siteKey,
+			@GraphQLName("documentMetadataSet") DocumentMetadataSet
+				documentMetadataSet)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_documentMetadataSetResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			documentMetadataSetResource ->
+				documentMetadataSetResource.postSiteDocumentMetadataSet(
+					Long.valueOf(siteKey), documentMetadataSet));
+	}
+
+	@GraphQLField
+	public Response createSiteDocumentMetadataSetBatch(
+			@GraphQLName("siteKey") @NotEmpty String siteKey,
+			@GraphQLName("callbackURL") String callbackURL,
+			@GraphQLName("object") Object object)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_documentMetadataSetResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			documentMetadataSetResource ->
+				documentMetadataSetResource.postSiteDocumentMetadataSetBatch(
+					Long.valueOf(siteKey), callbackURL, object));
 	}
 
 	@GraphQLField

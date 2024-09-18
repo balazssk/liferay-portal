@@ -59,6 +59,14 @@ public interface DocumentMetadataSetResource {
 			String fieldNames)
 		throws Exception;
 
+	public DocumentMetadataSet postAssetLibraryDocumentMetadataSet(
+			Long assetLibraryId, DocumentMetadataSet documentMetadataSet)
+		throws Exception;
+
+	public Response postAssetLibraryDocumentMetadataSetBatch(
+			Long assetLibraryId, String callbackURL, Object object)
+		throws Exception;
+
 	public DocumentMetadataSet getDocumentMetadataSet(
 			Long documentMetadataSetId)
 		throws Exception;
@@ -70,6 +78,14 @@ public interface DocumentMetadataSetResource {
 	public Response postSiteDocumentMetadataSetsPageExportBatch(
 			Long siteId, String callbackURL, String contentType,
 			String fieldNames)
+		throws Exception;
+
+	public DocumentMetadataSet postSiteDocumentMetadataSet(
+			Long siteId, DocumentMetadataSet documentMetadataSet)
+		throws Exception;
+
+	public Response postSiteDocumentMetadataSetBatch(
+			Long siteId, String callbackURL, Object object)
 		throws Exception;
 
 	public default void setContextAcceptLanguage(

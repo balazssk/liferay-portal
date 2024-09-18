@@ -6707,6 +6707,7 @@ paths:
                                 type: array
             tags: ["DocumentMetadataSet"]
         post:
+            operationId: postAssetLibraryDocumentMetadataSet
             parameters:
                 - in: path
                   name: assetLibraryId
@@ -13183,6 +13184,7 @@ paths:
                                 type: array
             tags: ["DocumentMetadataSet"]
         post:
+            operationId: postSiteDocumentMetadataSet
             parameters:
                 - in: path
                   name: siteId
