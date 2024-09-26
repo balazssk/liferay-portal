@@ -720,6 +720,20 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		PortletDataContext portletDataContext, StagedModel referenceStagedModel,
 		String rootPortletId) {
 
+		if ((referenceStagedModel instanceof Layout) &&
+			ExportImportThreadLocal.isStagingInProcess() &&
+			!portletDataContext.isWithinDateRange(
+				referenceStagedModel.getModifiedDate())) {
+
+			Layout layout = (Layout)referenceStagedModel;
+
+			if (!ArrayUtil.contains(
+					portletDataContext.getLayoutIds(), layout.getLayoutId())) {
+
+				return false;
+			}
+		}
+
 		Portlet portlet = _portletLocalService.getPortletById(rootPortletId);
 
 		if (portlet == null) {

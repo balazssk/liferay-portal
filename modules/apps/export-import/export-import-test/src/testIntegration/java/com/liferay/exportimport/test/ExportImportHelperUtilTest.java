@@ -10,6 +10,7 @@ import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.document.library.kernel.service.DLAppLocalServiceUtil;
 import com.liferay.exportimport.kernel.lar.DataLevel;
 import com.liferay.exportimport.kernel.lar.ExportImportHelperUtil;
+import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.exportimport.kernel.lar.ManifestSummary;
 import com.liferay.exportimport.kernel.lar.MissingReference;
 import com.liferay.exportimport.kernel.lar.MissingReferences;
@@ -17,6 +18,7 @@ import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataContextFactoryUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataHandler;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
+import com.liferay.exportimport.test.util.TestReaderWriter;
 import com.liferay.exportimport.test.util.TestUserIdStrategy;
 import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.layout.test.util.LayoutTestUtil;
@@ -53,6 +55,7 @@ import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
 import java.io.InputStream;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -862,6 +865,63 @@ public class ExportImportHelperUtilTest {
 
 		Assert.assertFalse(layoutJSONObject.getBoolean("includeChildren"));
 		Assert.assertEquals(layout.getPlid(), layoutJSONObject.getLong("plid"));
+	}
+
+	@Test
+	public void testIsAlwaysIncludeReferenceLayoutReference() throws Exception {
+		Layout layout1 = LayoutTestUtil.addTypePortletLayout(_stagingGroup);
+		Layout layout2 = LayoutTestUtil.addTypePortletLayout(_stagingGroup);
+		Layout layout3 = LayoutTestUtil.addTypePortletLayout(_stagingGroup);
+
+		Date startDate = layout2.getModifiedDate();
+
+		PortletDataContext portletDataContext =
+			PortletDataContextFactoryUtil.createExportPortletDataContext(
+				_stagingGroup.getCompanyId(), _stagingGroup.getGroupId(),
+				new HashMap<>(), new Date(startDate.getTime()),
+				new Date(startDate.getTime() + 1), new TestReaderWriter());
+
+		portletDataContext.setLayoutIds(new long[] {layout1.getLayoutId()});
+
+		boolean originalIsLayoutStagingInProcess =
+			ExportImportThreadLocal.isLayoutStagingInProcess();
+
+		ExportImportThreadLocal.setLayoutStagingInProcess(true);
+
+		Assert.assertTrue(
+			"A layoutId reference is not always included while Staging",
+			ExportImportHelperUtil.isAlwaysIncludeReference(
+				portletDataContext, layout1, JournalPortletKeys.JOURNAL));
+
+		Assert.assertTrue(
+			"A modified reference is not always included while Staging",
+			ExportImportHelperUtil.isAlwaysIncludeReference(
+				portletDataContext, layout2, JournalPortletKeys.JOURNAL));
+
+		Assert.assertFalse(
+			"An unmodified reference is always included while Staging",
+			ExportImportHelperUtil.isAlwaysIncludeReference(
+				portletDataContext, layout3, JournalPortletKeys.JOURNAL));
+
+		ExportImportThreadLocal.setLayoutStagingInProcess(false);
+
+		Assert.assertTrue(
+			"A layoutId reference is not always included while not Staging",
+			ExportImportHelperUtil.isAlwaysIncludeReference(
+				portletDataContext, layout1, JournalPortletKeys.JOURNAL));
+
+		Assert.assertTrue(
+			"A modified reference is not always included while not Staging",
+			ExportImportHelperUtil.isAlwaysIncludeReference(
+				portletDataContext, layout2, JournalPortletKeys.JOURNAL));
+
+		Assert.assertTrue(
+			"An unmodified reference is not always included while not Staging",
+			ExportImportHelperUtil.isAlwaysIncludeReference(
+				portletDataContext, layout3, JournalPortletKeys.JOURNAL));
+
+		ExportImportThreadLocal.setLayoutStagingInProcess(
+			originalIsLayoutStagingInProcess);
 	}
 
 	@Test
