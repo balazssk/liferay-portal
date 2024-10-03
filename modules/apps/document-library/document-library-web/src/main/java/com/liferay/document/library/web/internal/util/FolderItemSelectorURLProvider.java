@@ -70,7 +70,7 @@ public class FolderItemSelectorURLProvider {
 		folderItemSelectorCriterion.setRepositoryId(repositoryId);
 		folderItemSelectorCriterion.setSelectedFolderId(parentFolderId);
 		folderItemSelectorCriterion.setSelectedRepositoryId(repositoryId);
-		folderItemSelectorCriterion.setShowGroupSelector(true);
+		folderItemSelectorCriterion.setShowGroupSelector(false);
 		folderItemSelectorCriterion.setShowMountFolder(false);
 
 		return String.valueOf(
