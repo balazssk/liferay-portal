@@ -31,6 +31,34 @@ const test = mergeTests(
 );
 
 test(
+	'Check FileEntry cannot be moved to an other site',
+	{
+		tag: '@LPD-32483',
+	},
+	async ({documentLibraryEditFilePage, documentLibraryPage, page}) => {
+		const title = getRandomString();
+
+		await documentLibraryEditFilePage.publishNewFileWithoutGuestViewPermission(
+			title
+		);
+
+		await documentLibraryPage.selectFileEntry(title);
+
+		await page.getByRole('button', {name: 'Move'}).nth(0).click();
+
+		const iframe = page.frameLocator(
+			'iframe[title="Select Destination Folder for 1 Item"]'
+		);
+
+		await expect(iframe.getByRole('link', {name: 'Home'})).toBeVisible();
+
+		await expect(
+			iframe.getByText('Sites and Libraries')
+		).not.toBeAttached();
+	}
+);
+
+test(
 	'Check order by Relevance in Search of DL',
 	{
 		tag: '@LPD-32481',
