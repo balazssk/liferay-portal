@@ -1840,24 +1840,18 @@ public class JournalArticleLocalServiceImpl
 
 	@Override
 	public JournalArticle fetchDisplayArticle(long groupId, String articleId) {
-		List<JournalArticle> articles = journalArticlePersistence.findByG_A_ST(
-			groupId, articleId, WorkflowConstants.STATUS_APPROVED);
-
-		if (articles.isEmpty()) {
-			return null;
-		}
+		QueryDefinition<JournalArticle> queryDefinition = new QueryDefinition<>(
+			WorkflowConstants.STATUS_APPROVED, 0, 1, null);
 
 		Date date = new Date();
 
-		for (JournalArticle article : articles) {
-			Date displayDate = article.getDisplayDate();
-			Date expirationDate = article.getExpirationDate();
+		List<JournalArticle> articles =
+			journalArticleFinder.filterFindByG_A_LtDD_GtED_ST(
+				groupId, articleId, date, date,
+				WorkflowConstants.STATUS_APPROVED, queryDefinition);
 
-			if (((displayDate == null) || displayDate.before(date)) &&
-				((expirationDate == null) || expirationDate.after(date))) {
-
-				return article;
-			}
+		if (articles.isEmpty()) {
+			return null;
 		}
 
 		return articles.get(0);
