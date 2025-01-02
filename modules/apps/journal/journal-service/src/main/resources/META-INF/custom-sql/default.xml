@@ -218,6 +218,28 @@
 				JournalArticle.id_ ASC
 		]]>
 	</sql>
+	<sql id="com.liferay.journal.service.persistence.JournalArticleFinder.findByG_A_LtDD_GtED_ST">
+		<![CDATA[
+			SELECT
+				JournalArticle.*
+			FROM
+				JournalArticle
+			WHERE
+				(JournalArticle.groupId = ?) AND
+				(JournalArticle.articleId = ?) AND
+				(JournalArticle.status = ?) AND
+				(
+					(JournalArticle.displayDate IS NULL) OR
+					(JournalArticle.displayDate < ?)
+				) AND
+				(
+					(JournalArticle.expirationDate IS NULL) OR
+					(JournalArticle.expirationDate > ?)
+				)
+			ORDER BY
+				JournalArticle.version DESC
+		]]>
+	</sql>
 	<sql id="com.liferay.journal.service.persistence.JournalFolderFinder.countA_ByG_U_F_DDMSI_NotS">
 		<![CDATA[
 			SELECT
