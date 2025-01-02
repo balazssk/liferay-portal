@@ -27,6 +27,7 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -69,6 +70,9 @@ public class JournalArticleFinderImpl
 
 	public static final String FIND_BY_G_F_C_S_L =
 		JournalArticleFinder.class.getName() + ".findByG_F_C_S_L";
+
+	public static final String FIND_BY_G_A_LTDD_GTED_ST =
+		JournalArticleFinder.class.getName() + ".findByG_A_LtDD_GtED_ST";
 
 	@Override
 	public int countByG_F(
@@ -156,6 +160,16 @@ public class JournalArticleFinderImpl
 		return doFindByG_C_S_L(
 			groupId, folderIds, classNameId, ddmStructureId, locale,
 			queryDefinition, true);
+	}
+
+	@Override
+	public List<JournalArticle> filterFindByG_A_LtDD_GtED_ST(
+		long groupId, String articleId, Date displayDate, Date expirationDate,
+		int status, QueryDefinition<JournalArticle> queryDefinition) {
+
+		return doFindByG_A_LtDD_GtED_ST(
+			groupId, articleId, displayDate, expirationDate, status,
+			queryDefinition, false);
 	}
 
 	@Override
@@ -799,6 +813,54 @@ public class JournalArticleFinderImpl
 			}
 
 			queryPos.add(queryDefinition.getStatus());
+
+			return (List<JournalArticle>)QueryUtil.list(
+				sqlQuery, getDialect(), queryDefinition.getStart(),
+				queryDefinition.getEnd());
+		}
+		catch (Exception exception) {
+			throw new SystemException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	protected List<JournalArticle> doFindByG_A_LtDD_GtED_ST(
+		long groupId, String articleId, Date displayDate, Date expirationDate,
+		int status, QueryDefinition<JournalArticle> queryDefinition,
+		boolean inlineSQLHelper) {
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			String sql = _customSQL.get(
+				getClass(), FIND_BY_G_A_LTDD_GTED_ST, queryDefinition,
+				"JournalArticle");
+
+			sql = _customSQL.replaceOrderBy(
+				sql, queryDefinition.getOrderByComparator());
+
+			if (inlineSQLHelper) {
+				sql = InlineSQLHelperUtil.replacePermissionCheck(
+					sql, JournalArticle.class.getName(),
+					"JournalArticle.resourcePrimKey", groupId);
+			}
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			sqlQuery.addEntity(
+				JournalArticleImpl.TABLE_NAME, JournalArticleImpl.class);
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			queryPos.add(groupId);
+			queryPos.add(articleId);
+			queryPos.add(status);
+			queryPos.add(displayDate);
+			queryPos.add(expirationDate);
 
 			return (List<JournalArticle>)QueryUtil.list(
 				sqlQuery, getDialect(), queryDefinition.getStart(),
