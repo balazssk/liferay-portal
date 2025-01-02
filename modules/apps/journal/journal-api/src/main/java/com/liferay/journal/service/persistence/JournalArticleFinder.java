@@ -72,6 +72,13 @@ public interface JournalArticleFinder {
 			com.liferay.portal.kernel.dao.orm.QueryDefinition
 				<com.liferay.journal.model.JournalArticle> queryDefinition);
 
+	public java.util.List<com.liferay.journal.model.JournalArticle>
+		filterFindByG_A_LtDD_GtED_ST(
+			long groupId, String articleId, java.util.Date displayDate,
+			java.util.Date expirationDate, int status,
+			com.liferay.portal.kernel.dao.orm.QueryDefinition
+				<com.liferay.journal.model.JournalArticle> queryDefinition);
+
 	public java.util.List<com.liferay.journal.model.JournalArticle> findByG_F_L(
 		long groupId, java.util.List<Long> folderIds, java.util.Locale locale,
 		com.liferay.portal.kernel.dao.orm.QueryDefinition
