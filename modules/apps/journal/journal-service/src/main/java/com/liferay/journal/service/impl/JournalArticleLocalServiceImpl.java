@@ -1843,12 +1843,12 @@ public class JournalArticleLocalServiceImpl
 		QueryDefinition<JournalArticle> queryDefinition = new QueryDefinition<>(
 			WorkflowConstants.STATUS_APPROVED, 0, 1, null);
 
-		Date date = new Date();
+		Date now = new Date();
 
 		List<JournalArticle> articles =
 			journalArticleFinder.filterFindByG_A_LtDD_GtED_ST(
-				groupId, articleId, date, date,
-				WorkflowConstants.STATUS_APPROVED, queryDefinition);
+				groupId, articleId, now, now, WorkflowConstants.STATUS_APPROVED,
+				queryDefinition);
 
 		if (articles.isEmpty()) {
 			return null;
