@@ -15,6 +15,7 @@ import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalFolder;
 import com.liferay.journal.service.JournalArticleLocalServiceUtil;
 import com.liferay.journal.service.persistence.JournalArticleFinder;
+import com.liferay.journal.service.persistence.JournalArticlePersistence;
 import com.liferay.journal.test.util.JournalTestUtil;
 import com.liferay.journal.util.comparator.ArticleCreateDateComparator;
 import com.liferay.journal.util.comparator.ArticleDisplayDateComparator;
@@ -46,6 +47,7 @@ import com.liferay.portal.test.rule.TransactionalTestRule;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
@@ -192,6 +194,73 @@ public class JournalArticleFinderTest {
 		testQueryByG_C(
 			_group.getGroupId(), Collections.<Long>emptyList(),
 			JournalArticleConstants.CLASS_NAME_ID_DEFAULT, queryDefinition, 0);
+	}
+
+	@Test
+	public void testFindByG_A_LtDD_GtED_ST() throws Exception {
+		JournalArticle article = JournalTestUtil.addArticle(
+			_group.getGroupId(), 0);
+
+		QueryDefinition<JournalArticle> queryDefinition = new QueryDefinition<>(
+			WorkflowConstants.STATUS_APPROVED, 0, 1, null);
+
+		article = _journalArticleFinder.filterFindByG_A_LtDD_GtED_ST(
+			_group.getGroupId(), article.getArticleId(), new Date(), new Date(),
+			WorkflowConstants.STATUS_APPROVED, queryDefinition
+		).get(
+			0
+		);
+
+		Assert.assertEquals(
+			"Returns the only approved version", 1, article.getVersion(), 0);
+
+		article = JournalTestUtil.updateArticle(article);
+
+		article = JournalTestUtil.updateArticle(article);
+
+		JournalArticle articleToExpire = JournalTestUtil.updateArticle(article);
+
+		article = _journalArticleFinder.filterFindByG_A_LtDD_GtED_ST(
+			_group.getGroupId(), article.getArticleId(), new Date(), new Date(),
+			WorkflowConstants.STATUS_APPROVED, queryDefinition
+		).get(
+			0
+		);
+
+		Assert.assertEquals(
+			"Returns the latest approved version", 1.3, article.getVersion(),
+			0);
+
+		JournalTestUtil.expireArticle(
+			_group.getGroupId(), articleToExpire, articleToExpire.getVersion());
+
+		article = _journalArticleFinder.filterFindByG_A_LtDD_GtED_ST(
+			_group.getGroupId(), article.getArticleId(), new Date(), new Date(),
+			WorkflowConstants.STATUS_APPROVED, queryDefinition
+		).get(
+			0
+		);
+
+		Assert.assertEquals(
+			"Returns the latest approved version when an expired newer " +
+				"version exists",
+			1.2, article.getVersion(), 0);
+
+		articleToExpire.setDisplayDate(
+			new Date(System.currentTimeMillis() + (60 * 60 * 1000)));
+		articleToExpire.setStatus(WorkflowConstants.STATUS_APPROVED);
+
+		JournalTestUtil.updateArticle(articleToExpire);
+
+		article = _journalArticleFinder.filterFindByG_A_LtDD_GtED_ST(
+			_group.getGroupId(), article.getArticleId(), new Date(), new Date(),
+			WorkflowConstants.STATUS_APPROVED, queryDefinition
+		).get(
+			0
+		);
+
+		Assert.assertEquals(
+			"Does not return a future article", 1.2, article.getVersion(), 0);
 	}
 
 	@Test
@@ -514,5 +583,8 @@ public class JournalArticleFinderTest {
 
 	@DeleteAfterTestRun
 	private Group _group;
+
+	@Inject
+	private JournalArticlePersistence _journalArticlePersistence;
 
 }
