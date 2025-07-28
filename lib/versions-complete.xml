@@ -218,13 +218,47 @@
 				</licenses>
 			</library>
 			<library>
-				<file-name>com.liferay.commerce.payment.method.authorize.net.jar!net.authorize.anet.java.sdk.jar</file-name>
-				<version>2.0.6.JAKARTA-LIFERAY-PATCHED-1</version>
-				<project-name>com.liferay:net.authorize.anet.java.sdk</project-name>
+				<file-name>com.liferay.commerce.payment.method.authorize.net.jar!anet-java-sdk.jar</file-name>
+				<version>3.0.0</version>
+				<project-name>Authorize.Net Java SDK</project-name>
+				<project-url>http://developer.authorize.net</project-url>
 				<licenses>
 					<license>
-						<license-name>LGPL 2.1</license-name>
-						<license-url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt</license-url>
+						<license-name>SDK License Agreement</license-name>
+						<license-url>https://github.com/AuthorizeNet/sdk-java/blob/master/LICENSE.txt</license-url>
+					</license>
+				</licenses>
+			</library>
+			<library>
+				<file-name>com.liferay.commerce.payment.method.authorize.net.jar!httpclient5.jar</file-name>
+				<version>5.4.1</version>
+				<project-name>Apache HttpClient</project-name>
+				<licenses>
+					<license>
+						<license-name>Apache License, Version 2.0</license-name>
+						<license-url>https://www.apache.org/licenses/LICENSE-2.0.txt</license-url>
+					</license>
+				</licenses>
+			</library>
+			<library>
+				<file-name>com.liferay.commerce.payment.method.authorize.net.jar!httpcore5-h2.jar</file-name>
+				<version>5.3.2</version>
+				<project-name>Apache HttpComponents Core HTTP/2</project-name>
+				<licenses>
+					<license>
+						<license-name>Apache License, Version 2.0</license-name>
+						<license-url>https://www.apache.org/licenses/LICENSE-2.0.txt</license-url>
+					</license>
+				</licenses>
+			</library>
+			<library>
+				<file-name>com.liferay.commerce.payment.method.authorize.net.jar!httpcore5.jar</file-name>
+				<version>5.3.2</version>
+				<project-name>Apache HttpComponents Core HTTP/1.1</project-name>
+				<licenses>
+					<license>
+						<license-name>Apache License, Version 2.0</license-name>
+						<license-url>https://www.apache.org/licenses/LICENSE-2.0.txt</license-url>
 					</license>
 				</licenses>
 			</library>
@@ -420,18 +454,6 @@
 				</licenses>
 			</library>
 			<library>
-				<file-name>com.liferay.commerce.report.impl.jar!jxl.jar</file-name>
-				<version>2.6.10</version>
-				<project-name>jxl</project-name>
-				<project-url>http://www.jexcelapi.org</project-url>
-				<licenses>
-					<license>
-						<license-name>GNU Lesser General Public License</license-name>
-						<license-url>http://www.opensource.org/licenses/lgpl-license.php</license-url>
-					</license>
-				</licenses>
-			</library>
-			<library>
 				<file-name>com.liferay.commerce.report.impl.jar!lucene-analyzers-common.jar</file-name>
 				<version>7.1.0</version>
 				<project-name>Lucene Common Analyzers</project-name>
@@ -506,18 +528,6 @@
 					<license>
 						<license-name>Mozilla Public License Version 2.0</license-name>
 						<license-url>http://www.mozilla.org/MPL/2.0/</license-url>
-					</license>
-				</licenses>
-			</library>
-			<library>
-				<file-name>com.liferay.content.dashboard.web.jar!commons-lang3.jar</file-name>
-				<version>3.12.0</version>
-				<project-name>Apache Commons Lang</project-name>
-				<project-url>https://commons.apache.org/proper/commons-lang/</project-url>
-				<licenses>
-					<license>
-						<license-name>Apache License, Version 2.0</license-name>
-						<license-url>https://www.apache.org/licenses/LICENSE-2.0.txt</license-url>
 					</license>
 				</licenses>
 			</library>
@@ -2624,6 +2634,18 @@
 				</licenses>
 			</library>
 			<library>
+				<file-name>com.liferay.portal.search.elasticsearch7.sidecar.agent.jar!asm.jar</file-name>
+				<version>9.7</version>
+				<project-name>org.objectweb.asm</project-name>
+				<project-url>http://asm.ow2.org</project-url>
+				<licenses>
+					<license>
+						<license-name>The Apache Software License, Version 2.0</license-name>
+						<license-url>http://www.apache.org/licenses/LICENSE-2.0.txt</license-url>
+					</license>
+				</licenses>
+			</library>
+			<library>
 				<file-name>com.liferay.portal.search.rest.api.jar!jackson-dataformat-xml.jar</file-name>
 				<version>2.18.2</version>
 				<project-name>Jackson-dataformat-XML</project-name>
@@ -3530,6 +3552,88 @@
 				</licenses>
 			</library>
 			<library>
+				<file-name>com.liferay.portal.tools.db.migration.importer.jar!HikariCP.jar</file-name>
+				<version>4.0.3</version>
+				<project-name>HikariCP</project-name>
+				<project-url>https://github.com/brettwooldridge/HikariCP</project-url>
+				<licenses>
+					<license>
+						<license-name>The Apache Software License, Version 2.0</license-name>
+						<license-url>http://www.apache.org/licenses/LICENSE-2.0.txt</license-url>
+					</license>
+				</licenses>
+			</library>
+			<library>
+				<file-name>com.liferay.portal.tools.db.migration.importer.jar!commons-cli.jar</file-name>
+				<version>1.4</version>
+				<project-name>Apache Commons CLI</project-name>
+				<project-url>http://commons.apache.org/proper/commons-cli/</project-url>
+				<licenses>
+					<license>
+						<license-name>Apache License, Version 2.0</license-name>
+						<license-url>https://www.apache.org/licenses/LICENSE-2.0.txt</license-url>
+					</license>
+				</licenses>
+			</library>
+			<library>
+				<file-name>com.liferay.portal.tools.db.migration.importer.jar!mariadb-java-client.jar</file-name>
+				<version>3.2.0</version>
+				<project-name>mariadb-java-client</project-name>
+				<project-url>https://mariadb.com/kb/en/mariadb/about-mariadb-connector-j/</project-url>
+				<licenses>
+					<license>
+						<license-name>LGPL-2.1</license-name>
+					</license>
+				</licenses>
+			</library>
+			<library>
+				<file-name>com.liferay.portal.tools.db.migration.importer.jar!mysql-connector-j.jar</file-name>
+				<version>8.3.0</version>
+				<project-name>Oracle Corporation's JDBC and XDevAPI Driver for MySQL</project-name>
+				<project-url>http://dev.mysql.com/doc/connector-j/en/</project-url>
+				<licenses>
+					<license>
+						<license-name>The GNU General Public License, v2 with Universal FOSS Exception, v1.0</license-name>
+					</license>
+				</licenses>
+			</library>
+			<library>
+				<file-name>com.liferay.portal.tools.db.migration.importer.jar!postgresql.jar</file-name>
+				<version>42.4.4</version>
+				<project-name>PostgreSQL JDBC Driver</project-name>
+				<project-url>https://jdbc.postgresql.org/</project-url>
+				<licenses>
+					<license>
+						<license-name>BSD-2-Clause</license-name>
+						<license-url>https://jdbc.postgresql.org/about/license.html</license-url>
+					</license>
+				</licenses>
+			</library>
+			<library>
+				<file-name>com.liferay.portal.tools.db.migration.importer.jar!slf4j-api.jar</file-name>
+				<version>1.7.26</version>
+				<project-name>SLF4J API Module</project-name>
+				<project-url>http://www.slf4j.org</project-url>
+				<licenses>
+					<license>
+						<license-name>MIT License</license-name>
+						<license-url>http://www.opensource.org/licenses/mit-license.php</license-url>
+					</license>
+				</licenses>
+			</library>
+			<library>
+				<file-name>com.liferay.portal.tools.db.migration.importer.jar!slf4j-simple.jar</file-name>
+				<version>1.7.10</version>
+				<project-name>SLF4J Simple Binding</project-name>
+				<project-url>http://www.slf4j.org</project-url>
+				<licenses>
+					<license>
+						<license-name>MIT License</license-name>
+						<license-url>http://www.opensource.org/licenses/mit-license.php</license-url>
+					</license>
+				</licenses>
+			</library>
+			<library>
 				<file-name>com.liferay.portal.tools.db.partition.migration.validator.jar!commons-cli.jar</file-name>
 				<version>1.4</version>
 				<project-name>Apache Commons CLI</project-name>
@@ -3601,6 +3705,30 @@
 				</licenses>
 			</library>
 			<library>
+				<file-name>com.liferay.portal.tools.db.partition.migration.validator.jar!org.apache.logging.log4j.core.jar</file-name>
+				<version>2.17.1.LIFERAY-PATCHED-2</version>
+				<project-name>Apache Log4j Core</project-name>
+				<project-url>https://www.apache.org/</project-url>
+				<licenses>
+					<license>
+						<license-name>LGPL 2.1</license-name>
+						<license-url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt</license-url>
+					</license>
+				</licenses>
+			</library>
+			<library>
+				<file-name>com.liferay.portal.tools.db.partition.migration.validator.jar!org.apache.logging.log4j.jar</file-name>
+				<version>2.17.1.LIFERAY-PATCHED-1</version>
+				<project-name>Apache Log4j API</project-name>
+				<project-url>https://www.apache.org/</project-url>
+				<licenses>
+					<license>
+						<license-name>LGPL 2.1</license-name>
+						<license-url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt</license-url>
+					</license>
+				</licenses>
+			</library>
+			<library>
 				<file-name>com.liferay.portal.tools.db.partition.migration.validator.jar!postgresql.jar</file-name>
 				<version>42.4.4</version>
 				<project-name>PostgreSQL JDBC Driver</project-name>
@@ -3609,88 +3737,6 @@
 					<license>
 						<license-name>BSD-2-Clause</license-name>
 						<license-url>https://jdbc.postgresql.org/about/license.html</license-url>
-					</license>
-				</licenses>
-			</library>
-			<library>
-				<file-name>com.liferay.portal.tools.db.schema.importer.jar!HikariCP.jar</file-name>
-				<version>4.0.3</version>
-				<project-name>HikariCP</project-name>
-				<project-url>https://github.com/brettwooldridge/HikariCP</project-url>
-				<licenses>
-					<license>
-						<license-name>The Apache Software License, Version 2.0</license-name>
-						<license-url>http://www.apache.org/licenses/LICENSE-2.0.txt</license-url>
-					</license>
-				</licenses>
-			</library>
-			<library>
-				<file-name>com.liferay.portal.tools.db.schema.importer.jar!commons-cli.jar</file-name>
-				<version>1.4</version>
-				<project-name>Apache Commons CLI</project-name>
-				<project-url>http://commons.apache.org/proper/commons-cli/</project-url>
-				<licenses>
-					<license>
-						<license-name>Apache License, Version 2.0</license-name>
-						<license-url>https://www.apache.org/licenses/LICENSE-2.0.txt</license-url>
-					</license>
-				</licenses>
-			</library>
-			<library>
-				<file-name>com.liferay.portal.tools.db.schema.importer.jar!mariadb-java-client.jar</file-name>
-				<version>3.2.0</version>
-				<project-name>mariadb-java-client</project-name>
-				<project-url>https://mariadb.com/kb/en/mariadb/about-mariadb-connector-j/</project-url>
-				<licenses>
-					<license>
-						<license-name>LGPL-2.1</license-name>
-					</license>
-				</licenses>
-			</library>
-			<library>
-				<file-name>com.liferay.portal.tools.db.schema.importer.jar!mysql-connector-j.jar</file-name>
-				<version>8.3.0</version>
-				<project-name>Oracle Corporation's JDBC and XDevAPI Driver for MySQL</project-name>
-				<project-url>http://dev.mysql.com/doc/connector-j/en/</project-url>
-				<licenses>
-					<license>
-						<license-name>The GNU General Public License, v2 with Universal FOSS Exception, v1.0</license-name>
-					</license>
-				</licenses>
-			</library>
-			<library>
-				<file-name>com.liferay.portal.tools.db.schema.importer.jar!postgresql.jar</file-name>
-				<version>42.4.4</version>
-				<project-name>PostgreSQL JDBC Driver</project-name>
-				<project-url>https://jdbc.postgresql.org/</project-url>
-				<licenses>
-					<license>
-						<license-name>BSD-2-Clause</license-name>
-						<license-url>https://jdbc.postgresql.org/about/license.html</license-url>
-					</license>
-				</licenses>
-			</library>
-			<library>
-				<file-name>com.liferay.portal.tools.db.schema.importer.jar!slf4j-api.jar</file-name>
-				<version>1.7.26</version>
-				<project-name>SLF4J API Module</project-name>
-				<project-url>http://www.slf4j.org</project-url>
-				<licenses>
-					<license>
-						<license-name>MIT License</license-name>
-						<license-url>http://www.opensource.org/licenses/mit-license.php</license-url>
-					</license>
-				</licenses>
-			</library>
-			<library>
-				<file-name>com.liferay.portal.tools.db.schema.importer.jar!slf4j-simple.jar</file-name>
-				<version>1.7.10</version>
-				<project-name>SLF4J Simple Binding</project-name>
-				<project-url>http://www.slf4j.org</project-url>
-				<licenses>
-					<license>
-						<license-name>MIT License</license-name>
-						<license-url>http://www.opensource.org/licenses/mit-license.php</license-url>
 					</license>
 				</licenses>
 			</library>
