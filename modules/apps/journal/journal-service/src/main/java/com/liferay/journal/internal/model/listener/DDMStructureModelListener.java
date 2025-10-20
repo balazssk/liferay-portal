@@ -100,10 +100,9 @@ public class DDMStructureModelListener extends BaseModelListener<DDMStructure> {
 
 					_ddmFieldLocalService.updateDDMFormValues(
 						ddmStructure.getStructureId(), journalArticle.getId(),
-						_fieldsToDDMFormValuesConverter.convert(
-							ddmStructure,
-							_journalConverter.getDDMFields(
-								ddmStructure, journalArticle.getContent())));
+						_ddmFieldLocalService.getDDMFormValues(
+							originalDDMStructure.getDDMForm(),
+							journalArticle.getId()));
 				}
 			};
 		}
