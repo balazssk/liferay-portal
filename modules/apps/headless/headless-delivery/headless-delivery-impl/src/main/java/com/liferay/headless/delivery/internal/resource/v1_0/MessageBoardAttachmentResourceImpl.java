@@ -182,7 +182,7 @@ public class MessageBoardAttachmentResourceImpl
 				MBMessage.class.getName(), mbMessage.getClassPK(),
 				MBConstants.SERVICE_NAME, folder.getFolderId(),
 				binaryFile.getInputStream(), binaryFile.getFileName(),
-				binaryFile.getFileName(), false));
+				binaryFile.getContentType(), false));
 	}
 
 	private Page<MessageBoardAttachment> _getMessageBoardAttachmentsPage(
