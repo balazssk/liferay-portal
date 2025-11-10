@@ -16,6 +16,7 @@ import com.liferay.portal.kernel.test.constants.TestDataConstants;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.MimeTypesUtil;
 import com.liferay.portal.kernel.util.PropsValues;
 
 import java.io.File;
@@ -109,6 +110,60 @@ public class MessageBoardAttachmentResourceTest
 		throws Exception {
 
 		super.testGraphQLGetMessageBoardThreadMessageBoardAttachmentsPage();
+	}
+
+	@Override
+	@Test
+	public void testPostMessageBoardMessageMessageBoardAttachment()
+		throws Exception {
+
+		MessageBoardAttachment randomMessageBoardAttachment =
+			randomMessageBoardAttachment();
+
+		Map<String, File> multipartFiles = getMultipartFiles();
+
+		MessageBoardAttachment postMessageBoardAttachment =
+			testPostMessageBoardMessageMessageBoardAttachment_addMessageBoardAttachment(
+				randomMessageBoardAttachment, multipartFiles);
+
+		assertEquals(randomMessageBoardAttachment, postMessageBoardAttachment);
+		assertValid(postMessageBoardAttachment);
+
+		assertValid(postMessageBoardAttachment, multipartFiles);
+
+		File file = multipartFiles.get("file");
+
+		String mimeType = MimeTypesUtil.getContentType(file, file.getName());
+
+		Assert.assertEquals(
+			mimeType, postMessageBoardAttachment.getEncodingFormat());
+	}
+
+	@Override
+	@Test
+	public void testPostMessageBoardThreadMessageBoardAttachment()
+		throws Exception {
+
+		MessageBoardAttachment randomMessageBoardAttachment =
+			randomMessageBoardAttachment();
+
+		Map<String, File> multipartFiles = getMultipartFiles();
+
+		MessageBoardAttachment postMessageBoardAttachment =
+			testPostMessageBoardThreadMessageBoardAttachment_addMessageBoardAttachment(
+				randomMessageBoardAttachment, multipartFiles);
+
+		assertEquals(randomMessageBoardAttachment, postMessageBoardAttachment);
+		assertValid(postMessageBoardAttachment);
+
+		assertValid(postMessageBoardAttachment, multipartFiles);
+
+		File file = multipartFiles.get("file");
+
+		String mimeType = MimeTypesUtil.getContentType(file, file.getName());
+
+		Assert.assertEquals(
+			mimeType, postMessageBoardAttachment.getEncodingFormat());
 	}
 
 	@Override
