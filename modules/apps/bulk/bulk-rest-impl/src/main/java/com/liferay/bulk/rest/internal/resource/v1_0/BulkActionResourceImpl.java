@@ -396,6 +396,9 @@ public class BulkActionResourceImpl extends BaseBulkActionResourceImpl {
 		else if (BulkAction.Type.DELETE_BULK_ACTION.equals(type)) {
 			return _deleteObjectBulkSelectionAction;
 		}
+		else if (BulkAction.Type.EXPIRE_BULK_ACTION.equals(type)) {
+			return _expireObjectBulkSelectionAction;
+		}
 		else if (BulkAction.Type.KEYWORD_BULK_ACTION.equals(type)) {
 			return _editObjectTagsBulkSelectionAction;
 		}
@@ -440,6 +443,9 @@ public class BulkActionResourceImpl extends BaseBulkActionResourceImpl {
 			).build();
 		}
 		else if (BulkAction.Type.DELETE_BULK_ACTION.equals(type)) {
+			return hashMapWrapper.build();
+		}
+		else if (BulkAction.Type.EXPIRE_BULK_ACTION.equals(type)) {
 			return hashMapWrapper.build();
 		}
 		else if (BulkAction.Type.KEYWORD_BULK_ACTION.equals(type)) {
@@ -823,6 +829,9 @@ public class BulkActionResourceImpl extends BaseBulkActionResourceImpl {
 
 	@Reference(target = "(bulk.selection.action.key=edit.object.tags)")
 	private BulkSelectionAction<Object> _editObjectTagsBulkSelectionAction;
+
+	@Reference(target = "(bulk.selection.action.key=expire.object)")
+	private BulkSelectionAction<Object> _expireObjectBulkSelectionAction;
 
 	@Reference(
 		target = "(filter.factory.key=" + ObjectDefinitionConstants.STORAGE_TYPE_DEFAULT + ")"
