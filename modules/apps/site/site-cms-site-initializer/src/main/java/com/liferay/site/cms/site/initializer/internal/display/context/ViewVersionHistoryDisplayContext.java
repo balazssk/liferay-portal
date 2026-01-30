@@ -6,10 +6,12 @@
 package com.liferay.site.cms.site.initializer.internal.display.context;
 
 import com.liferay.frontend.data.set.model.FDSActionDropdownItem;
+import com.liferay.frontend.data.set.model.FDSActionDropdownItemBuilder;
 import com.liferay.frontend.data.set.model.FDSSortItem;
 import com.liferay.frontend.data.set.model.FDSSortItemBuilder;
 import com.liferay.frontend.data.set.model.FDSSortItemList;
 import com.liferay.frontend.data.set.model.FDSSortItemListBuilder;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectEntry;
 import com.liferay.petra.string.StringBundler;
@@ -27,6 +29,7 @@ import com.liferay.portal.kernel.util.WebKeys;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -54,6 +57,27 @@ public class ViewVersionHistoryDisplayContext {
 			_objectEntry.getGroupId(), "/by-external-reference-code/",
 			_objectEntry.getExternalReferenceCode(),
 			"/versions?nestedFields=file.thumbnailURL");
+	}
+
+	public List<DropdownItem> getBulkActionDropdownItems() {
+		List<DropdownItem> fdsBulkActionDropdownItems =
+			new ArrayList<>();
+
+		fdsBulkActionDropdownItems.add(
+			FDSActionDropdownItemBuilder.setHighlighted(
+				true
+			).setHref(
+				"#"
+			).setIcon(
+				"time"
+			).setLabel(
+				LanguageUtil.get(_httpServletRequest, "expire")
+			).build(
+				"expire"
+			)
+		);
+
+		return fdsBulkActionDropdownItems;
 	}
 
 	public List<FDSActionDropdownItem> getFDSActionDropdownItems() {
