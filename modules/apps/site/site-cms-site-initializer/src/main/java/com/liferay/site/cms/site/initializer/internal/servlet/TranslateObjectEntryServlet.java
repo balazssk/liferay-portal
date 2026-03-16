@@ -43,6 +43,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -185,37 +186,47 @@ public class TranslateObjectEntryServlet extends BaseBulkActionServlet {
 			return;
 		}
 
-		File file = null;
+		List<File> files = new ArrayList<>();
 		Locale locale = portal.getLocale(httpServletRequest);
 		String zipFileName = StringPool.BLANK;
 		ZipWriter zipWriter = _zipWriterFactory.getZipWriter();
 
 		for (Map.Entry<String, List<Long>> entry : objectEntryIds.entrySet()) {
-			file = _translationManager.getXLIFFZipFile(
+			File file = _translationManager.getXLIFFZipFile(
 				entry.getKey(), ArrayUtil.toLongArray(entry.getValue()),
 				xliffMimeType, locale, sourceLanguageId, targetLanguageIds);
 
+			files.add(file);
 			zipFileName = file.getName();
 
 			if (objectEntryIds.size() > 1) {
-				zipWriter.addEntry(file.getName(), new FileInputStream(file));
+				try (InputStream inputStream = new FileInputStream(file)) {
+					zipWriter.addEntry(file.getName(), inputStream);
+				}
 			}
 		}
 
+		File file1 = files.get(0);
+
 		if (objectEntryIds.size() > 1) {
-			file = zipWriter.getFile();
+			file1 = zipWriter.getFile();
 			zipFileName = "translations-" + Time.getTimestamp() + ".zip";
 		}
 
-		try (InputStream inputStream = new FileInputStream(file)) {
+		try (InputStream inputStream = new FileInputStream(file1)) {
 			ServletResponseUtil.sendFile(
 				httpServletRequest, httpServletResponse, zipFileName,
 				inputStream, 0, ContentTypes.APPLICATION_ZIP,
 				HttpHeaders.CONTENT_DISPOSITION_ATTACHMENT);
 		}
 		finally {
-			if ((file != null) && file.exists()) {
-				file.delete();
+			file1 = zipWriter.getFile();
+
+			file1.delete();
+
+			for (File file2 : files) {
+				file2.delete();
+				file2.
 			}
 		}
 	}
