@@ -14,8 +14,10 @@ import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldOptions;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldValidation;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldValidationExpression;
+import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 import com.liferay.dynamic.data.mapping.util.SettingsDDMFormFieldsUtil;
 import com.liferay.petra.function.transform.TransformUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -29,6 +31,7 @@ import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -228,10 +231,25 @@ public class DataDefinitionDDMFormUtil {
 			GetterUtil.getBoolean(dataDefinitionField.getRequired()));
 		ddmFormField.setShowLabel(
 			GetterUtil.getBoolean(dataDefinitionField.getShowLabel(), true));
+
+		Map<String, Object> tip = dataDefinitionField.getTip();
+
+		if (tip == null) {
+			tip = new HashMap<>();
+		}
+
+		if (tip.isEmpty()) {
+			LocalizedValue label = ddmFormField.getLabel();
+
+			for (Locale locale : label.getAvailableLocales()) {
+				tip.put(LocaleUtil.toLanguageId(locale), StringPool.BLANK);
+			}
+		}
+
 		ddmFormField.setTip(
 			LocalizedValueUtil.toLocalizedValue(
-				dataDefinitionField.getTip(),
-				LocaleUtil.fromLanguageId(languageId)));
+				tip, LocaleUtil.fromLanguageId(languageId)));
+
 		ddmFormField.setType(dataDefinitionField.getFieldType());
 
 		Map<String, Object> customProperties =
