@@ -18,8 +18,8 @@ dependencies {
 	compileOnly group: "commons-io", name: "commons-io", version: "2.19.0"
 	compileOnly group: "commons-lang", name: "commons-lang", version: "2.6"
 	compileOnly group: "jakarta.annotation", name: "jakarta.annotation-api", version: "2.1.1"
-	compileOnly group: "org.apache.httpcomponents", name: "httpclient", version: "4.5.13"
-	compileOnly group: "org.apache.httpcomponents", name: "httpcore", version: "4.4.14"
+	compileOnly group: "org.apache.httpcomponents", name: "httpclient", version: "4.5.14"
+	compileOnly group: "org.apache.httpcomponents", name: "httpcore", version: "4.4.16"
 	compileOnly group: "org.apache.httpcomponents", name: "httpmime", version: "4.5.13"
 	compileOnly group: "org.apache.lucene", name: "lucene-misc", version: luceneVersion
 	compileOnly group: "org.apache.lucene", name: "lucene-sandbox", version: luceneVersion

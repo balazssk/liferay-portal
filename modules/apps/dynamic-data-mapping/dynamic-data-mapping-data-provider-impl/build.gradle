@@ -13,7 +13,7 @@ dependencies {
 	compileOnly group: "jakarta.servlet", name: "jakarta.servlet-api", version: "6.0.0"
 	compileOnly group: "net.minidev", name: "accessors-smart", version: "2.4.9"
 	compileOnly group: "net.minidev", name: "json-smart", version: "2.4.10"
-	compileOnly group: "org.apache.httpcomponents", name: "httpcore", version: "4.4.14"
+	compileOnly group: "org.apache.httpcomponents", name: "httpcore", version: "4.4.16"
 	compileOnly group: "org.osgi", name: "org.osgi.service.component.annotations", version: "1.4.0"
 	compileOnly group: "org.ow2.asm", name: "asm", version: "9.7"
 	compileOnly group: "org.slf4j", name: "slf4j-api", version: "1.7.26"
