@@ -648,8 +648,7 @@ public class TaxonomyVocabularyResourceImpl
 
 						if (_log.isDebugEnabled()) {
 							_log.debug(
-								"Unable to get class type found with class " +
-									"type ID " + classTypePK);
+								"Unable to get class type for " + classTypePK);
 						}
 
 						return null;
