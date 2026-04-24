@@ -13,8 +13,8 @@ import com.liferay.document.library.configuration.DLFileEntryMimeTypeConfigurati
 import com.liferay.document.library.constants.DLPortletKeys;
 import com.liferay.document.library.exception.DLStorageQuotaExceededException;
 import com.liferay.document.library.kernel.antivirus.AntivirusScannerException;
+import com.liferay.document.library.kernel.exception.DuplicateDLFileEntryExternalReferenceCodeException;
 import com.liferay.document.library.kernel.exception.DuplicateFileEntryException;
-import com.liferay.document.library.kernel.exception.DuplicateFileEntryExternalReferenceCodeException;
 import com.liferay.document.library.kernel.exception.DuplicateFolderNameException;
 import com.liferay.document.library.kernel.exception.FileEntryDisplayDateException;
 import com.liferay.document.library.kernel.exception.FileEntryExpirationDateException;
@@ -1174,9 +1174,9 @@ public class EditFileEntryMVCActionCommand extends BaseMVCActionCommand {
 		else if (exception instanceof AntivirusScannerException ||
 				 exception instanceof DDMFormValuesValidationException ||
 				 exception instanceof DLStorageQuotaExceededException ||
-				 exception instanceof DuplicateFileEntryException ||
 				 exception instanceof
-					 DuplicateFileEntryExternalReferenceCodeException ||
+					 DuplicateDLFileEntryExternalReferenceCodeException ||
+				 exception instanceof DuplicateFileEntryException ||
 				 exception instanceof DuplicateFolderNameException ||
 				 exception instanceof FileExtensionException ||
 				 exception instanceof FileMimeTypeException ||

@@ -11,8 +11,8 @@ import com.liferay.asset.kernel.service.AssetEntryLocalServiceUtil;
 import com.liferay.document.library.configuration.DLConfiguration;
 import com.liferay.document.library.configuration.DLFileEntryFriendlyURLConfiguration;
 import com.liferay.document.library.configuration.DLFileEntryMimeTypeConfiguration;
+import com.liferay.document.library.kernel.exception.DuplicateDLFileEntryExternalReferenceCodeException;
 import com.liferay.document.library.kernel.exception.DuplicateFileEntryException;
-import com.liferay.document.library.kernel.exception.DuplicateFileEntryExternalReferenceCodeException;
 import com.liferay.document.library.kernel.exception.DuplicateFolderNameException;
 import com.liferay.document.library.kernel.exception.FileEntryExpirationDateException;
 import com.liferay.document.library.kernel.exception.FileExtensionException;
@@ -378,7 +378,7 @@ public class DLFileEntryLocalServiceTest {
 		Assert.assertNull(dlFileEntry.getReviewDate());
 	}
 
-	@Test(expected = DuplicateFileEntryExternalReferenceCodeException.class)
+	@Test(expected = DuplicateDLFileEntryExternalReferenceCodeException.class)
 	public void testAddFileEntryWithExistingExternalReferenceCode()
 		throws Exception {
 

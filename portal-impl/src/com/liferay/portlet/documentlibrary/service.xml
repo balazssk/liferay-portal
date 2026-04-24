@@ -518,7 +518,6 @@
 	<exceptions>
 		<exception>DirectoryName</exception>
 		<exception>DuplicateFileEntry</exception>
-		<exception>DuplicateFileEntryExternalReferenceCode</exception>
 		<exception>DuplicateFileEntryType</exception>
 		<exception>DuplicateFolderExternalReferenceCode</exception>
 		<exception>DuplicateFolderName</exception>
