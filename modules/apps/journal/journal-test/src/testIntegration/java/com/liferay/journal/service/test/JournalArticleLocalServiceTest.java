@@ -51,8 +51,8 @@ import com.liferay.friendly.url.exception.FriendlyURLLocalizationUrlTitleExcepti
 import com.liferay.journal.constants.JournalArticleConstants;
 import com.liferay.journal.constants.JournalFolderConstants;
 import com.liferay.journal.exception.ArticleFriendlyURLException;
-import com.liferay.journal.exception.DuplicateArticleExternalReferenceCodeException;
 import com.liferay.journal.exception.DuplicateArticleIdException;
+import com.liferay.journal.exception.DuplicateJournalArticleExternalReferenceCodeException;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalArticleDisplay;
 import com.liferay.journal.model.JournalFolder;
@@ -347,7 +347,9 @@ public class JournalArticleLocalServiceTest {
 		Assert.assertNotNull(friendlyURLMap.get(defaultLocale));
 	}
 
-	@Test(expected = DuplicateArticleExternalReferenceCodeException.class)
+	@Test(
+		expected = DuplicateJournalArticleExternalReferenceCodeException.class
+	)
 	public void testAddArticleWithExistingExternalReferenceCode()
 		throws Exception {
 
