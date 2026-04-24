@@ -12,7 +12,7 @@ import com.liferay.dynamic.data.mapping.test.util.DDMStructureTestUtil;
 import com.liferay.dynamic.data.mapping.test.util.DDMTemplateTestUtil;
 import com.liferay.journal.constants.JournalArticleConstants;
 import com.liferay.journal.constants.JournalFolderConstants;
-import com.liferay.journal.exception.DuplicateFolderExternalReferenceCodeException;
+import com.liferay.journal.exception.DuplicateJournalFolderExternalReferenceCodeException;
 import com.liferay.journal.exception.InvalidDDMStructureException;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalFolder;
@@ -331,7 +331,7 @@ public class JournalFolderServiceTest {
 		Assert.assertEquals(folder1.getFolderId(), folder2.getFolderId());
 	}
 
-	@Test(expected = DuplicateFolderExternalReferenceCodeException.class)
+	@Test(expected = DuplicateJournalFolderExternalReferenceCodeException.class)
 	public void testJournalFolderWithExistingExternalReferenceCode()
 		throws Exception {
 
