@@ -364,7 +364,6 @@
 		<exception>DuplicateQueryRule</exception>
 		<exception>DuplicateTag</exception>
 		<exception>DuplicateVocabulary</exception>
-		<exception>DuplicateVocabularyExternalReferenceCode</exception>
 		<exception>InvalidAssetCategory</exception>
 		<exception>VocabularyName</exception>
 		<exception>VocabularyVisibilityType</exception>

@@ -6,8 +6,8 @@
 package com.liferay.asset.categories.service.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.asset.kernel.exception.DuplicateAssetVocabularyExternalReferenceCodeException;
 import com.liferay.asset.kernel.exception.DuplicateVocabularyException;
-import com.liferay.asset.kernel.exception.DuplicateVocabularyExternalReferenceCodeException;
 import com.liferay.asset.kernel.exception.NoSuchVocabularyException;
 import com.liferay.asset.kernel.exception.VocabularyNameException;
 import com.liferay.asset.kernel.model.AssetCategory;
@@ -273,7 +273,9 @@ public class AssetVocabularyServiceTest {
 				vocabulary.getVocabularyId()));
 	}
 
-	@Test(expected = DuplicateVocabularyExternalReferenceCodeException.class)
+	@Test(
+		expected = DuplicateAssetVocabularyExternalReferenceCodeException.class
+	)
 	public void testDuplicateVocabularyExternalReferenceCode()
 		throws Exception {
 

@@ -15,10 +15,10 @@ import com.liferay.asset.display.page.portlet.AssetDisplayPageFriendlyURLProvide
 import com.liferay.asset.kernel.NoSuchClassTypeException;
 import com.liferay.asset.kernel.exception.AssetCategoryLimitException;
 import com.liferay.asset.kernel.exception.AssetCategoryNameException;
+import com.liferay.asset.kernel.exception.DuplicateAssetVocabularyExternalReferenceCodeException;
 import com.liferay.asset.kernel.exception.DuplicateCategoryException;
 import com.liferay.asset.kernel.exception.DuplicateCategoryExternalReferenceCodeException;
 import com.liferay.asset.kernel.exception.DuplicateVocabularyException;
-import com.liferay.asset.kernel.exception.DuplicateVocabularyExternalReferenceCodeException;
 import com.liferay.asset.kernel.exception.InvalidAssetCategoryException;
 import com.liferay.asset.kernel.exception.NoSuchCategoryException;
 import com.liferay.asset.kernel.exception.NoSuchEntryException;
@@ -133,13 +133,13 @@ public class AssetCategoryAdminPortlet extends MVCPortlet {
 			throwable instanceof AssetCategoryNameException ||
 			throwable instanceof CategoryPropertyKeyException ||
 			throwable instanceof CategoryPropertyValueException ||
+			throwable instanceof
+				DuplicateAssetVocabularyExternalReferenceCodeException ||
 			throwable instanceof DuplicateCategoryException ||
 			throwable instanceof
 				DuplicateCategoryExternalReferenceCodeException ||
 			throwable instanceof DuplicateCategoryPropertyException ||
 			throwable instanceof DuplicateVocabularyException ||
-			throwable instanceof
-				DuplicateVocabularyExternalReferenceCodeException ||
 			throwable instanceof InvalidAssetCategoryException ||
 			throwable instanceof NoSuchCategoryException ||
 			throwable instanceof NoSuchClassTypeException ||
