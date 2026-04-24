@@ -519,7 +519,6 @@
 		<exception>DirectoryName</exception>
 		<exception>DuplicateFileEntry</exception>
 		<exception>DuplicateFileEntryType</exception>
-		<exception>DuplicateFolderExternalReferenceCode</exception>
 		<exception>DuplicateFolderName</exception>
 		<exception>DuplicateRepositoryName</exception>
 		<exception>FileEntryDisplayDate</exception>
