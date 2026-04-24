@@ -12,8 +12,8 @@ import com.liferay.asset.category.property.service.AssetCategoryPropertyLocalSer
 import com.liferay.asset.kernel.exception.AssetCategoryLimitException;
 import com.liferay.asset.kernel.exception.AssetCategoryNameException;
 import com.liferay.asset.kernel.exception.AssetCategoryParentCategoryIdException;
+import com.liferay.asset.kernel.exception.DuplicateAssetCategoryExternalReferenceCodeException;
 import com.liferay.asset.kernel.exception.DuplicateCategoryException;
-import com.liferay.asset.kernel.exception.DuplicateCategoryExternalReferenceCodeException;
 import com.liferay.asset.kernel.exception.NoSuchCategoryException;
 import com.liferay.asset.kernel.exception.NoSuchVocabularyException;
 import com.liferay.asset.kernel.model.AssetCategory;
@@ -171,7 +171,7 @@ public class AssetCategoryLocalServiceTest {
 			assetCategory.getCategoryId());
 	}
 
-	@Test(expected = DuplicateCategoryExternalReferenceCodeException.class)
+	@Test(expected = DuplicateAssetCategoryExternalReferenceCodeException.class)
 	public void testAddAssetCategoryWithExistingExternalReferenceCode()
 		throws Exception {
 

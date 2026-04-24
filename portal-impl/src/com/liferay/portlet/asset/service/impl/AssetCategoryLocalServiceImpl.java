@@ -7,8 +7,8 @@ package com.liferay.portlet.asset.service.impl;
 
 import com.liferay.asset.kernel.exception.AssetCategoryNameException;
 import com.liferay.asset.kernel.exception.AssetCategoryParentCategoryIdException;
+import com.liferay.asset.kernel.exception.DuplicateAssetCategoryExternalReferenceCodeException;
 import com.liferay.asset.kernel.exception.DuplicateCategoryException;
-import com.liferay.asset.kernel.exception.DuplicateCategoryExternalReferenceCodeException;
 import com.liferay.asset.kernel.exception.InvalidAssetCategoryException;
 import com.liferay.asset.kernel.exception.NoSuchCategoryException;
 import com.liferay.asset.kernel.exception.NoSuchVocabularyException;
@@ -972,7 +972,7 @@ public class AssetCategoryLocalServiceImpl
 			externalReferenceCode, groupId);
 
 		if (assetCategory != null) {
-			throw new DuplicateCategoryExternalReferenceCodeException(
+			throw new DuplicateAssetCategoryExternalReferenceCodeException(
 				StringBundler.concat(
 					"Duplicate category external reference code ",
 					externalReferenceCode, " in group", groupId));
