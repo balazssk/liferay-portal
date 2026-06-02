@@ -6,6 +6,9 @@
 package com.liferay.site.cms.site.initializer.test.util;
 
 import com.liferay.batch.engine.test.util.BatchEngineTestUtil;
+import com.liferay.depot.constants.DepotConstants;
+import com.liferay.depot.model.DepotEntry;
+import com.liferay.depot.service.DepotEntryLocalServiceUtil;
 import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
@@ -20,6 +23,9 @@ import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.site.initializer.SiteInitializer;
 import com.liferay.site.initializer.SiteInitializerRegistry;
 
@@ -28,6 +34,18 @@ import com.liferay.site.initializer.SiteInitializerRegistry;
  * @author Stefano Motta
  */
 public class CMSTestUtil {
+
+	public static DepotEntry addSpaceDepotEntry() throws Exception {
+		return DepotEntryLocalServiceUtil.addDepotEntry(
+			HashMapBuilder.put(
+				LocaleUtil.getDefault(), StringUtil.randomString()
+			).build(),
+			HashMapBuilder.put(
+				LocaleUtil.getDefault(), StringUtil.randomString()
+			).build(),
+			DepotConstants.TYPE_SPACE,
+			ServiceContextTestUtil.getServiceContext());
+	}
 
 	public static Group getOrAddGroup(Class<?> clazz) throws Exception {
 		Group group = GroupLocalServiceUtil.fetchGroup(

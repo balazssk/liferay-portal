@@ -7,6 +7,7 @@ package com.liferay.headless.admin.site.resource.v1_0.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.depot.constants.DepotConstants;
+import com.liferay.depot.constants.DepotRolesConstants;
 import com.liferay.depot.model.DepotEntry;
 import com.liferay.depot.service.DepotEntryLocalService;
 import com.liferay.exportimport.test.rule.LazyReferencing;
@@ -28,11 +29,15 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.LayoutSetPrototype;
+import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.LayoutSetPrototypeLocalService;
+import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.UserGroupRoleLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.test.constants.TestDataConstants;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
@@ -55,6 +60,7 @@ import com.liferay.portal.test.log.LogCapture;
 import com.liferay.portal.test.log.LoggerTestUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LanguageIds;
+import com.liferay.site.cms.site.initializer.test.util.CMSTestUtil;
 import com.liferay.site.initializer.SiteInitializer;
 
 import java.io.File;
@@ -183,6 +189,10 @@ public class SiteResourceTest extends BaseSiteResourceTestCase {
 		_testGetSitesPageWithoutSiteMembership();
 		_testGetSitesPageWithSearch();
 		_testGetSitesPageWithoutAuthentication();
+		_testGetSitesPageWithCMSAdministrator();
+		_testGetSitesPageWithSpaceAdministrator();
+		_testGetSitesPageWithSpaceOwner();
+		_testGetSitesPageWithSpaceMember();
 	}
 
 	@LazyReferencing
@@ -401,6 +411,34 @@ public class SiteResourceTest extends BaseSiteResourceTestCase {
 		}
 	}
 
+	private User _addUserWithRegularRole(String roleName) throws Exception {
+		User user = UserTestUtil.addUser(
+			testCompany, RandomTestUtil.randomString());
+
+		Role role = _roleLocalService.getRole(
+			testCompany.getCompanyId(), roleName);
+
+		_userLocalService.addRoleUser(role.getRoleId(), user.getUserId());
+
+		return user;
+	}
+
+	private User _addUserWithSpaceRole(DepotEntry depotEntry, String roleName)
+		throws Exception {
+
+		User user = UserTestUtil.addUser(
+			testCompany, RandomTestUtil.randomString());
+
+		Role role = _roleLocalService.getRole(
+			testCompany.getCompanyId(), roleName);
+
+		_userGroupRoleLocalService.addUserGroupRoles(
+			user.getUserId(), depotEntry.getGroupId(),
+			new long[] {role.getRoleId()});
+
+		return user;
+	}
+
 	private void _assertEquals(Group group, Site site) throws Exception {
 		Assert.assertEquals(site.getActive(), group.isActive());
 		Assert.assertEquals(
@@ -428,6 +466,18 @@ public class SiteResourceTest extends BaseSiteResourceTestCase {
 
 		Assert.assertEquals(
 			site.getName(), group.getName(LocaleUtil.getDefault()));
+	}
+
+	private SiteResource _buildSiteResource(User user) {
+		return SiteResource.builder(
+		).authentication(
+			user.getEmailAddress(), user.getPasswordUnencrypted()
+		).endpoint(
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
+		).locale(
+			LocaleUtil.getDefault()
+		).build();
 	}
 
 	private void _testGetSitesPageWithActiveAndInactiveSites()
@@ -473,6 +523,18 @@ public class SiteResourceTest extends BaseSiteResourceTestCase {
 		List<Site> existingItems = (List<Site>)sitesPage.getItems();
 
 		Assert.assertEquals(originalItems, existingItems);
+	}
+
+	private void _testGetSitesPageWithCMSAdministrator() throws Exception {
+		Site site = _testPostSite_addSite(randomSite());
+
+		Page<Site> page = _buildSiteResource(
+			_addUserWithRegularRole(RoleConstants.CMS_ADMINISTRATOR)
+		).getSitesPage(
+			null, null, Pagination.of(1, 500)
+		);
+
+		assertContains(site, (List<Site>)page.getItems());
 	}
 
 	private void _testGetSitesPageWithDepotEntry() throws Exception {
@@ -580,6 +642,53 @@ public class SiteResourceTest extends BaseSiteResourceTestCase {
 		Assert.assertEquals(items.toString(), 1, items.size());
 
 		assertEquals(postSite, items.get(0));
+	}
+
+	private void _testGetSitesPageWithSpaceAdministrator() throws Exception {
+		Site site = _testPostSite_addSite(randomSite());
+
+		Page<Site> page = _buildSiteResource(
+			_addUserWithSpaceRole(
+				CMSTestUtil.addSpaceDepotEntry(),
+				DepotRolesConstants.ASSET_LIBRARY_ADMINISTRATOR)
+		).getSitesPage(
+			null, null, Pagination.of(1, 500)
+		);
+
+		assertContains(site, (List<Site>)page.getItems());
+	}
+
+	private void _testGetSitesPageWithSpaceMember() throws Exception {
+		SiteResource siteResource = _buildSiteResource(
+			_addUserWithSpaceRole(
+				CMSTestUtil.addSpaceDepotEntry(),
+				DepotRolesConstants.ASSET_LIBRARY_MEMBER));
+
+		long initialTotalCount = siteResource.getSitesPage(
+			null, null, Pagination.of(1, 1)
+		).getTotalCount();
+
+		_testPostSite_addSite(randomSite());
+
+		Assert.assertEquals(
+			initialTotalCount,
+			siteResource.getSitesPage(
+				null, null, Pagination.of(1, 1)
+			).getTotalCount());
+	}
+
+	private void _testGetSitesPageWithSpaceOwner() throws Exception {
+		Site site = _testPostSite_addSite(randomSite());
+
+		Page<Site> page = _buildSiteResource(
+			_addUserWithSpaceRole(
+				CMSTestUtil.addSpaceDepotEntry(),
+				DepotRolesConstants.ASSET_LIBRARY_OWNER)
+		).getSitesPage(
+			null, null, Pagination.of(1, 500)
+		);
+
+		assertContains(site, (List<Site>)page.getItems());
 	}
 
 	private void _testGetSiteWithDollar() throws Exception {
@@ -1642,7 +1751,14 @@ public class SiteResourceTest extends BaseSiteResourceTestCase {
 	private LayoutSetPrototypeLocalService _layoutSetPrototypeLocalService;
 
 	private String _originalName;
+
+	@Inject
+	private RoleLocalService _roleLocalService;
+
 	private final List<Site> _sites = new ArrayList<>();
+
+	@Inject
+	private UserGroupRoleLocalService _userGroupRoleLocalService;
 
 	@Inject
 	private UserLocalService _userLocalService;

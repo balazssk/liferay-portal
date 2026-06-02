@@ -6,20 +6,37 @@
 package com.liferay.headless.admin.site.resource.v1_0.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.depot.constants.DepotRolesConstants;
+import com.liferay.depot.model.DepotEntry;
 import com.liferay.headless.admin.site.client.dto.v1_0.SiteTemplate;
+import com.liferay.headless.admin.site.client.pagination.Page;
+import com.liferay.headless.admin.site.client.pagination.Pagination;
+import com.liferay.headless.admin.site.client.resource.v1_0.SiteTemplateResource;
+import com.liferay.portal.kernel.model.Role;
+import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.service.LayoutSetPrototypeLocalService;
+import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.UserGroupRoleLocalService;
+import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.test.rule.Inject;
+import com.liferay.site.cms.site.initializer.test.util.CMSTestUtil;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.junit.Assert;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
@@ -27,6 +44,17 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class SiteTemplateResourceTest extends BaseSiteTemplateResourceTestCase {
+
+	@Override
+	@Test
+	public void testGetSiteTemplatesPage() throws Exception {
+		super.testGetSiteTemplatesPage();
+
+		_testGetSiteTemplatesPageWithCMSAdministrator();
+		_testGetSiteTemplatesPageWithSpaceAdministrator();
+		_testGetSiteTemplatesPageWithSpaceMember();
+		_testGetSiteTemplatesPageWithSpaceOwner();
+	}
 
 	@Override
 	protected SiteTemplate randomSiteTemplate() throws Exception {
@@ -81,7 +109,122 @@ public class SiteTemplateResourceTest extends BaseSiteTemplateResourceTestCase {
 		return siteTemplate;
 	}
 
+	private User _addUserWithRegularRole(String roleName) throws Exception {
+		User user = UserTestUtil.addUser(
+			testCompany, RandomTestUtil.randomString());
+
+		Role role = _roleLocalService.getRole(
+			testCompany.getCompanyId(), roleName);
+
+		_userLocalService.addRoleUser(role.getRoleId(), user.getUserId());
+
+		return user;
+	}
+
+	private User _addUserWithSpaceRole(DepotEntry depotEntry, String roleName)
+		throws Exception {
+
+		User user = UserTestUtil.addUser(
+			testCompany, RandomTestUtil.randomString());
+
+		Role role = _roleLocalService.getRole(
+			testCompany.getCompanyId(), roleName);
+
+		_userGroupRoleLocalService.addUserGroupRoles(
+			user.getUserId(), depotEntry.getGroupId(),
+			new long[] {role.getRoleId()});
+
+		return user;
+	}
+
+	private SiteTemplateResource _buildSiteTemplateResource(User user) {
+		return SiteTemplateResource.builder(
+		).authentication(
+			user.getEmailAddress(), user.getPasswordUnencrypted()
+		).endpoint(
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
+		).locale(
+			LocaleUtil.getDefault()
+		).build();
+	}
+
+	private void _testGetSiteTemplatesPageWithCMSAdministrator()
+		throws Exception {
+
+		SiteTemplate siteTemplate = testGetSiteTemplatesPage_addSiteTemplate(
+			randomSiteTemplate());
+
+		Page<SiteTemplate> page = _buildSiteTemplateResource(
+			_addUserWithRegularRole(RoleConstants.CMS_ADMINISTRATOR)
+		).getSiteTemplatesPage(
+			null, Pagination.of(1, 500)
+		);
+
+		assertContains(siteTemplate, (List<SiteTemplate>)page.getItems());
+	}
+
+	private void _testGetSiteTemplatesPageWithSpaceAdministrator()
+		throws Exception {
+
+		SiteTemplate siteTemplate = testGetSiteTemplatesPage_addSiteTemplate(
+			randomSiteTemplate());
+
+		Page<SiteTemplate> page = _buildSiteTemplateResource(
+			_addUserWithSpaceRole(
+				CMSTestUtil.addSpaceDepotEntry(),
+				DepotRolesConstants.ASSET_LIBRARY_ADMINISTRATOR)
+		).getSiteTemplatesPage(
+			null, Pagination.of(1, 500)
+		);
+
+		assertContains(siteTemplate, (List<SiteTemplate>)page.getItems());
+	}
+
+	private void _testGetSiteTemplatesPageWithSpaceMember() throws Exception {
+		testGetSiteTemplatesPage_addSiteTemplate(randomSiteTemplate());
+
+		Page<SiteTemplate> page = _buildSiteTemplateResource(
+			_addUserWithSpaceRole(
+				CMSTestUtil.addSpaceDepotEntry(),
+				DepotRolesConstants.ASSET_LIBRARY_MEMBER)
+		).getSiteTemplatesPage(
+			null, Pagination.of(1, 500)
+		);
+
+		Assert.assertEquals(
+			page.getItems(
+			).toString(),
+			0,
+			page.getItems(
+			).size());
+	}
+
+	private void _testGetSiteTemplatesPageWithSpaceOwner() throws Exception {
+		SiteTemplate siteTemplate = testGetSiteTemplatesPage_addSiteTemplate(
+			randomSiteTemplate());
+
+		Page<SiteTemplate> page = _buildSiteTemplateResource(
+			_addUserWithSpaceRole(
+				CMSTestUtil.addSpaceDepotEntry(),
+				DepotRolesConstants.ASSET_LIBRARY_OWNER)
+		).getSiteTemplatesPage(
+			null, Pagination.of(1, 500)
+		);
+
+		assertContains(siteTemplate, (List<SiteTemplate>)page.getItems());
+	}
+
 	@Inject
 	private LayoutSetPrototypeLocalService _layoutSetPrototypeLocalService;
+
+	@Inject
+	private RoleLocalService _roleLocalService;
+
+	@Inject
+	private UserGroupRoleLocalService _userGroupRoleLocalService;
+
+	@Inject
+	private UserLocalService _userLocalService;
 
 }
