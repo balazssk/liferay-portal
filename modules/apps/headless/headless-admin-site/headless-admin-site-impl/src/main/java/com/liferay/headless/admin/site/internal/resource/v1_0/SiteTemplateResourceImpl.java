@@ -6,9 +6,11 @@
 package com.liferay.headless.admin.site.internal.resource.v1_0;
 
 import com.liferay.headless.admin.site.dto.v1_0.SiteTemplate;
+import com.liferay.headless.admin.site.internal.util.CMSPermissionUtil;
 import com.liferay.headless.admin.site.resource.v1_0.SiteTemplateResource;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.LayoutSetPrototype;
+import com.liferay.portal.kernel.service.LayoutSetPrototypeLocalService;
 import com.liferay.portal.kernel.service.LayoutSetPrototypeService;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Localization;
@@ -35,16 +37,29 @@ public class SiteTemplateResourceImpl extends BaseSiteTemplateResourceImpl {
 			Boolean active, Pagination pagination)
 		throws Exception {
 
+		long companyId = contextCompany.getCompanyId();
+
+		if (CMSPermissionUtil.isSpaceAdmin(
+				companyId, contextUser.getUserId())) {
+
+			return Page.of(
+				transform(
+					_layoutSetPrototypeLocalService.search(
+						companyId, active, pagination.getStartPosition(),
+						pagination.getEndPosition(), null),
+					this::_toSiteTemplate),
+				pagination,
+				_layoutSetPrototypeLocalService.searchCount(companyId, active));
+		}
+
 		return Page.of(
 			transform(
 				_layoutSetPrototypeService.search(
-					contextCompany.getCompanyId(), active,
-					pagination.getStartPosition(), pagination.getEndPosition(),
-					null),
+					companyId, active, pagination.getStartPosition(),
+					pagination.getEndPosition(), null),
 				this::_toSiteTemplate),
 			pagination,
-			_layoutSetPrototypeService.searchCount(
-				contextCompany.getCompanyId(), active));
+			_layoutSetPrototypeService.searchCount(companyId, active));
 	}
 
 	private SiteTemplate _toSiteTemplate(
@@ -95,6 +110,9 @@ public class SiteTemplateResourceImpl extends BaseSiteTemplateResourceImpl {
 			}
 		};
 	}
+
+	@Reference
+	private LayoutSetPrototypeLocalService _layoutSetPrototypeLocalService;
 
 	@Reference
 	private LayoutSetPrototypeService _layoutSetPrototypeService;

@@ -10,6 +10,7 @@ import com.liferay.headless.admin.site.dto.v1_0.AnalyticsConfiguration;
 import com.liferay.headless.admin.site.dto.v1_0.GoogleAnalyticsConfiguration;
 import com.liferay.headless.admin.site.dto.v1_0.RatingsTypes;
 import com.liferay.headless.admin.site.dto.v1_0.Site;
+import com.liferay.headless.admin.site.internal.util.CMSPermissionUtil;
 import com.liferay.headless.admin.site.resource.v1_0.SiteResource;
 import com.liferay.layout.util.LayoutServiceContextHelper;
 import com.liferay.petra.function.UnsafeFunction;
@@ -73,6 +74,7 @@ import java.io.File;
 import java.io.Serializable;
 
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -310,13 +312,14 @@ public class SiteResourceImpl extends BaseSiteResourceImpl {
 			Boolean active, String search, Pagination pagination)
 		throws Exception {
 
+		long companyId = contextCompany.getCompanyId();
+
 		long[] classNameIds = {
 			_portal.getClassNameId(Company.class.getName()),
 			_portal.getClassNameId(Group.class.getName())
 		};
 
-		List<Group> groups = _groupService.search(
-			contextCompany.getCompanyId(), classNameIds, search, null,
+		LinkedHashMap<String, Object> params =
 			LinkedHashMapBuilder.<String, Object>put(
 				"active",
 				() -> {
@@ -328,9 +331,24 @@ public class SiteResourceImpl extends BaseSiteResourceImpl {
 				}
 			).put(
 				"site", true
-			).build(),
-			true, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			new GroupNameComparator());
+			).build();
+
+		List<Group> groups = null;
+
+		if (CMSPermissionUtil.isSpaceAdmin(
+				companyId, contextUser.getUserId())) {
+
+			groups = _groupLocalService.search(
+				companyId, classNameIds, search, null, params, true,
+				QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+				new GroupNameComparator());
+		}
+		else {
+			groups = _groupService.search(
+				companyId, classNameIds, search, null, params, true,
+				QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+				new GroupNameComparator());
+		}
 
 		return Page.of(
 			HashMapBuilder.put(
