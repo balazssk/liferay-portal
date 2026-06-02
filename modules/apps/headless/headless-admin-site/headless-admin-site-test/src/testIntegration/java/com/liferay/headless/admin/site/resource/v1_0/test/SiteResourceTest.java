@@ -32,7 +32,6 @@ import com.liferay.portal.kernel.model.LayoutSetPrototype;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.role.RoleConstants;
-import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.LayoutSetPrototypeLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
@@ -40,6 +39,7 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserGroupRoleLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.test.constants.TestDataConstants;
+import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.HTTPTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -60,6 +60,8 @@ import com.liferay.portal.test.log.LogCapture;
 import com.liferay.portal.test.log.LoggerTestUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LanguageIds;
+import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.site.cms.site.initializer.test.util.CMSTestUtil;
 import com.liferay.site.initializer.SiteInitializer;
 
@@ -74,7 +76,6 @@ import java.util.Map;
 
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -98,18 +99,10 @@ public class SiteResourceTest extends BaseSiteResourceTestCase {
 
 	@ClassRule
 	@Rule
-	public static final LazyReferencingTestRule lazyReferencingTestRule =
-		LazyReferencingTestRule.INSTANCE;
-
-	@Before
-	@Override
-	public void setUp() throws Exception {
-		super.setUp();
-
-		_originalName = PrincipalThreadLocal.getName();
-
-		PrincipalThreadLocal.setName(TestPropsValues.getUserId());
-	}
+	public static final AggregateTestRule aggregateTestRule =
+		new AggregateTestRule(
+			LazyReferencingTestRule.INSTANCE, new LiferayIntegrationTestRule(),
+			PermissionCheckerMethodTestRule.INSTANCE);
 
 	@After
 	@Override
@@ -135,8 +128,6 @@ public class SiteResourceTest extends BaseSiteResourceTestCase {
 
 			_groupLocalService.deleteGroup(group);
 		}
-
-		PrincipalThreadLocal.setName(_originalName);
 	}
 
 	@Override
@@ -1749,8 +1740,6 @@ public class SiteResourceTest extends BaseSiteResourceTestCase {
 
 	@Inject
 	private LayoutSetPrototypeLocalService _layoutSetPrototypeLocalService;
-
-	private String _originalName;
 
 	@Inject
 	private RoleLocalService _roleLocalService;
