@@ -76,8 +76,8 @@ public class StatusStrutsActionTest {
 		String htmlEnd = RandomTestUtil.randomString() + _HTML_END;
 
 		String expected = StringBundler.concat(
-			htmlStart, "\n  <div id=\"content\">\n   ", _STATUS_PAGE_CONTENT,
-			"\n  </div>", htmlEnd);
+			htmlStart, "<div id=\"content\">", _STATUS_PAGE_CONTENT, "</div>",
+			htmlEnd);
 		String html = StringBundler.concat(
 			htmlStart, "<div id=\"content\">", RandomTestUtil.randomString(),
 			"</div>", htmlEnd);
@@ -121,8 +121,8 @@ public class StatusStrutsActionTest {
 
 		_testExecute(
 			StringBundler.concat(
-				htmlStart, "\n  <div id=\"content\">\n   ",
-				_STATUS_PAGE_CONTENT, "\n  </div>", htmlEnd),
+				htmlStart, "<div id=\"content\">", _STATUS_PAGE_CONTENT,
+				"</div>", htmlEnd),
 			StringBundler.concat(
 				htmlStart, "<div id=\"content\">",
 				RandomTestUtil.randomString(), "</div>", htmlEnd));
@@ -213,7 +213,7 @@ public class StatusStrutsActionTest {
 
 				PrintWriter printWriter = pipingServletResponse.getWriter();
 
-				printWriter.println(_STATUS_PAGE_CONTENT);
+				printWriter.print(_STATUS_PAGE_CONTENT);
 
 				return null;
 			}
@@ -263,11 +263,11 @@ public class StatusStrutsActionTest {
 		Assert.assertEquals(expected, argumentCaptor.getValue());
 	}
 
-	private static final String _HTML_END = "\n </body>\n</html>";
+	private static final String _HTML_END = "</body>\n</html>";
 
 	private static final String _HTML_START = StringBundler.concat(
 		"<html>\n <head>\n  <script>var ", RandomTestUtil.randomString(), " = ",
-		RandomTestUtil.randomString(), ";</script>\n </head>\n <body>\n  ");
+		RandomTestUtil.randomString(), ";</script>\n </head>\n <body>");
 
 	private static final String _STATUS_PAGE_CONTENT =
 		RandomTestUtil.randomString();
