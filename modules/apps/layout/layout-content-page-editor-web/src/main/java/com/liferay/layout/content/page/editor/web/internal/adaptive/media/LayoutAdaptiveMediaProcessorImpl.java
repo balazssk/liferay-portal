@@ -57,7 +57,7 @@ public class LayoutAdaptiveMediaProcessorImpl
 			return processedContent;
 		}
 
-		Document document = Jsoup.parse(processedContent);
+		Document document = _getDocument(processedContent);
 
 		try {
 			for (Map.Entry<ViewportSize, String> entry :
@@ -154,6 +154,18 @@ public class LayoutAdaptiveMediaProcessorImpl
 		sourceElement.attr("srcset", uri.toString());
 
 		parentElement.prependChild(sourceElement);
+	}
+
+	private Document _getDocument(String html) {
+		Document document = Jsoup.parse(html);
+
+		Document.OutputSettings outputSettings = new Document.OutputSettings();
+
+		outputSettings.prettyPrint(false);
+
+		document.outputSettings(outputSettings);
+
+		return document;
 	}
 
 	private String _getMediaQuery(String elementId, long fileEntryId)

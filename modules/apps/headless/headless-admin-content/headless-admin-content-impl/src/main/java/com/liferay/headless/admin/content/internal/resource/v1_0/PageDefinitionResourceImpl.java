@@ -185,7 +185,7 @@ public class PageDefinitionResourceImpl extends BasePageDefinitionResourceImpl {
 
 		LayoutSet layoutSet = layout.getLayoutSet();
 
-		Document document = Jsoup.parse(
+		Document document = _getDocument(
 			ThemeUtil.include(
 				ServletContextPool.get(StringPool.BLANK),
 				contextHttpServletRequest, contextHttpServletResponse,
@@ -200,6 +200,18 @@ public class PageDefinitionResourceImpl extends BasePageDefinitionResourceImpl {
 		return Response.ok(
 			document.html()
 		).build();
+	}
+
+	private Document _getDocument(String html) {
+		Document document = Jsoup.parse(html);
+
+		Document.OutputSettings outputSettings = new Document.OutputSettings();
+
+		outputSettings.prettyPrint(false);
+
+		document.outputSettings(outputSettings);
+
+		return document;
 	}
 
 	private ThemeDisplay _getThemeDisplay(Layout layout) throws Exception {

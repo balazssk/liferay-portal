@@ -168,7 +168,7 @@ public class DisplayPageRendererUtil {
 
 		LayoutSet layoutSet = layout.getLayoutSet();
 
-		Document document = Jsoup.parse(
+		Document document = _getDocument(
 			ThemeUtil.include(
 				ServletContextPool.get(StringPool.BLANK), httpServletRequest,
 				httpServletResponse, "portal_normal.ftl", layoutSet.getTheme(),
@@ -179,6 +179,18 @@ public class DisplayPageRendererUtil {
 		bodyElement.html(sb.toString());
 
 		return document.html();
+	}
+
+	private static Document _getDocument(String html) {
+		Document document = Jsoup.parse(html);
+
+		Document.OutputSettings outputSettings = new Document.OutputSettings();
+
+		outputSettings.prettyPrint(false);
+
+		document.outputSettings(outputSettings);
+
+		return document;
 	}
 
 	private static LayoutDisplayPageObjectProvider<?>

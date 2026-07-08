@@ -100,7 +100,7 @@ public class RenderFragmentEntryStrutsAction implements StrutsAction {
 			return null;
 		}
 
-		Document document = Jsoup.parse(content);
+		Document document = _getDocument(content);
 
 		Element bodyElement = document.body();
 
@@ -116,6 +116,18 @@ public class RenderFragmentEntryStrutsAction implements StrutsAction {
 				SessionMessages.KEY_SUFFIX_HIDE_DEFAULT_SUCCESS_MESSAGE);
 
 		return null;
+	}
+
+	private Document _getDocument(String html) {
+		Document document = Jsoup.parse(html);
+
+		Document.OutputSettings outputSettings = new Document.OutputSettings();
+
+		outputSettings.prettyPrint(false);
+
+		document.outputSettings(outputSettings);
+
+		return document;
 	}
 
 	@Reference

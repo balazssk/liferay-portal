@@ -181,7 +181,7 @@ public class GetPagePreviewStrutsAction implements StrutsAction {
 			layout.includeLayoutContent(
 				httpServletRequest, httpServletResponse);
 
-			Document document = Jsoup.parse(
+			Document document = _getDocument(
 				ThemeUtil.include(
 					ServletContextPool.get(_portal.getServletContextName()),
 					httpServletRequest, httpServletResponse,
@@ -293,6 +293,18 @@ public class GetPagePreviewStrutsAction implements StrutsAction {
 		return _layoutLocalService.fetchLayoutByUuidAndGroupId(
 			layout.getUuid(), stagingGroup.getGroupId(),
 			layout.isPrivateLayout());
+	}
+
+	private Document _getDocument(String html) {
+		Document document = Jsoup.parse(html);
+
+		Document.OutputSettings outputSettings = new Document.OutputSettings();
+
+		outputSettings.prettyPrint(false);
+
+		document.outputSettings(outputSettings);
+
+		return document;
 	}
 
 	private void _includeInfoItemObjects(

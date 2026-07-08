@@ -82,7 +82,7 @@ public class StatusStrutsAction implements StrutsAction {
 		try {
 			PrincipalThreadLocal.setName(themeDisplay.getUserId());
 
-			document = Jsoup.parse(
+			document = _getDocument(
 				ThemeUtil.include(
 					httpServletRequest.getServletContext(), httpServletRequest,
 					httpServletResponse, "portal_normal.ftl",
@@ -113,6 +113,18 @@ public class StatusStrutsAction implements StrutsAction {
 		ServletResponseUtil.write(httpServletResponse, document.html());
 
 		return null;
+	}
+
+	private Document _getDocument(String html) {
+		Document document = Jsoup.parse(html);
+
+		Document.OutputSettings outputSettings = new Document.OutputSettings();
+
+		outputSettings.prettyPrint(false);
+
+		document.outputSettings(outputSettings);
+
+		return document;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

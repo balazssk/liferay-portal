@@ -549,6 +549,18 @@ public class SitePageResourceImpl
 		).build();
 	}
 
+	private Document _getDocument(String html) {
+		Document document = Jsoup.parse(html);
+
+		Document.OutputSettings outputSettings = new Document.OutputSettings();
+
+		outputSettings.prettyPrint(false);
+
+		document.outputSettings(outputSettings);
+
+		return document;
+	}
+
 	private Map<String, Map<String, String>> _getExperienceActions(
 		Layout layout) {
 
@@ -790,7 +802,7 @@ public class SitePageResourceImpl
 
 			LayoutSet layoutSet = layout.getLayoutSet();
 
-			Document document = Jsoup.parse(
+			Document document = _getDocument(
 				ThemeUtil.include(
 					ServletContextPool.get(StringPool.BLANK),
 					httpServletRequest, contextHttpServletResponse,
