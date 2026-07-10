@@ -33,8 +33,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -113,24 +111,36 @@ public class PortletRegistryImpl implements PortletRegistry {
 			portletIds.add(_portal.getJsSafePortletId(portletId));
 		}
 
-		Matcher liferayPortletRuntimeMatcher =
-			_liferayPortletRuntimePattern.matcher(fragmentEntryLink.getHtml());
+		int index = html.indexOf(_LIFERAY_PORTLET_MACRO);
 
-		while (liferayPortletRuntimeMatcher.find()) {
-			String portletName = _getAttributeValue(
-				"portletName", liferayPortletRuntimeMatcher.group(2));
+		while (index != -1) {
+			int contentIndex = index + _LIFERAY_PORTLET_MACRO.length();
+
+			if (!html.startsWith(".runtime", contentIndex) &&
+				!html.startsWith("[\"runtime\"]", contentIndex)) {
+
+				index = html.indexOf(_LIFERAY_PORTLET_MACRO, index + 1);
+
+				continue;
+			}
+
+			int endIndex = html.indexOf("/]", contentIndex);
+
+			if (endIndex == -1) {
+				break;
+			}
+
+			String macro = html.substring(index, endIndex);
+
+			index = html.indexOf(_LIFERAY_PORTLET_MACRO, endIndex);
+
+			String portletName = _getAttributeValue("portletName", macro);
 
 			if (Validator.isNull(portletName)) {
 				continue;
 			}
 
-			String instanceId = _getAttributeValue(
-				"instanceId", liferayPortletRuntimeMatcher.group(1));
-
-			if (Validator.isNull(instanceId)) {
-				instanceId = _getAttributeValue(
-					"instanceId", liferayPortletRuntimeMatcher.group(3));
-			}
+			String instanceId = _getAttributeValue("instanceId", macro);
 
 			String portletId = PortletIdCodec.encode(
 				PortletIdCodec.decodePortletName(portletName),
@@ -254,13 +264,10 @@ public class PortletRegistryImpl implements PortletRegistry {
 		return document;
 	}
 
+	private static final String _LIFERAY_PORTLET_MACRO = "[@liferay_portlet";
+
 	private static final Log _log = LogFactoryUtil.getLog(
 		PortletRegistryImpl.class);
-
-	private static final Pattern _liferayPortletRuntimePattern =
-		Pattern.compile(
-			"\\[@liferay_portlet(?=\\.runtime|\\[\"runtime\"\\])([\\s\\S]*)?" +
-				"(portletName=\"\\w+\")([\\s\\S]*)?\\/\\]");
 
 	private final Map<String, String> _aliasPortletNames =
 		new ConcurrentHashMap<>();
