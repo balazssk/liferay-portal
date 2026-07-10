@@ -195,6 +195,40 @@ public class PortletRegistryImplTest {
 	}
 
 	@Test
+	public void testGetFragmentEntryLinkPortletIdsMultipleFreeMarkerRuntimeTags() {
+		String instanceId1 = RandomTestUtil.randomString();
+		String instanceId2 = RandomTestUtil.randomString();
+		String instanceId3 = RandomTestUtil.randomString();
+		String portletName1 = RandomTestUtil.randomString();
+		String portletName2 = RandomTestUtil.randomString();
+		String portletName3 = RandomTestUtil.randomString();
+
+		_assertGetFragmentEntryLinkPortletIds(
+			_getFragmentEntryLink(
+				StringBundler.concat(
+					"<div class=\"fragment_1\">", RandomTestUtil.randomString(),
+					"[@liferay_portlet.runtime\n\tinstanceId=\"", instanceId1,
+					"\"\n\tportletName=\"", portletName1, "\"\n/]",
+					RandomTestUtil.randomString(),
+					"[@liferay_portlet.runtime instanceId=\"", instanceId2,
+					"\" portletName=\"", portletName2, "\" /]",
+					RandomTestUtil.randomString(),
+					"[@liferay_portlet[\"runtime\"] instanceId=\"", instanceId3,
+					"\" portletName=\"", portletName3, "\" /]",
+					RandomTestUtil.randomString(), "</div>"),
+				RandomTestUtil.randomString()),
+			PortletIdCodec.encode(
+				PortletIdCodec.decodePortletName(portletName1),
+				PortletIdCodec.decodeUserId(portletName1), instanceId1),
+			PortletIdCodec.encode(
+				PortletIdCodec.decodePortletName(portletName2),
+				PortletIdCodec.decodeUserId(portletName2), instanceId2),
+			PortletIdCodec.encode(
+				PortletIdCodec.decodePortletName(portletName3),
+				PortletIdCodec.decodeUserId(portletName3), instanceId3));
+	}
+
+	@Test
 	public void testGetFragmentEntryLinkPortletIdsTypePortlet() {
 		String instanceId = RandomTestUtil.randomString();
 
