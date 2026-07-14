@@ -78,79 +78,8 @@ public class PortletRegistryImpl implements PortletRegistry {
 
 		String html = fragmentEntryLink.getHtml();
 
-		if (!html.contains("@liferay_portlet") &&
-			!html.contains("lfr-widget-")) {
-
-			return portletIds;
-		}
-
-		if (document == null) {
-			document = _getDocument(html);
-		}
-
-		for (Element element : document.select("*")) {
-			String tagName = element.tagName();
-
-			if (!StringUtil.startsWith(tagName, "lfr-widget-")) {
-				continue;
-			}
-
-			String alias = StringUtil.removeSubstring(tagName, "lfr-widget-");
-
-			String portletName = getPortletName(alias);
-
-			if (Validator.isNull(portletName)) {
-				continue;
-			}
-
-			String portletId = PortletIdCodec.encode(
-				PortletIdCodec.decodePortletName(portletName),
-				PortletIdCodec.decodeUserId(portletName),
-				fragmentEntryLink.getNamespace() + element.attr("id"));
-
-			portletIds.add(_portal.getJsSafePortletId(portletId));
-		}
-
-		int index = html.indexOf(_LIFERAY_PORTLET_MACRO);
-
-		while (index != -1) {
-			int contentIndex = index + _LIFERAY_PORTLET_MACRO.length();
-
-			if (!html.startsWith(".runtime", contentIndex) &&
-				!html.startsWith("[\"runtime\"]", contentIndex)) {
-
-				index = html.indexOf(_LIFERAY_PORTLET_MACRO, index + 1);
-
-				continue;
-			}
-
-			int endIndex = html.indexOf("/]", contentIndex);
-
-			if (endIndex == -1) {
-				break;
-			}
-
-			String macro = html.substring(index, endIndex);
-
-			index = html.indexOf(_LIFERAY_PORTLET_MACRO, endIndex);
-
-			String portletName = _getAttributeValue("portletName", macro);
-
-			if (Validator.isNull(portletName)) {
-				continue;
-			}
-
-			String instanceId = _getAttributeValue("instanceId", macro);
-
-			String portletId = PortletIdCodec.encode(
-				PortletIdCodec.decodePortletName(portletName),
-				PortletIdCodec.decodeUserId(portletName),
-				StringUtil.replace(
-					instanceId, "fragmentEntryLinkNamespace",
-					fragmentEntryLink.getNamespace()));
-
-			portletIds.add(_portal.getJsSafePortletId(portletId));
-		}
+		_addRuntimeTagPortletIds(fragmentEntryLink, html, portletIds);
+		_addWidgetTagPortletIds(document, fragmentEntryLink, html, portletIds);
 
 		return portletIds;
 	}
@@ -228,6 +157,88 @@ public class PortletRegistryImpl implements PortletRegistry {
 					"Unable to write portlet paths " + portlet.getPortletId(),
 					exception);
 			}
+		}
+	}
+
+	private void _addRuntimeTagPortletIds(
+		FragmentEntryLink fragmentEntryLink, String html,
+		List<String> portletIds) {
+
+		int index = html.indexOf(_LIFERAY_PORTLET_MACRO);
+
+		while (index != -1) {
+			int contentIndex = index + _LIFERAY_PORTLET_MACRO.length();
+
+			if (!html.startsWith(".runtime", contentIndex) &&
+				!html.startsWith("[\"runtime\"]", contentIndex)) {
+
+				index = html.indexOf(_LIFERAY_PORTLET_MACRO, index + 1);
+
+				continue;
+			}
+
+			int endIndex = html.indexOf("/]", contentIndex);
+
+			if (endIndex == -1) {
+				break;
+			}
+
+			String macro = html.substring(index, endIndex);
+
+			index = html.indexOf(_LIFERAY_PORTLET_MACRO, endIndex);
+
+			String portletName = _getAttributeValue("portletName", macro);
+
+			if (Validator.isNull(portletName)) {
+				continue;
+			}
+
+			String instanceId = _getAttributeValue("instanceId", macro);
+
+			String portletId = PortletIdCodec.encode(
+				PortletIdCodec.decodePortletName(portletName),
+				PortletIdCodec.decodeUserId(portletName),
+				StringUtil.replace(
+					instanceId, "fragmentEntryLinkNamespace",
+					fragmentEntryLink.getNamespace()));
+
+			portletIds.add(_portal.getJsSafePortletId(portletId));
+		}
+	}
+
+	private void _addWidgetTagPortletIds(
+		Document document, FragmentEntryLink fragmentEntryLink, String html,
+		List<String> portletIds) {
+
+		if (!html.contains("lfr-widget-")) {
+			return;
+		}
+
+		if (document == null) {
+			document = _getDocument(html);
+		}
+
+		for (Element element : document.select("*")) {
+			String tagName = element.tagName();
+
+			if (!StringUtil.startsWith(tagName, "lfr-widget-")) {
+				continue;
+			}
+
+			String alias = StringUtil.removeSubstring(tagName, "lfr-widget-");
+
+			String portletName = getPortletName(alias);
+
+			if (Validator.isNull(portletName)) {
+				continue;
+			}
+
+			String portletId = PortletIdCodec.encode(
+				PortletIdCodec.decodePortletName(portletName),
+				PortletIdCodec.decodeUserId(portletName),
+				fragmentEntryLink.getNamespace() + element.attr("id"));
+
+			portletIds.add(_portal.getJsSafePortletId(portletId));
 		}
 	}
 
