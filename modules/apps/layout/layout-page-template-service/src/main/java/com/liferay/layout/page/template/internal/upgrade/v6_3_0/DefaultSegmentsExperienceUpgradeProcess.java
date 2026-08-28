@@ -1,0 +1,315 @@
+/**
+ * SPDX-FileCopyrightText: (c) 2026 Liferay, Inc. https://liferay.com
+ * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
+ */
+
+package com.liferay.layout.page.template.internal.upgrade.v6_3_0;
+
+import com.liferay.petra.lang.SafeCloseable;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.change.tracking.CTCollectionThreadLocal;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.LayoutConstants;
+import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.UserLocalService;
+import com.liferay.portal.kernel.upgrade.UpgradeProcess;
+import com.liferay.portal.kernel.util.LocaleThreadLocal;
+import com.liferay.portal.kernel.util.Portal;
+import com.liferay.segments.constants.SegmentsExperienceConstants;
+import com.liferay.segments.model.SegmentsExperience;
+import com.liferay.segments.service.SegmentsExperienceLocalService;
+
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
+
+/**
+ * @author Balázs Sáfrány-Kovalik
+ */
+public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
+
+	public DefaultSegmentsExperienceUpgradeProcess(
+		Portal portal,
+		SegmentsExperienceLocalService segmentsExperienceLocalService,
+		UserLocalService userLocalService) {
+
+		_portal = portal;
+		_segmentsExperienceLocalService = segmentsExperienceLocalService;
+		_userLocalService = userLocalService;
+	}
+
+	@Override
+	protected void doUpgrade() throws Exception {
+		try (PreparedStatement preparedStatement = connection.prepareStatement(
+				StringBundler.concat(
+					"select ctCollectionId, plid, groupId, companyId, userId, ",
+					"externalReferenceCode from Layout where type_ = ? or ",
+					"type_ = ? or type_ = ?"))) {
+
+			preparedStatement.setString(1, LayoutConstants.TYPE_CONTENT);
+			preparedStatement.setString(2, LayoutConstants.TYPE_ASSET_DISPLAY);
+			preparedStatement.setString(3, LayoutConstants.TYPE_UTILITY);
+
+			try (ResultSet resultSet = preparedStatement.executeQuery()) {
+				while (resultSet.next()) {
+					long ctCollectionId = resultSet.getLong("ctCollectionId");
+
+					try (SafeCloseable safeCloseable =
+							CTCollectionThreadLocal.
+								setCTCollectionIdWithSafeCloseable(
+									ctCollectionId)) {
+
+						_updateOrphanedSegmentsExperienceIds(
+							resultSet.getLong("companyId"), ctCollectionId,
+							resultSet.getString("externalReferenceCode"),
+							resultSet.getLong("groupId"),
+							resultSet.getLong("plid"),
+							resultSet.getLong("userId"));
+					}
+				}
+			}
+		}
+	}
+
+	private Set<Long> _getFragmentEntryLinkSegmentsExperienceIds(
+			long ctCollectionId, long plid)
+		throws Exception {
+
+		Set<Long> segmentsExperienceIds = new HashSet<>();
+
+		try (PreparedStatement preparedStatement = connection.prepareStatement(
+				StringBundler.concat(
+					"select distinct FragmentEntryLink.segmentsExperienceId ",
+					"from FragmentEntryLink where ",
+					"FragmentEntryLink.ctCollectionId = ? and ",
+					"FragmentEntryLink.plid = ? and ",
+					"FragmentEntryLink.segmentsExperienceId > 0 and not ",
+					"exists (select 1 from SegmentsExperience where ",
+					"SegmentsExperience.segmentsExperienceId = ",
+					"FragmentEntryLink.segmentsExperienceId and ",
+					"SegmentsExperience.plid = FragmentEntryLink.plid and ",
+					"SegmentsExperience.ctCollectionId in (0, ?))"))) {
+
+			preparedStatement.setLong(1, ctCollectionId);
+			preparedStatement.setLong(2, plid);
+			preparedStatement.setLong(3, ctCollectionId);
+
+			try (ResultSet resultSet = preparedStatement.executeQuery()) {
+				while (resultSet.next()) {
+					segmentsExperienceIds.add(
+						resultSet.getLong("segmentsExperienceId"));
+				}
+			}
+		}
+
+		return segmentsExperienceIds;
+	}
+
+	private long _getLayoutPageTemplateStructureId(
+			long ctCollectionId, long plid)
+		throws Exception {
+
+		try (PreparedStatement preparedStatement = connection.prepareStatement(
+				StringBundler.concat(
+					"select layoutPageTemplateStructureId from ",
+					"LayoutPageTemplateStructure where ctCollectionId = ? and ",
+					"plid = ?"))) {
+
+			preparedStatement.setLong(1, ctCollectionId);
+			preparedStatement.setLong(2, plid);
+
+			try (ResultSet resultSet = preparedStatement.executeQuery()) {
+				if (resultSet.next()) {
+					return resultSet.getLong("layoutPageTemplateStructureId");
+				}
+			}
+		}
+
+		return 0;
+	}
+
+	private Set<Long> _getLayoutPageTemplateStructureRelSegmentsExperienceIds(
+			long ctCollectionId, long layoutPageTemplateStructureId, long plid)
+		throws Exception {
+
+		Set<Long> segmentsExperienceIds = new HashSet<>();
+
+		try (PreparedStatement preparedStatement = connection.prepareStatement(
+				StringBundler.concat(
+					"select distinct ",
+					"LayoutPageTemplateStructureRel.segmentsExperienceId from ",
+					"LayoutPageTemplateStructureRel where ",
+					"LayoutPageTemplateStructureRel.ctCollectionId = ? and ",
+					"LayoutPageTemplateStructureRel.",
+					"layoutPageTemplateStructureId = ? and ",
+					"LayoutPageTemplateStructureRel.segmentsExperienceId > 0 ",
+					"and not exists (select 1 from SegmentsExperience where ",
+					"SegmentsExperience.segmentsExperienceId = ",
+					"LayoutPageTemplateStructureRel.segmentsExperienceId and ",
+					"SegmentsExperience.plid = ? and ",
+					"SegmentsExperience.ctCollectionId in (0, ?))"))) {
+
+			preparedStatement.setLong(1, ctCollectionId);
+			preparedStatement.setLong(2, layoutPageTemplateStructureId);
+			preparedStatement.setLong(3, plid);
+			preparedStatement.setLong(4, ctCollectionId);
+
+			try (ResultSet resultSet = preparedStatement.executeQuery()) {
+				while (resultSet.next()) {
+					segmentsExperienceIds.add(
+						resultSet.getLong("segmentsExperienceId"));
+				}
+			}
+		}
+
+		return segmentsExperienceIds;
+	}
+
+	private long _getUserId(long companyId, long userId) throws Exception {
+		User user = _userLocalService.fetchUser(userId);
+
+		if (user == null) {
+			return _userLocalService.getGuestUserId(companyId);
+		}
+
+		return userId;
+	}
+
+	private void _updateFragmentEntryLinks(
+			long ctCollectionId, long defaultSegmentsExperienceId,
+			long orphanedSegmentsExperienceId, long plid)
+		throws Exception {
+
+		try (PreparedStatement preparedStatement = connection.prepareStatement(
+				StringBundler.concat(
+					"update FragmentEntryLink set segmentsExperienceId = ? ",
+					"where ctCollectionId = ? and plid = ? and ",
+					"segmentsExperienceId = ?"))) {
+
+			preparedStatement.setLong(1, defaultSegmentsExperienceId);
+			preparedStatement.setLong(2, ctCollectionId);
+			preparedStatement.setLong(3, plid);
+			preparedStatement.setLong(4, orphanedSegmentsExperienceId);
+
+			preparedStatement.executeUpdate();
+		}
+	}
+
+	private void _updateLayoutPageTemplateStructureRels(
+			long ctCollectionId, long defaultSegmentsExperienceId,
+			long layoutPageTemplateStructureId,
+			long orphanedSegmentsExperienceId)
+		throws Exception {
+
+		try (PreparedStatement preparedStatement = connection.prepareStatement(
+				StringBundler.concat(
+					"update LayoutPageTemplateStructureRel set ",
+					"segmentsExperienceId = ? where ctCollectionId = ? and ",
+					"layoutPageTemplateStructureId = ? and ",
+					"segmentsExperienceId = ?"))) {
+
+			preparedStatement.setLong(1, defaultSegmentsExperienceId);
+			preparedStatement.setLong(2, ctCollectionId);
+			preparedStatement.setLong(3, layoutPageTemplateStructureId);
+			preparedStatement.setLong(4, orphanedSegmentsExperienceId);
+
+			preparedStatement.executeUpdate();
+		}
+	}
+
+	private void _updateOrphanedSegmentsExperienceIds(
+			long companyId, long ctCollectionId, String externalReferenceCode,
+			long groupId, long plid, long userId)
+		throws Exception {
+
+		long defaultSegmentsExperienceId =
+			_segmentsExperienceLocalService.fetchDefaultSegmentsExperienceId(
+				plid);
+
+		long layoutPageTemplateStructureId = _getLayoutPageTemplateStructureId(
+			ctCollectionId, plid);
+
+		Set<Long> orphanedSegmentsExperienceIds =
+			_getFragmentEntryLinkSegmentsExperienceIds(ctCollectionId, plid);
+
+		if (layoutPageTemplateStructureId > 0) {
+			orphanedSegmentsExperienceIds.addAll(
+				_getLayoutPageTemplateStructureRelSegmentsExperienceIds(
+					ctCollectionId, layoutPageTemplateStructureId, plid));
+		}
+
+		if ((defaultSegmentsExperienceId !=
+				SegmentsExperienceConstants.ID_DEFAULT) &&
+			orphanedSegmentsExperienceIds.isEmpty()) {
+
+			return;
+		}
+
+		if (orphanedSegmentsExperienceIds.size() > 1) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					StringBundler.concat(
+						"Skipping layout ", plid, " because it references ",
+						orphanedSegmentsExperienceIds.size(),
+						" orphaned segments experiences"));
+			}
+
+			return;
+		}
+
+		if (defaultSegmentsExperienceId ==
+				SegmentsExperienceConstants.ID_DEFAULT) {
+
+			Locale siteDefaultLocale = LocaleThreadLocal.getSiteDefaultLocale();
+
+			try {
+				LocaleThreadLocal.setSiteDefaultLocale(
+					_portal.getSiteDefaultLocale(groupId));
+
+				SegmentsExperience segmentsExperience =
+					_segmentsExperienceLocalService.
+						addDefaultSegmentsExperience(
+							externalReferenceCode +
+								LayoutConstants.
+									EXTERNAL_REFERENCE_CODE_SUFFIX_DEFAULT,
+							_getUserId(companyId, userId), plid,
+							new ServiceContext());
+
+				defaultSegmentsExperienceId =
+					segmentsExperience.getSegmentsExperienceId();
+			}
+			finally {
+				LocaleThreadLocal.setSiteDefaultLocale(siteDefaultLocale);
+			}
+		}
+
+		for (long orphanedSegmentsExperienceId :
+				orphanedSegmentsExperienceIds) {
+
+			_updateFragmentEntryLinks(
+				ctCollectionId, defaultSegmentsExperienceId,
+				orphanedSegmentsExperienceId, plid);
+
+			if (layoutPageTemplateStructureId > 0) {
+				_updateLayoutPageTemplateStructureRels(
+					ctCollectionId, defaultSegmentsExperienceId,
+					layoutPageTemplateStructureId,
+					orphanedSegmentsExperienceId);
+			}
+		}
+	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		DefaultSegmentsExperienceUpgradeProcess.class);
+
+	private final Portal _portal;
+	private final SegmentsExperienceLocalService
+		_segmentsExperienceLocalService;
+	private final UserLocalService _userLocalService;
+
+}
