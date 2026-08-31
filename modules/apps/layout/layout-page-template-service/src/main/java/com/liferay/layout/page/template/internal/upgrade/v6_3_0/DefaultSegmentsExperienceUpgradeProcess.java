@@ -116,9 +116,9 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 
 		try (PreparedStatement preparedStatement = connection.prepareStatement(
 				StringBundler.concat(
-					"select layoutPageTemplateStructureId from ",
-					"LayoutPageTemplateStructure where ctCollectionId = ? and ",
-					"plid = ?"))) {
+					"select distinct layoutPageTemplateStructureId from ",
+					"LayoutPageTemplateStructure where ctCollectionId in (0, ",
+					"?) and plid = ?"))) {
 
 			preparedStatement.setLong(1, ctCollectionId);
 			preparedStatement.setLong(2, plid);
