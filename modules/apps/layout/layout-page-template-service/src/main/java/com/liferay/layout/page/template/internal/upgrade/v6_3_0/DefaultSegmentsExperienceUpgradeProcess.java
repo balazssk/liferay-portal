@@ -121,7 +121,7 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 	}
 
 	private Set<Long> _getFragmentEntryLinkSegmentsExperienceIds(
-			long ctCollectionId, long plid)
+			long ctCollectionId, long groupId, long plid)
 		throws Exception {
 
 		Set<Long> segmentsExperienceIds = new HashSet<>();
@@ -129,9 +129,9 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 		try (PreparedStatement preparedStatement = connection.prepareStatement(
 				StringBundler.concat(
 					"select distinct FragmentEntryLink.segmentsExperienceId ",
-					"from FragmentEntryLink where ",
+					"from FragmentEntryLink where FragmentEntryLink.groupId = ",
+					"? and FragmentEntryLink.plid = ? and ",
 					"FragmentEntryLink.ctCollectionId = ? and ",
-					"FragmentEntryLink.plid = ? and ",
 					"FragmentEntryLink.segmentsExperienceId > 0 and not ",
 					"exists (select 1 from SegmentsExperience where ",
 					"SegmentsExperience.segmentsExperienceId = ",
@@ -139,9 +139,10 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 					"SegmentsExperience.plid = FragmentEntryLink.plid and ",
 					"SegmentsExperience.ctCollectionId in (0, ?))"))) {
 
-			preparedStatement.setLong(1, ctCollectionId);
+			preparedStatement.setLong(1, groupId);
 			preparedStatement.setLong(2, plid);
 			preparedStatement.setLong(3, ctCollectionId);
+			preparedStatement.setLong(4, ctCollectionId);
 
 			try (ResultSet resultSet = preparedStatement.executeQuery()) {
 				while (resultSet.next()) {
@@ -225,20 +226,21 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 	}
 
 	private void _updateFragmentEntryLinks(
-			long ctCollectionId, long defaultSegmentsExperienceId,
+			long ctCollectionId, long defaultSegmentsExperienceId, long groupId,
 			long orphanedSegmentsExperienceId, long plid)
 		throws Exception {
 
 		try (PreparedStatement preparedStatement = connection.prepareStatement(
 				StringBundler.concat(
 					"update FragmentEntryLink set segmentsExperienceId = ? ",
-					"where ctCollectionId = ? and plid = ? and ",
-					"segmentsExperienceId = ?"))) {
+					"where groupId = ? and plid = ? and ctCollectionId = ? ",
+					"and segmentsExperienceId = ?"))) {
 
 			preparedStatement.setLong(1, defaultSegmentsExperienceId);
-			preparedStatement.setLong(2, ctCollectionId);
+			preparedStatement.setLong(2, groupId);
 			preparedStatement.setLong(3, plid);
-			preparedStatement.setLong(4, orphanedSegmentsExperienceId);
+			preparedStatement.setLong(4, ctCollectionId);
+			preparedStatement.setLong(5, orphanedSegmentsExperienceId);
 
 			preparedStatement.executeUpdate();
 		}
@@ -278,7 +280,8 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 			ctCollectionId, plid);
 
 		Set<Long> orphanedSegmentsExperienceIds =
-			_getFragmentEntryLinkSegmentsExperienceIds(ctCollectionId, plid);
+			_getFragmentEntryLinkSegmentsExperienceIds(
+				ctCollectionId, groupId, plid);
 
 		if (layoutPageTemplateStructureId > 0) {
 			orphanedSegmentsExperienceIds.addAll(
@@ -308,7 +311,7 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 				orphanedSegmentsExperienceIds) {
 
 			_updateFragmentEntryLinks(
-				ctCollectionId, defaultSegmentsExperienceId,
+				ctCollectionId, defaultSegmentsExperienceId, groupId,
 				orphanedSegmentsExperienceId, plid);
 
 			if (layoutPageTemplateStructureId > 0) {
