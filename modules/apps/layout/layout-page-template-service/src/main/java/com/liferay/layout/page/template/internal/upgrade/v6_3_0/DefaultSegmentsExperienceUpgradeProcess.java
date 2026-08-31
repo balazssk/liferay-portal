@@ -85,7 +85,8 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 					"LayoutPageTemplateStructureRel.segmentsExperienceId and ",
 					"SegmentsExperience.plid = Layout.plid and ",
 					"SegmentsExperience.ctCollectionId in (0, ",
-					"Layout.ctCollectionId))))"))) {
+					"Layout.ctCollectionId)))) order by ",
+					"Layout.ctCollectionId"))) {
 
 			preparedStatement.setString(1, LayoutConstants.TYPE_CONTENT);
 			preparedStatement.setString(2, LayoutConstants.TYPE_ASSET_DISPLAY);
