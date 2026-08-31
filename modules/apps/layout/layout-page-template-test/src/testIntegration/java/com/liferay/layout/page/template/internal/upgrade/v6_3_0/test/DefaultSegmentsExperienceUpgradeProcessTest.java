@@ -219,6 +219,47 @@ public class DefaultSegmentsExperienceUpgradeProcessTest {
 
 	@Test
 	@TestInfo("LPD-103969")
+	public void testUpgradeRepointsMisScopedDefaultSegmentsExperience()
+		throws Exception {
+
+		Layout layout = LayoutTestUtil.addTypeContentLayout(_group);
+
+		SegmentsExperience segmentsExperience =
+			_segmentsExperienceLocalService.fetchDefaultSegmentsExperience(
+				layout.getPlid());
+
+		Layout draftLayout = layout.fetchDraftLayout();
+
+		_deleteDefaultSegmentsExperience(draftLayout);
+
+		_updateLayoutPageTemplateStructureRel(
+			draftLayout.getPlid(),
+			segmentsExperience.getSegmentsExperienceId());
+
+		FragmentEntryLink fragmentEntryLink = _addFragmentEntryLink(
+			draftLayout, RandomTestUtil.randomLong());
+
+		_runUpgrade();
+
+		long defaultSegmentsExperienceId = _getDefaultSegmentsExperienceId(
+			draftLayout.getPlid());
+
+		Assert.assertNotEquals(
+			segmentsExperience.getSegmentsExperienceId(),
+			defaultSegmentsExperienceId);
+
+		Assert.assertEquals(
+			defaultSegmentsExperienceId,
+			_getLayoutPageTemplateStructureRelSegmentsExperienceId(
+				0, draftLayout.getPlid()));
+		Assert.assertEquals(
+			defaultSegmentsExperienceId,
+			_getFragmentEntryLinkSegmentsExperienceId(
+				fragmentEntryLink.getFragmentEntryLinkId()));
+	}
+
+	@Test
+	@TestInfo("LPD-103969")
 	public void testUpgradeUpdatesFragmentEntryLink() throws Exception {
 		Layout layout = LayoutTestUtil.addTypeContentLayout(_group);
 
@@ -392,6 +433,28 @@ public class DefaultSegmentsExperienceUpgradeProcessTest {
 		return 0;
 	}
 
+	private long _getDefaultSegmentsExperienceId(long plid) throws Exception {
+		try (Connection connection = DataAccess.getConnection()) {
+			try (PreparedStatement preparedStatement =
+					connection.prepareStatement(
+						"select segmentsExperienceId from SegmentsExperience " +
+							"where plid = ? and segmentsExperienceKey = ?")) {
+
+				preparedStatement.setLong(1, plid);
+				preparedStatement.setString(
+					2, SegmentsExperienceConstants.KEY_DEFAULT);
+
+				try (ResultSet resultSet = preparedStatement.executeQuery()) {
+					if (resultSet.next()) {
+						return resultSet.getLong("segmentsExperienceId");
+					}
+				}
+			}
+		}
+
+		return 0;
+	}
+
 	private long _getFragmentEntryLinkSegmentsExperienceId(
 			long fragmentEntryLinkId)
 		throws Exception {
@@ -466,6 +529,21 @@ public class DefaultSegmentsExperienceUpgradeProcessTest {
 
 			_layoutLocalService.updateLayout(ctCollectionLayout);
 		}
+	}
+
+	private void _updateLayoutPageTemplateStructureRel(
+			long plid, long segmentsExperienceId)
+		throws Exception {
+
+		DB db = DBManagerUtil.getDB();
+
+		db.runSQL(
+			StringBundler.concat(
+				"update LayoutPageTemplateStructureRel set ",
+				"segmentsExperienceId = ", segmentsExperienceId,
+				" where layoutPageTemplateStructureId in (select distinct ",
+				"layoutPageTemplateStructureId from ",
+				"LayoutPageTemplateStructure where plid = ", plid, ")"));
 	}
 
 	private static final String _CLASS_NAME =
