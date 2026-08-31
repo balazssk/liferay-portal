@@ -17,6 +17,7 @@ import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.segments.constants.SegmentsExperienceConstants;
 import com.liferay.segments.model.SegmentsExperience;
 import com.liferay.segments.service.SegmentsExperienceLocalService;
@@ -74,6 +75,49 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 				}
 			}
 		}
+	}
+
+	private long _addDefaultSegmentsExperience(
+			long companyId, String externalReferenceCode, long groupId,
+			long plid, long userId)
+		throws Exception {
+
+		Locale siteDefaultLocale = LocaleThreadLocal.getSiteDefaultLocale();
+
+		try {
+			LocaleThreadLocal.setSiteDefaultLocale(
+				_portal.getSiteDefaultLocale(groupId));
+
+			SegmentsExperience segmentsExperience =
+				_segmentsExperienceLocalService.addDefaultSegmentsExperience(
+					externalReferenceCode +
+						LayoutConstants.EXTERNAL_REFERENCE_CODE_SUFFIX_DEFAULT,
+					_getUserId(companyId, userId), plid, new ServiceContext());
+
+			return segmentsExperience.getSegmentsExperienceId();
+		}
+		finally {
+			LocaleThreadLocal.setSiteDefaultLocale(siteDefaultLocale);
+		}
+	}
+
+	private long _getDefaultSegmentsExperienceId(
+			long companyId, String externalReferenceCode, long groupId,
+			long plid, long userId)
+		throws Exception {
+
+		long defaultSegmentsExperienceId =
+			_segmentsExperienceLocalService.fetchDefaultSegmentsExperienceId(
+				plid);
+
+		if (defaultSegmentsExperienceId !=
+				SegmentsExperienceConstants.ID_DEFAULT) {
+
+			return defaultSegmentsExperienceId;
+		}
+
+		return _addDefaultSegmentsExperience(
+			companyId, externalReferenceCode, groupId, plid, userId);
 	}
 
 	private Set<Long> _getFragmentEntryLinkSegmentsExperienceIds(
@@ -227,9 +271,8 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 			long groupId, long plid, long userId)
 		throws Exception {
 
-		long defaultSegmentsExperienceId =
-			_segmentsExperienceLocalService.fetchDefaultSegmentsExperienceId(
-				plid);
+		long defaultSegmentsExperienceId = _getDefaultSegmentsExperienceId(
+			companyId, externalReferenceCode, groupId, plid, userId);
 
 		long layoutPageTemplateStructureId = _getLayoutPageTemplateStructureId(
 			ctCollectionId, plid);
@@ -243,10 +286,7 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 					ctCollectionId, layoutPageTemplateStructureId, plid));
 		}
 
-		if ((defaultSegmentsExperienceId !=
-				SegmentsExperienceConstants.ID_DEFAULT) &&
-			orphanedSegmentsExperienceIds.isEmpty()) {
-
+		if (orphanedSegmentsExperienceIds.isEmpty()) {
 			return;
 		}
 
@@ -254,38 +294,14 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					StringBundler.concat(
-						"Skipping layout ", plid, " because it references ",
-						orphanedSegmentsExperienceIds.size(),
-						" orphaned segments experiences"));
+						"Unable to repoint layout ", plid,
+						" because it references the orphaned segments ",
+						"experiences ",
+						StringUtil.merge(orphanedSegmentsExperienceIds, ", "),
+						" and the correct mapping is ambiguous"));
 			}
 
 			return;
-		}
-
-		if (defaultSegmentsExperienceId ==
-				SegmentsExperienceConstants.ID_DEFAULT) {
-
-			Locale siteDefaultLocale = LocaleThreadLocal.getSiteDefaultLocale();
-
-			try {
-				LocaleThreadLocal.setSiteDefaultLocale(
-					_portal.getSiteDefaultLocale(groupId));
-
-				SegmentsExperience segmentsExperience =
-					_segmentsExperienceLocalService.
-						addDefaultSegmentsExperience(
-							externalReferenceCode +
-								LayoutConstants.
-									EXTERNAL_REFERENCE_CODE_SUFFIX_DEFAULT,
-							_getUserId(companyId, userId), plid,
-							new ServiceContext());
-
-				defaultSegmentsExperienceId =
-					segmentsExperience.getSegmentsExperienceId();
-			}
-			finally {
-				LocaleThreadLocal.setSiteDefaultLocale(siteDefaultLocale);
-			}
 		}
 
 		for (long orphanedSegmentsExperienceId :
