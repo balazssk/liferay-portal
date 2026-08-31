@@ -48,13 +48,50 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 	protected void doUpgrade() throws Exception {
 		try (PreparedStatement preparedStatement = connection.prepareStatement(
 				StringBundler.concat(
-					"select ctCollectionId, plid, groupId, companyId, userId, ",
-					"externalReferenceCode from Layout where type_ = ? or ",
-					"type_ = ? or type_ = ?"))) {
+					"select Layout.companyId, Layout.ctCollectionId, ",
+					"Layout.externalReferenceCode, Layout.groupId, ",
+					"Layout.plid, Layout.userId from Layout where ",
+					"Layout.type_ in (?, ?, ?) and (not exists (select 1 from ",
+					"SegmentsExperience where SegmentsExperience.groupId = ",
+					"Layout.groupId and SegmentsExperience.plid = Layout.plid ",
+					"and SegmentsExperience.segmentsExperienceKey = ? and ",
+					"SegmentsExperience.ctCollectionId in (0, ",
+					"Layout.ctCollectionId)) or exists (select 1 from ",
+					"FragmentEntryLink where FragmentEntryLink.groupId = ",
+					"Layout.groupId and FragmentEntryLink.plid = Layout.plid ",
+					"and FragmentEntryLink.ctCollectionId = ",
+					"Layout.ctCollectionId and ",
+					"FragmentEntryLink.segmentsExperienceId > 0 and not ",
+					"exists (select 1 from SegmentsExperience where ",
+					"SegmentsExperience.segmentsExperienceId = ",
+					"FragmentEntryLink.segmentsExperienceId and ",
+					"SegmentsExperience.plid = FragmentEntryLink.plid and ",
+					"SegmentsExperience.ctCollectionId in (0, ",
+					"Layout.ctCollectionId))) or exists (select 1 from ",
+					"LayoutPageTemplateStructureRel inner join ",
+					"LayoutPageTemplateStructure on ",
+					"LayoutPageTemplateStructure.",
+					"layoutPageTemplateStructureId = ",
+					"LayoutPageTemplateStructureRel.",
+					"layoutPageTemplateStructureId where ",
+					"LayoutPageTemplateStructure.plid = Layout.plid and ",
+					"LayoutPageTemplateStructure.ctCollectionId in (0, ",
+					"Layout.ctCollectionId) and ",
+					"LayoutPageTemplateStructureRel.ctCollectionId = ",
+					"Layout.ctCollectionId and ",
+					"LayoutPageTemplateStructureRel.segmentsExperienceId > 0 ",
+					"and not exists (select 1 from SegmentsExperience where ",
+					"SegmentsExperience.segmentsExperienceId = ",
+					"LayoutPageTemplateStructureRel.segmentsExperienceId and ",
+					"SegmentsExperience.plid = Layout.plid and ",
+					"SegmentsExperience.ctCollectionId in (0, ",
+					"Layout.ctCollectionId))))"))) {
 
 			preparedStatement.setString(1, LayoutConstants.TYPE_CONTENT);
 			preparedStatement.setString(2, LayoutConstants.TYPE_ASSET_DISPLAY);
 			preparedStatement.setString(3, LayoutConstants.TYPE_UTILITY);
+			preparedStatement.setString(
+				4, SegmentsExperienceConstants.KEY_DEFAULT);
 
 			try (ResultSet resultSet = preparedStatement.executeQuery()) {
 				while (resultSet.next()) {
