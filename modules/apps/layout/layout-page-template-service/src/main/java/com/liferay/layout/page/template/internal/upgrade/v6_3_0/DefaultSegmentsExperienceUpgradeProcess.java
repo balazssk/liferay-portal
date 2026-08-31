@@ -263,6 +263,50 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 		return userId;
 	}
 
+	private boolean _hasMultipleNondefaultSegmentsExperiences(
+			long ctCollectionId, Set<Long> segmentsExperienceIds)
+		throws Exception {
+
+		int count = 0;
+
+		for (long segmentsExperienceId : segmentsExperienceIds) {
+			if (_isDefaultSegmentsExperience(
+					ctCollectionId, segmentsExperienceId)) {
+
+				continue;
+			}
+
+			count++;
+
+			if (count > 1) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private boolean _isDefaultSegmentsExperience(
+			long ctCollectionId, long segmentsExperienceId)
+		throws Exception {
+
+		try (PreparedStatement preparedStatement = connection.prepareStatement(
+				StringBundler.concat(
+					"select 1 from SegmentsExperience where ",
+					"segmentsExperienceId = ? and segmentsExperienceKey = ? ",
+					"and ctCollectionId in (0, ?)"))) {
+
+			preparedStatement.setLong(1, segmentsExperienceId);
+			preparedStatement.setString(
+				2, SegmentsExperienceConstants.KEY_DEFAULT);
+			preparedStatement.setLong(3, ctCollectionId);
+
+			try (ResultSet resultSet = preparedStatement.executeQuery()) {
+				return resultSet.next();
+			}
+		}
+	}
+
 	private void _updateFragmentEntryLinks(
 			long ctCollectionId, long defaultSegmentsExperienceId, long groupId,
 			long orphanedSegmentsExperienceId, long plid)
@@ -331,7 +375,9 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 			return;
 		}
 
-		if (orphanedSegmentsExperienceIds.size() > 1) {
+		if (_hasMultipleNondefaultSegmentsExperiences(
+				ctCollectionId, orphanedSegmentsExperienceIds)) {
+
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					StringBundler.concat(
