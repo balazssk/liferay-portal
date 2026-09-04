@@ -20,6 +20,7 @@ import com.liferay.layout.utility.page.model.LayoutUtilityPageEntry;
 import com.liferay.layout.utility.page.service.LayoutUtilityPageEntryLocalService;
 import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.cache.MultiVMPool;
 import com.liferay.portal.kernel.change.tracking.CTCollectionThreadLocal;
 import com.liferay.portal.kernel.dao.db.DB;
@@ -193,6 +194,64 @@ public class DefaultSegmentsExperienceUpgradeProcessTest {
 		finally {
 			_ctCollectionLocalService.deleteCTCollection(ctCollection);
 		}
+	}
+
+	@Test
+	@TestInfo("LPD-103969")
+	public void testUpgradeDeletesDuplicateLayoutPageTemplateStructureRel()
+		throws Exception {
+
+		Layout layout1 = LayoutTestUtil.addTypeContentLayout(_group);
+		Layout layout2 = LayoutTestUtil.addTypeContentLayout(_group);
+
+		long segmentsExperienceId1 = _getDefaultSegmentsExperienceId(
+			layout1.getPlid());
+		long segmentsExperienceId2 = _getDefaultSegmentsExperienceId(
+			layout2.getPlid());
+
+		_deleteDefaultSegmentsExperience(layout1);
+
+		_addLayoutPageTemplateStructureRel(layout1, segmentsExperienceId2);
+
+		_runUpgrade();
+
+		Assert.assertEquals(
+			1,
+			_getLayoutPageTemplateStructureRelCount(
+				layout1.getPlid(),
+				_getDefaultSegmentsExperienceId(layout1.getPlid())));
+		Assert.assertEquals(
+			0,
+			_getLayoutPageTemplateStructureRelCount(
+				layout1.getPlid(), segmentsExperienceId1));
+		Assert.assertEquals(
+			0,
+			_getLayoutPageTemplateStructureRelCount(
+				layout1.getPlid(), segmentsExperienceId2));
+	}
+
+	@Test
+	@TestInfo("LPD-103969")
+	public void testUpgradeDeletesOrphanedLayoutPageTemplateStructureRel()
+		throws Exception {
+
+		Layout layout = LayoutTestUtil.addTypeContentLayout(_group);
+
+		long segmentsExperienceId = RandomTestUtil.randomLong();
+
+		_addLayoutPageTemplateStructureRel(layout, segmentsExperienceId);
+
+		_runUpgrade();
+
+		Assert.assertEquals(
+			1,
+			_getLayoutPageTemplateStructureRelCount(
+				layout.getPlid(),
+				_getDefaultSegmentsExperienceId(layout.getPlid())));
+		Assert.assertEquals(
+			0,
+			_getLayoutPageTemplateStructureRelCount(
+				layout.getPlid(), segmentsExperienceId));
 	}
 
 	@Test
@@ -386,6 +445,36 @@ public class DefaultSegmentsExperienceUpgradeProcessTest {
 			fragmentEntryLink);
 	}
 
+	private void _addLayoutPageTemplateStructureRel(
+			Layout layout, long segmentsExperienceId)
+		throws Exception {
+
+		LayoutPageTemplateStructure layoutPageTemplateStructure =
+			_layoutPageTemplateStructureLocalService.
+				fetchLayoutPageTemplateStructure(
+					layout.getGroupId(), layout.getPlid());
+
+		LayoutPageTemplateStructureRel layoutPageTemplateStructureRel =
+			_layoutPageTemplateStructureRelLocalService.
+				createLayoutPageTemplateStructureRel(
+					_counterLocalService.increment(
+						LayoutPageTemplateStructureRel.class.getName()));
+
+		layoutPageTemplateStructureRel.setGroupId(layout.getGroupId());
+		layoutPageTemplateStructureRel.setCompanyId(layout.getCompanyId());
+		layoutPageTemplateStructureRel.setUserId(TestPropsValues.getUserId());
+		layoutPageTemplateStructureRel.setCreateDate(new Date());
+		layoutPageTemplateStructureRel.setModifiedDate(new Date());
+		layoutPageTemplateStructureRel.setLayoutPageTemplateStructureId(
+			layoutPageTemplateStructure.getLayoutPageTemplateStructureId());
+		layoutPageTemplateStructureRel.setSegmentsExperienceId(
+			segmentsExperienceId);
+		layoutPageTemplateStructureRel.setData(StringPool.BLANK);
+
+		_layoutPageTemplateStructureRelLocalService.
+			addLayoutPageTemplateStructureRel(layoutPageTemplateStructureRel);
+	}
+
 	private void _deleteDefaultSegmentsExperience(Layout layout)
 		throws Exception {
 
@@ -470,6 +559,35 @@ public class DefaultSegmentsExperienceUpgradeProcessTest {
 				try (ResultSet resultSet = preparedStatement.executeQuery()) {
 					if (resultSet.next()) {
 						return resultSet.getLong("segmentsExperienceId");
+					}
+				}
+			}
+		}
+
+		return 0;
+	}
+
+	private long _getLayoutPageTemplateStructureRelCount(
+			long plid, long segmentsExperienceId)
+		throws Exception {
+
+		try (Connection connection = DataAccess.getConnection()) {
+			try (PreparedStatement preparedStatement =
+					connection.prepareStatement(
+						StringBundler.concat(
+							"select count(*) as count from ",
+							"LayoutPageTemplateStructureRel where ",
+							"segmentsExperienceId = ? and ",
+							"layoutPageTemplateStructureId in (select ",
+							"distinct layoutPageTemplateStructureId from ",
+							"LayoutPageTemplateStructure where plid = ?)"))) {
+
+				preparedStatement.setLong(1, segmentsExperienceId);
+				preparedStatement.setLong(2, plid);
+
+				try (ResultSet resultSet = preparedStatement.executeQuery()) {
+					if (resultSet.next()) {
+						return resultSet.getLong("count");
 					}
 				}
 			}
