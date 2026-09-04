@@ -139,6 +139,25 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 		}
 	}
 
+	private void _deleteLayoutPageTemplateStructureRels(
+			long ctCollectionId, long layoutPageTemplateStructureId,
+			long orphanedSegmentsExperienceId)
+		throws Exception {
+
+		try (PreparedStatement preparedStatement = connection.prepareStatement(
+				StringBundler.concat(
+					"delete from LayoutPageTemplateStructureRel where ",
+					"ctCollectionId = ? and layoutPageTemplateStructureId = ? ",
+					"and segmentsExperienceId = ?"))) {
+
+			preparedStatement.setLong(1, ctCollectionId);
+			preparedStatement.setLong(2, layoutPageTemplateStructureId);
+			preparedStatement.setLong(3, orphanedSegmentsExperienceId);
+
+			preparedStatement.executeUpdate();
+		}
+	}
+
 	private long _getDefaultSegmentsExperienceId(
 			long companyId, String externalReferenceCode, long groupId,
 			long plid, long userId)
@@ -261,6 +280,27 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 		}
 
 		return userId;
+	}
+
+	private boolean _hasLayoutPageTemplateStructureRel(
+			long ctCollectionId, long layoutPageTemplateStructureId,
+			long segmentsExperienceId)
+		throws Exception {
+
+		try (PreparedStatement preparedStatement = connection.prepareStatement(
+				StringBundler.concat(
+					"select 1 from LayoutPageTemplateStructureRel where ",
+					"ctCollectionId = ? and layoutPageTemplateStructureId = ? ",
+					"and segmentsExperienceId = ?"))) {
+
+			preparedStatement.setLong(1, ctCollectionId);
+			preparedStatement.setLong(2, layoutPageTemplateStructureId);
+			preparedStatement.setLong(3, segmentsExperienceId);
+
+			try (ResultSet resultSet = preparedStatement.executeQuery()) {
+				return resultSet.next();
+			}
+		}
 	}
 
 	private boolean _hasMultipleNondefaultSegmentsExperiences(
@@ -399,10 +439,20 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 				orphanedSegmentsExperienceId, plid);
 
 			if (layoutPageTemplateStructureId > 0) {
-				_updateLayoutPageTemplateStructureRels(
-					ctCollectionId, defaultSegmentsExperienceId,
-					layoutPageTemplateStructureId,
-					orphanedSegmentsExperienceId);
+				if (_hasLayoutPageTemplateStructureRel(
+						ctCollectionId, layoutPageTemplateStructureId,
+						defaultSegmentsExperienceId)) {
+
+					_deleteLayoutPageTemplateStructureRels(
+						ctCollectionId, layoutPageTemplateStructureId,
+						orphanedSegmentsExperienceId);
+				}
+				else {
+					_updateLayoutPageTemplateStructureRels(
+						ctCollectionId, defaultSegmentsExperienceId,
+						layoutPageTemplateStructureId,
+						orphanedSegmentsExperienceId);
+				}
 			}
 		}
 	}
