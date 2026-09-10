@@ -55,13 +55,16 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 	}
 
 	private void _addDefaultSegmentsExperience(
-			long companyId, String externalReferenceCode, long groupId,
-			long plid, long userId)
+			long companyId, long ctCollectionId, String externalReferenceCode,
+			long groupId, long plid, long userId)
 		throws Exception {
 
 		Locale siteDefaultLocale = LocaleThreadLocal.getSiteDefaultLocale();
 
-		try {
+		try (SafeCloseable safeCloseable =
+				CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
+					ctCollectionId)) {
+
 			LocaleThreadLocal.setSiteDefaultLocale(
 				_portal.getSiteDefaultLocale(groupId));
 
@@ -99,20 +102,12 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 
 			try (ResultSet resultSet = preparedStatement.executeQuery()) {
 				while (resultSet.next()) {
-					long ctCollectionId = resultSet.getLong("ctCollectionId");
-					long plid = resultSet.getLong("plid");
-
-					try (SafeCloseable safeCloseable =
-							CTCollectionThreadLocal.
-								setCTCollectionIdWithSafeCloseable(
-									ctCollectionId)) {
-
-						_addDefaultSegmentsExperience(
-							resultSet.getLong("companyId"),
-							resultSet.getString("externalReferenceCode"),
-							resultSet.getLong("groupId"), plid,
-							resultSet.getLong("userId"));
-					}
+					_addDefaultSegmentsExperience(
+						resultSet.getLong("companyId"),
+						resultSet.getLong("ctCollectionId"),
+						resultSet.getString("externalReferenceCode"),
+						resultSet.getLong("groupId"), resultSet.getLong("plid"),
+						resultSet.getLong("userId"));
 				}
 			}
 		}
