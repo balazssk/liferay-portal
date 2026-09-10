@@ -86,7 +86,9 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 					"Layout.groupId and SegmentsExperience.plid = Layout.plid ",
 					"and SegmentsExperience.segmentsExperienceKey = ? and ",
 					"SegmentsExperience.ctCollectionId in (0, ",
-					"Layout.ctCollectionId)) order by ",
+					"Layout.ctCollectionId)) and not exists (select 1 from ",
+					"Layout Layout2 where Layout2.plid = Layout.plid and ",
+					"Layout2.ctCollectionId < Layout.ctCollectionId) order by ",
 					"Layout.ctCollectionId"))) {
 
 			preparedStatement.setString(1, LayoutConstants.TYPE_CONTENT);
@@ -98,6 +100,7 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 			try (ResultSet resultSet = preparedStatement.executeQuery()) {
 				while (resultSet.next()) {
 					long ctCollectionId = resultSet.getLong("ctCollectionId");
+					long plid = resultSet.getLong("plid");
 
 					try (SafeCloseable safeCloseable =
 							CTCollectionThreadLocal.
@@ -107,8 +110,7 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 						_addDefaultSegmentsExperience(
 							resultSet.getLong("companyId"),
 							resultSet.getString("externalReferenceCode"),
-							resultSet.getLong("groupId"),
-							resultSet.getLong("plid"),
+							resultSet.getLong("groupId"), plid,
 							resultSet.getLong("userId"));
 					}
 				}
