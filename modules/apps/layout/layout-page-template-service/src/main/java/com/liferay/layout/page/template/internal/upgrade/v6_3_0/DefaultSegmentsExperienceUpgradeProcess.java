@@ -176,6 +176,12 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 
 			ambiguousPlids.add(entry.getKey());
 
+			// TODO Consider signaling this more strongly than a warning.
+			// The references cannot be repaired automatically because
+			// the correct segments experience is a judgment call, so
+			// someone has to repair the page by hand and a line in the
+			// upgrade log is easy to miss.
+
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					StringBundler.concat(
