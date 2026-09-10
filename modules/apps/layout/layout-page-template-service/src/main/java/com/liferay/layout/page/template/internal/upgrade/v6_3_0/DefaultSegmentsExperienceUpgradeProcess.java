@@ -51,7 +51,7 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 
 		_updateMisScopedSegmentsExperienceIds();
 
-		_updateOrphanedSegmentsExperienceIds();
+		_updateUnresolvedSegmentsExperienceIds();
 	}
 
 	private void _addDefaultSegmentsExperience(
@@ -133,10 +133,11 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 	}
 
 	private Set<Long> _getAmbiguousPlids() throws Exception {
-		Map<Long, Set<Long>> orphanedSegmentsExperienceIdsMap = new HashMap<>();
+		Map<Long, Set<Long>> unresolvedSegmentsExperienceIdsMap =
+			new HashMap<>();
 
-		_putOrphanedSegmentsExperienceIds(
-			orphanedSegmentsExperienceIdsMap,
+		_putUnresolvedSegmentsExperienceIds(
+			unresolvedSegmentsExperienceIdsMap,
 			StringBundler.concat(
 				"select distinct FragmentEntryLink.plid, ",
 				"FragmentEntryLink.segmentsExperienceId from ",
@@ -146,8 +147,8 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 				"SegmentsExperience.segmentsExperienceId = ",
 				"FragmentEntryLink.segmentsExperienceId)"));
 
-		_putOrphanedSegmentsExperienceIds(
-			orphanedSegmentsExperienceIdsMap,
+		_putUnresolvedSegmentsExperienceIds(
+			unresolvedSegmentsExperienceIdsMap,
 			StringBundler.concat(
 				"select distinct LayoutPageTemplateStructure.plid, ",
 				"LayoutPageTemplateStructureRel.segmentsExperienceId from ",
@@ -165,11 +166,11 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 		Set<Long> ambiguousPlids = new HashSet<>();
 
 		for (Map.Entry<Long, Set<Long>> entry :
-				orphanedSegmentsExperienceIdsMap.entrySet()) {
+				unresolvedSegmentsExperienceIdsMap.entrySet()) {
 
-			Set<Long> orphanedSegmentsExperienceIds = entry.getValue();
+			Set<Long> unresolvedSegmentsExperienceIds = entry.getValue();
 
-			if (orphanedSegmentsExperienceIds.size() < 2) {
+			if (unresolvedSegmentsExperienceIds.size() < 2) {
 				continue;
 			}
 
@@ -179,9 +180,9 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 				_log.warn(
 					StringBundler.concat(
 						"Unable to repoint layout ", entry.getKey(),
-						" because it references the orphaned segments ",
+						" because it references the unresolved segments ",
 						"experiences ",
-						StringUtil.merge(orphanedSegmentsExperienceIds, ", "),
+						StringUtil.merge(unresolvedSegmentsExperienceIds, ", "),
 						" and the correct mapping is ambiguous"));
 			}
 		}
@@ -265,8 +266,8 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 		}
 	}
 
-	private void _putOrphanedSegmentsExperienceIds(
-			Map<Long, Set<Long>> orphanedSegmentsExperienceIdsMap, String sql)
+	private void _putUnresolvedSegmentsExperienceIds(
+			Map<Long, Set<Long>> unresolvedSegmentsExperienceIdsMap, String sql)
 		throws Exception {
 
 		try (PreparedStatement preparedStatement = connection.prepareStatement(
@@ -274,11 +275,11 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 
 			try (ResultSet resultSet = preparedStatement.executeQuery()) {
 				while (resultSet.next()) {
-					Set<Long> orphanedSegmentsExperienceIds =
-						orphanedSegmentsExperienceIdsMap.computeIfAbsent(
+					Set<Long> unresolvedSegmentsExperienceIds =
+						unresolvedSegmentsExperienceIdsMap.computeIfAbsent(
 							resultSet.getLong("plid"), plid -> new HashSet<>());
 
-					orphanedSegmentsExperienceIds.add(
+					unresolvedSegmentsExperienceIds.add(
 						resultSet.getLong("segmentsExperienceId"));
 				}
 			}
@@ -445,7 +446,7 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 		_updateMisScopedFragmentEntryLinks();
 	}
 
-	private void _updateOrphanedFragmentEntryLinks(Set<Long> ambiguousPlids)
+	private void _updateUnresolvedFragmentEntryLinks(Set<Long> ambiguousPlids)
 		throws Exception {
 
 		try (PreparedStatement preparedStatement = connection.prepareStatement(
@@ -491,7 +492,7 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 		}
 	}
 
-	private void _updateOrphanedLayoutPageTemplateStructureRels(
+	private void _updateUnresolvedLayoutPageTemplateStructureRels(
 			Set<Long> ambiguousPlids)
 		throws Exception {
 
@@ -549,12 +550,12 @@ public class DefaultSegmentsExperienceUpgradeProcess extends UpgradeProcess {
 		}
 	}
 
-	private void _updateOrphanedSegmentsExperienceIds() throws Exception {
+	private void _updateUnresolvedSegmentsExperienceIds() throws Exception {
 		Set<Long> ambiguousPlids = _getAmbiguousPlids();
 
-		_updateOrphanedLayoutPageTemplateStructureRels(ambiguousPlids);
+		_updateUnresolvedLayoutPageTemplateStructureRels(ambiguousPlids);
 
-		_updateOrphanedFragmentEntryLinks(ambiguousPlids);
+		_updateUnresolvedFragmentEntryLinks(ambiguousPlids);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
