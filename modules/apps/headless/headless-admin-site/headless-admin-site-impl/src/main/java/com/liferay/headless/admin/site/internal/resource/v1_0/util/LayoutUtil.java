@@ -42,6 +42,7 @@ import com.liferay.layout.importer.util.PortletPreferencesPortletConfigurationIm
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalServiceUtil;
+import com.liferay.layout.page.template.util.LayoutPageTemplateEntryUtil;
 import com.liferay.layout.util.LayoutServiceContextHelperUtil;
 import com.liferay.layout.util.UpdateLayoutModifiedDateThreadLocal;
 import com.liferay.petra.function.UnsafeSupplier;
@@ -137,6 +138,13 @@ public class LayoutUtil {
 				serviceContext.getUserId(), layout.getPlid(), status,
 				serviceContext);
 		}
+
+		_validateMasterPageItemExternalReferences(
+			groupId,
+			() -> GetterUtil.getInteger(
+				serviceContext.getAttribute("layout.page.template.entry.type"),
+				-1),
+			pageSpecifications);
 
 		PageSpecification[] sortedContentPageSpecifications =
 			PageSpecificationUtil.getSortedContentPageSpecifications(
@@ -390,6 +398,12 @@ public class LayoutUtil {
 			PageSpecification[] pageSpecifications,
 			ServiceContext serviceContext)
 		throws Exception {
+
+		long plid = layout.getPlid();
+
+		_validateMasterPageItemExternalReferences(
+			serviceContext.getScopeGroupId(),
+			() -> _getLayoutPageTemplateEntryType(plid), pageSpecifications);
 
 		typeSettingsUnicodeProperties.putAll(
 			_getLastImportSettingsMap(serviceContext.getUserId()));
@@ -698,6 +712,53 @@ public class LayoutUtil {
 		return layoutPageTemplateEntry.getType();
 	}
 
+	private static LayoutPageTemplateEntry _getMasterLayoutPageTemplateEntry(
+			long groupId, ItemExternalReference itemExternalReference,
+			int layoutPageTemplateEntryType)
+		throws Exception {
+
+		String externalReferenceCode =
+			itemExternalReference.getExternalReferenceCode();
+
+		if (Validator.isNull(externalReferenceCode)) {
+			return null;
+		}
+
+		if (layoutPageTemplateEntryType ==
+				LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT) {
+
+			throw new IllegalArgumentException(
+				"A master page cannot reference another master page");
+		}
+
+		if (itemExternalReference.getScope() != null) {
+			throw new IllegalArgumentException(
+				"The master page reference does not belong to the same scope " +
+					"as the target page");
+		}
+
+		LayoutPageTemplateEntry layoutPageTemplateEntry =
+			LayoutPageTemplateEntryLocalServiceUtil.
+				fetchLayoutPageTemplateEntryByExternalReferenceCode(
+					externalReferenceCode, groupId);
+
+		if (layoutPageTemplateEntry == null) {
+			return null;
+		}
+
+		if (!Objects.equals(
+				LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT,
+				layoutPageTemplateEntry.getType())) {
+
+			throw new IllegalArgumentException(
+				"The master page reference does not point to a master page");
+		}
+
+		LayoutPageTemplateEntryUtil.validatePublished(layoutPageTemplateEntry);
+
+		return layoutPageTemplateEntry;
+	}
+
 	private static String _getMasterLayoutPageTemplateEntryERC(
 			long groupId,
 			UnsafeSupplier<Integer, Exception>
@@ -723,37 +784,14 @@ public class LayoutUtil {
 			return null;
 		}
 
-		if (layoutPageTemplateEntryTypeUnsafeSupplier.get() ==
-				LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT) {
-
-			throw new IllegalArgumentException(
-				"A master page cannot reference another master page");
-		}
-
-		if (itemExternalReference.getScope() != null) {
-			throw new IllegalArgumentException(
-				"The master page reference does not belong to the same scope " +
-					"as the target page");
-		}
-
 		LayoutPageTemplateEntry layoutPageTemplateEntry =
-			LayoutPageTemplateEntryLocalServiceUtil.
-				fetchLayoutPageTemplateEntryByExternalReferenceCode(
-					externalReferenceCode, groupId);
+			_getMasterLayoutPageTemplateEntry(
+				groupId, itemExternalReference,
+				layoutPageTemplateEntryTypeUnsafeSupplier.get());
 
 		if (layoutPageTemplateEntry == null) {
 			LogUtil.logOptionalReference(
 				LayoutPageTemplateEntry.class, externalReferenceCode, groupId);
-
-			return externalReferenceCode;
-		}
-
-		if (!Objects.equals(
-				LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT,
-				layoutPageTemplateEntry.getType())) {
-
-			throw new IllegalArgumentException(
-				"The master page reference does not point to a master page");
 		}
 
 		return externalReferenceCode;
@@ -1083,6 +1121,13 @@ public class LayoutUtil {
 
 		Settings settings = SettingsUtil.getSettings(pageSpecification);
 
+		long plid = layout.getPlid();
+
+		String masterLayoutPageTemplateEntryERC =
+			_getMasterLayoutPageTemplateEntryERC(
+				serviceContext.getScopeGroupId(),
+				() -> _getLayoutPageTemplateEntryType(plid), settings);
+
 		_updateClientExtensions(cetManager, layout, settings, serviceContext);
 
 		_setExpandoBridgeAttributes(pageSpecification, serviceContext);
@@ -1117,17 +1162,12 @@ public class LayoutUtil {
 				layout.getCompanyId(), serviceContext.getScopeGroupId(),
 				settings);
 
-		long plid = layout.getPlid();
-
 		layout = _updateLayout(
 			layout, nameMap, titleMap, descriptionMap, keywordsMap, robotsMap,
 			styleBookEntryReference.getStyleBookEntryERC(),
 			styleBookEntryReference.getStyleBookEntryScopeERC(),
 			faviconFileEntryERC, faviconFileEntryScopeERC,
-			_getMasterLayoutPageTemplateEntryERC(
-				serviceContext.getScopeGroupId(),
-				() -> _getLayoutPageTemplateEntryType(plid), settings),
-			friendlyURLMap, serviceContext);
+			masterLayoutPageTemplateEntryERC, friendlyURLMap, serviceContext);
 
 		layout = LayoutLocalServiceUtil.updateIconImage(
 			layout.getPlid(), _getIconImageByteArray(settings));
@@ -1408,6 +1448,37 @@ public class LayoutUtil {
 		return LayoutServiceUtil.updateTypeSettings(
 			layout.getGroupId(), layout.isPrivateLayout(), layout.getLayoutId(),
 			unicodeProperties.toString());
+	}
+
+	private static void _validateMasterPageItemExternalReferences(
+			long groupId,
+			UnsafeSupplier<Integer, Exception>
+				layoutPageTemplateEntryTypeUnsafeSupplier,
+			PageSpecification[] pageSpecifications)
+		throws Exception {
+
+		if (pageSpecifications == null) {
+			return;
+		}
+
+		for (PageSpecification pageSpecification : pageSpecifications) {
+			Settings settings = SettingsUtil.getSettings(pageSpecification);
+
+			if (settings == null) {
+				continue;
+			}
+
+			ItemExternalReference itemExternalReference =
+				settings.getMasterPageItemExternalReference();
+
+			if (itemExternalReference == null) {
+				continue;
+			}
+
+			_getMasterLayoutPageTemplateEntry(
+				groupId, itemExternalReference,
+				layoutPageTemplateEntryTypeUnsafeSupplier.get());
+		}
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(LayoutUtil.class);

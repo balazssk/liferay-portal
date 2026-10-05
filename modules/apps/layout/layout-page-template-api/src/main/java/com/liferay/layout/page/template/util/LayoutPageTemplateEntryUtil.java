@@ -8,6 +8,7 @@ package com.liferay.layout.page.template.util;
 import com.liferay.info.item.InfoItemFormVariation;
 import com.liferay.info.item.InfoItemServiceRegistryUtil;
 import com.liferay.info.item.provider.InfoItemFormVariationsProvider;
+import com.liferay.layout.page.template.exception.LayoutPageTemplateEntryNotPublishedException;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalServiceUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -129,6 +130,21 @@ public class LayoutPageTemplateEntryUtil {
 		}
 
 		return infoItemFormVariation.getExternalReferenceCode();
+	}
+
+	public static void validatePublished(
+			LayoutPageTemplateEntry layoutPageTemplateEntry)
+		throws LayoutPageTemplateEntryNotPublishedException {
+
+		if ((layoutPageTemplateEntry == null) ||
+			layoutPageTemplateEntry.isApproved()) {
+
+			return;
+		}
+
+		throw new LayoutPageTemplateEntryNotPublishedException(
+			layoutPageTemplateEntry.getExternalReferenceCode(),
+			layoutPageTemplateEntry.getType());
 	}
 
 }
