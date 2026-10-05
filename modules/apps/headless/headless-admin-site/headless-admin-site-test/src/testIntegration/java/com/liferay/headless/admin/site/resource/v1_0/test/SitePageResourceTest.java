@@ -56,6 +56,7 @@ import com.liferay.headless.admin.site.client.dto.v1_0.PageSpecificationVersion;
 import com.liferay.headless.admin.site.client.dto.v1_0.ParentTaxonomyCategory;
 import com.liferay.headless.admin.site.client.dto.v1_0.ParentTaxonomyVocabulary;
 import com.liferay.headless.admin.site.client.dto.v1_0.SEOSettings;
+import com.liferay.headless.admin.site.client.dto.v1_0.Settings;
 import com.liferay.headless.admin.site.client.dto.v1_0.SitePage;
 import com.liferay.headless.admin.site.client.dto.v1_0.SitePageNavigationSettings;
 import com.liferay.headless.admin.site.client.dto.v1_0.SitemapSettings;
@@ -386,7 +387,7 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 	@FeatureFlag("LPD-38869")
 	@Override
 	@Test
-	@TestInfo({"LPD-83094", "LPD-101791"})
+	@TestInfo({"LPD-83094", "LPD-95027", "LPD-101791"})
 	public void testPostSiteSitePage() throws Exception {
 		super.testPostSiteSitePage();
 
@@ -414,6 +415,8 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 		_testPostSiteSitePageWithPageElements();
 		_testPostSiteSitePageWithPageSpecifications();
 		_testPostSiteSitePageWithContentPageSpecification();
+		_testPostSiteSitePageWithUnpublishedMasterPage();
+		_testPostSiteSitePageWithUnpublishedMasterPageInDraftPageSpecification();
 		_testPostSiteSitePageWithWidgetPageSettings();
 		_testPostSiteSitePageWithWidgetPageSettingsWithWidgetPageTemplate();
 		_testPostSiteSitePageWithWidgetPageTypeIsDeprecated();
@@ -467,8 +470,8 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 		{
 			"LPD-72013", "LPD-74331", "LPD-75450", "LPD-77124", "LPD-77505",
 			"LPD-77576", "LPD-77852", "LPD-78667", "LPD-79415", "LPD-80061",
-			"LPD-81793", "LPD-83094", "LPD-97454", "LPD-101044", "LPD-101791",
-			"LPD-103694"
+			"LPD-81793", "LPD-83094", "LPD-95027", "LPD-97454", "LPD-101044",
+			"LPD-101791", "LPD-103694"
 		}
 	)
 	public void testPutSiteSitePage() throws Exception {
@@ -507,6 +510,7 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 		_testPutSiteSitePageWithParentLayout();
 		_testPutSiteSitePageWithPriority();
 		_testPutSiteSitePageWithStagingImport(serviceContext);
+		_testPutSiteSitePageWithUnpublishedMasterPage();
 		_testPutSiteSitePageWithWidgetPageSettings();
 		_testPutSiteSitePageWithWidgetPageSettingsWithWidgetPageTemplate();
 		_testPutSiteSitePageWithWidgetPageTypeWithWidgetPageWidgetInstances();
@@ -1482,6 +1486,27 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 		return _testPutSiteSitePage(sitePage, testGroup, sitePage);
 	}
 
+	private PageSpecification[] _getContentPageSpecifications(
+		String sitePageExternalReferenceCode) {
+
+		ContentPageSpecification draftContentPageSpecification =
+			PageSpecificationsTestUtil.getContentPageSpecification(
+				null, testGroup.getGroupId(),
+				PageSpecification.Status.APPROVED);
+
+		ContentPageSpecification publishedContentPageSpecification =
+			PageSpecificationsTestUtil.getContentPageSpecification(
+				draftContentPageSpecification.getExternalReferenceCode(),
+				testGroup.getGroupId(), PageSpecification.Status.APPROVED);
+
+		publishedContentPageSpecification.setExternalReferenceCode(
+			sitePageExternalReferenceCode);
+
+		return new PageSpecification[] {
+			publishedContentPageSpecification, draftContentPageSpecification
+		};
+	}
+
 	private CustomMetaTag[] _getCustomMetaTags() {
 		return new CustomMetaTag[] {
 			new CustomMetaTag() {
@@ -2312,6 +2337,29 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 			ReflectionTestUtil.setFieldValue(
 				centralizedThreadLocal, "_supplier", originalSupplier);
 		};
+	}
+
+	private void _setMasterPageSettings(
+		String masterPageExternalReferenceCode,
+		PageSpecification[] pageSpecifications) {
+
+		for (PageSpecification pageSpecification : pageSpecifications) {
+			ContentPageSpecification contentPageSpecification =
+				(ContentPageSpecification)pageSpecification;
+
+			contentPageSpecification.setSettings(
+				new Settings() {
+					{
+						setMasterPageItemExternalReference(
+							new ItemExternalReference() {
+								{
+									setExternalReferenceCode(
+										masterPageExternalReferenceCode);
+								}
+							});
+					}
+				});
+		}
 	}
 
 	private void _setWidgetPageWidgetInstancesApplicationDecorator(
@@ -3836,6 +3884,96 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 		}
 	}
 
+	private void _testPostSiteSitePageWithUnpublishedMasterPage()
+		throws Exception {
+
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext(
+				testGroup.getGroupId(), TestPropsValues.getUserId());
+
+		LayoutPageTemplateEntry draftMasterLayoutPageTemplateEntry =
+			LayoutPageTemplateEntryTestUtil.getMasterLayoutPageTemplateEntry(
+				serviceContext, WorkflowConstants.STATUS_DRAFT);
+
+		SitePage sitePage = _getRandomSitePage(SitePage.Type.CONTENT_PAGE);
+
+		PageSpecification[] pageSpecifications = _getContentPageSpecifications(
+			sitePage.getExternalReferenceCode());
+
+		_setMasterPageSettings(
+			draftMasterLayoutPageTemplateEntry.getExternalReferenceCode(),
+			pageSpecifications);
+
+		sitePage.setPageSpecifications(pageSpecifications);
+
+		SitePageResource sitePageResource = _getSitePageResource(
+			"pageSpecifications");
+
+		_assertProblemException(
+			"CONFLICT",
+			StringBundler.concat(
+				"The master page ",
+				draftMasterLayoutPageTemplateEntry.getExternalReferenceCode(),
+				" must be published before it can be assigned"),
+			() -> sitePageResource.postSiteSitePage(
+				testGroup.getExternalReferenceCode(), false, sitePage));
+
+		LayoutPageTemplateEntry publishedMasterLayoutPageTemplateEntry =
+			LayoutPageTemplateEntryTestUtil.getMasterLayoutPageTemplateEntry(
+				serviceContext, WorkflowConstants.STATUS_APPROVED);
+
+		_setMasterPageSettings(
+			publishedMasterLayoutPageTemplateEntry.getExternalReferenceCode(),
+			pageSpecifications);
+
+		sitePageResource.postSiteSitePage(
+			testGroup.getExternalReferenceCode(), false, sitePage);
+
+		Layout layout = _layoutLocalService.fetchLayoutByExternalReferenceCode(
+			sitePage.getExternalReferenceCode(), testGroup.getGroupId());
+
+		Assert.assertEquals(
+			publishedMasterLayoutPageTemplateEntry.getExternalReferenceCode(),
+			layout.getMasterLayoutPageTemplateEntryERC());
+	}
+
+	private void _testPostSiteSitePageWithUnpublishedMasterPageInDraftPageSpecification()
+		throws Exception {
+
+		LayoutPageTemplateEntry masterLayoutPageTemplateEntry =
+			LayoutPageTemplateEntryTestUtil.getMasterLayoutPageTemplateEntry(
+				ServiceContextTestUtil.getServiceContext(
+					testGroup.getGroupId(), TestPropsValues.getUserId()),
+				WorkflowConstants.STATUS_DRAFT);
+
+		SitePage sitePage = _getRandomSitePage(SitePage.Type.CONTENT_PAGE);
+
+		PageSpecification[] pageSpecifications = _getContentPageSpecifications(
+			sitePage.getExternalReferenceCode());
+
+		_setMasterPageSettings(
+			masterLayoutPageTemplateEntry.getExternalReferenceCode(),
+			new PageSpecification[] {pageSpecifications[1]});
+
+		sitePage.setPageSpecifications(pageSpecifications);
+
+		SitePageResource sitePageResource = _getSitePageResource(
+			"pageSpecifications");
+
+		_assertProblemException(
+			"CONFLICT",
+			StringBundler.concat(
+				"The master page ",
+				masterLayoutPageTemplateEntry.getExternalReferenceCode(),
+				" must be published before it can be assigned"),
+			() -> sitePageResource.postSiteSitePage(
+				testGroup.getExternalReferenceCode(), false, sitePage));
+
+		Assert.assertNull(
+			_layoutLocalService.fetchLayoutByExternalReferenceCode(
+				sitePage.getExternalReferenceCode(), testGroup.getGroupId()));
+	}
+
 	private void _testPostSiteSitePageWithWidgetPageSettings()
 		throws Exception {
 
@@ -5314,6 +5452,64 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 		Assert.assertEquals(
 			lastImportUser.getUuid(),
 			layout.getTypeSettingsProperty("last-import-user-uuid"));
+	}
+
+	private void _testPutSiteSitePageWithUnpublishedMasterPage()
+		throws Exception {
+
+		SitePage sitePage = _getRandomSitePage(SitePage.Type.CONTENT_PAGE);
+
+		PageSpecification[] pageSpecifications = _getContentPageSpecifications(
+			sitePage.getExternalReferenceCode());
+
+		sitePage.setPageSpecifications(pageSpecifications);
+
+		SitePageResource sitePageResource = _getSitePageResource(
+			"pageSpecifications");
+
+		sitePageResource.postSiteSitePage(
+			testGroup.getExternalReferenceCode(), false, sitePage);
+
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext(
+				testGroup.getGroupId(), TestPropsValues.getUserId());
+
+		LayoutPageTemplateEntry draftMasterLayoutPageTemplateEntry =
+			LayoutPageTemplateEntryTestUtil.getMasterLayoutPageTemplateEntry(
+				serviceContext, WorkflowConstants.STATUS_DRAFT);
+
+		_setMasterPageSettings(
+			draftMasterLayoutPageTemplateEntry.getExternalReferenceCode(),
+			pageSpecifications);
+
+		_assertProblemException(
+			"CONFLICT",
+			StringBundler.concat(
+				"The master page ",
+				draftMasterLayoutPageTemplateEntry.getExternalReferenceCode(),
+				" must be published before it can be assigned"),
+			() -> sitePageResource.putSiteSitePage(
+				testGroup.getExternalReferenceCode(),
+				sitePage.getExternalReferenceCode(), false, sitePage));
+
+		LayoutPageTemplateEntry publishedMasterLayoutPageTemplateEntry =
+			LayoutPageTemplateEntryTestUtil.getMasterLayoutPageTemplateEntry(
+				serviceContext, WorkflowConstants.STATUS_APPROVED);
+
+		_setMasterPageSettings(
+			publishedMasterLayoutPageTemplateEntry.getExternalReferenceCode(),
+			pageSpecifications);
+
+		sitePageResource.putSiteSitePage(
+			testGroup.getExternalReferenceCode(),
+			sitePage.getExternalReferenceCode(), false, sitePage);
+
+		Layout layout = _layoutLocalService.fetchLayoutByExternalReferenceCode(
+			sitePage.getExternalReferenceCode(), testGroup.getGroupId());
+
+		Assert.assertEquals(
+			publishedMasterLayoutPageTemplateEntry.getExternalReferenceCode(),
+			layout.getMasterLayoutPageTemplateEntryERC());
 	}
 
 	private void _testPutSiteSitePageWithWidgetPageSettings() throws Exception {
