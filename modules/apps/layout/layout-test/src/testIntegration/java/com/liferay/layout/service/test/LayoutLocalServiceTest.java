@@ -17,6 +17,7 @@ import com.liferay.fragment.service.FragmentEntryLocalService;
 import com.liferay.friendly.url.service.FriendlyURLEntryLocalServiceUtil;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateConstants;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
+import com.liferay.layout.page.template.exception.LayoutPageTemplateEntryNotPublishedException;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.model.LayoutPageTemplateStructure;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
@@ -293,6 +294,30 @@ public class LayoutLocalServiceTest {
 			_group.getGroupId(), true, LayoutConstants.DEFAULT_PARENT_LAYOUT_ID,
 			RandomTestUtil.randomString(), null, RandomTestUtil.randomString(),
 			LayoutConstants.TYPE_CONTENT, false, false, null, _serviceContext);
+	}
+
+	@Test(expected = LayoutPageTemplateEntryNotPublishedException.class)
+	@TestInfo("LPD-95027")
+	public void testAddLayoutWithUnpublishedMasterLayoutPageTemplateEntryERC()
+		throws Exception {
+
+		LayoutPageTemplateEntry masterLayoutPageTemplateEntry =
+			_addMasterLayoutPageTemplateEntry(WorkflowConstants.STATUS_DRAFT);
+
+		Map<Locale, String> nameMap = Collections.singletonMap(
+			LocaleUtil.getSiteDefault(), RandomTestUtil.randomString());
+
+		_layoutLocalService.addLayout(
+			null, TestPropsValues.getUserId(), _group.getGroupId(), false,
+			LayoutConstants.DEFAULT_PARENT_LAYOUT_ID, 0, 0, nameMap, nameMap,
+			nameMap, nameMap, nameMap, LayoutConstants.TYPE_CONTENT, null,
+			false, false,
+			Collections.singletonMap(
+				LocaleUtil.getSiteDefault(),
+				StringPool.SLASH +
+					StringUtil.toLowerCase(RandomTestUtil.randomString())),
+			masterLayoutPageTemplateEntry.getExternalReferenceCode(),
+			_serviceContext);
 	}
 
 	@Test
@@ -1001,17 +1026,12 @@ public class LayoutLocalServiceTest {
 	public void testUpdateLayoutWithInvalidMasterLayoutPageTemplateEntryERC()
 		throws Exception {
 
-		LayoutPageTemplateEntry layoutPageTemplateEntry =
-			_layoutPageTemplateEntryLocalService.addLayoutPageTemplateEntry(
-				null, TestPropsValues.getUserId(), _group.getGroupId(),
-				LayoutPageTemplateConstants.
-					PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT,
-				null, RandomTestUtil.randomString(),
-				LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT, 0,
-				WorkflowConstants.STATUS_DRAFT, _serviceContext);
+		LayoutPageTemplateEntry masterLayoutPageTemplateEntry =
+			_addMasterLayoutPageTemplateEntry(
+				WorkflowConstants.STATUS_APPROVED);
 
 		Layout layout = _layoutLocalService.getLayout(
-			layoutPageTemplateEntry.getPlid());
+			masterLayoutPageTemplateEntry.getPlid());
 
 		_layoutLocalService.updateLayout(
 			layout.getGroupId(), layout.isPrivateLayout(), layout.getLayoutId(),
@@ -1022,7 +1042,7 @@ public class LayoutLocalServiceTest {
 			layout.getIconImage(), null, layout.getStyleBookEntryERC(),
 			layout.getStyleBookEntryScopeERC(), layout.getFaviconFileEntryERC(),
 			layout.getFaviconFileEntryScopeERC(),
-			layoutPageTemplateEntry.getExternalReferenceCode(),
+			masterLayoutPageTemplateEntry.getExternalReferenceCode(),
 			_serviceContext);
 	}
 
@@ -1084,21 +1104,31 @@ public class LayoutLocalServiceTest {
 	public void testUpdateMasterLayoutPageTemplateEntryERCWithInvalidMasterLayoutPageTemplateEntryERC()
 		throws Exception {
 
-		LayoutPageTemplateEntry layoutPageTemplateEntry =
-			_layoutPageTemplateEntryLocalService.addLayoutPageTemplateEntry(
-				null, TestPropsValues.getUserId(), _group.getGroupId(),
-				LayoutPageTemplateConstants.
-					PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT,
-				null, RandomTestUtil.randomString(),
-				LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT, 0,
-				WorkflowConstants.STATUS_DRAFT, _serviceContext);
+		LayoutPageTemplateEntry masterLayoutPageTemplateEntry =
+			_addMasterLayoutPageTemplateEntry(
+				WorkflowConstants.STATUS_APPROVED);
 
 		Layout layout = _layoutLocalService.getLayout(
-			layoutPageTemplateEntry.getPlid());
+			masterLayoutPageTemplateEntry.getPlid());
 
 		_layoutLocalService.updateMasterLayoutPageTemplateEntryERC(
 			_group.getGroupId(), layout.isPrivateLayout(), layout.getLayoutId(),
-			layoutPageTemplateEntry.getExternalReferenceCode());
+			masterLayoutPageTemplateEntry.getExternalReferenceCode());
+	}
+
+	@Test(expected = LayoutPageTemplateEntryNotPublishedException.class)
+	@TestInfo("LPD-95027")
+	public void testUpdateMasterLayoutPageTemplateEntryERCWithUnpublishedMasterLayoutPageTemplateEntryERC()
+		throws Exception {
+
+		LayoutPageTemplateEntry masterLayoutPageTemplateEntry =
+			_addMasterLayoutPageTemplateEntry(WorkflowConstants.STATUS_DRAFT);
+
+		Layout layout = LayoutTestUtil.addTypeContentLayout(_group);
+
+		_layoutLocalService.updateMasterLayoutPageTemplateEntryERC(
+			_group.getGroupId(), layout.isPrivateLayout(), layout.getLayoutId(),
+			masterLayoutPageTemplateEntry.getExternalReferenceCode());
 	}
 
 	@Test
@@ -1251,6 +1281,19 @@ public class LayoutLocalServiceTest {
 				RandomTestUtil.randomString(), TestPropsValues.getUserId(),
 				_group.getGroupId(), false, _serviceContext);
 		}
+	}
+
+	private LayoutPageTemplateEntry _addMasterLayoutPageTemplateEntry(
+			int status)
+		throws Exception {
+
+		return _layoutPageTemplateEntryLocalService.addLayoutPageTemplateEntry(
+			null, TestPropsValues.getUserId(), _group.getGroupId(),
+			LayoutPageTemplateConstants.
+				PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT,
+			null, RandomTestUtil.randomString(),
+			LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT, 0, status,
+			_serviceContext);
 	}
 
 	private void _assertExternalReferenceCodes(
