@@ -267,7 +267,7 @@ public class DisplayPageLayoutTypeControllerTest {
 					PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT,
 				null, StringUtil.randomString(),
 				LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT, 0,
-				WorkflowConstants.STATUS_DRAFT,
+				WorkflowConstants.STATUS_APPROVED,
 				ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 
 		layout = _layoutLocalService.updateMasterLayoutPageTemplateEntryERC(

@@ -262,7 +262,7 @@ public class PageTemplatesImporterTest {
 					null, TestPropsValues.getUserId(), _group.getGroupId(), 0,
 					null, RandomTestUtil.randomString(),
 					LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT, 0,
-					WorkflowConstants.STATUS_DRAFT,
+					WorkflowConstants.STATUS_APPROVED,
 					ServiceContextTestUtil.getServiceContext(
 						_group.getGroupId()));
 
@@ -1104,7 +1104,7 @@ public class PageTemplatesImporterTest {
 				null, TestPropsValues.getUserId(), _group.getGroupId(), 0, null,
 				"Test Master Page",
 				LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT, 0,
-				WorkflowConstants.STATUS_DRAFT,
+				WorkflowConstants.STATUS_APPROVED,
 				ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 
 		List<LayoutsImporterResultEntry> layoutsImporterResultEntries =
