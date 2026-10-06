@@ -28,6 +28,7 @@ import com.liferay.layout.page.template.model.LayoutPageTemplateStructureRelElem
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
 import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalService;
 import com.liferay.layout.page.template.service.LayoutPageTemplateStructureRelElementVariationLocalService;
+import com.liferay.layout.page.template.util.LayoutPageTemplateEntryUtil;
 import com.liferay.layout.seo.model.LayoutSEOEntry;
 import com.liferay.layout.seo.service.LayoutSEOEntryLocalService;
 import com.liferay.layout.service.LayoutClassedModelUsageLocalService;
@@ -100,10 +101,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.function.Supplier;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -114,6 +117,51 @@ import org.osgi.service.component.annotations.Reference;
 @Component(service = ServiceWrapper.class)
 public class LayoutLocalServiceWrapper
 	extends com.liferay.portal.kernel.service.LayoutLocalServiceWrapper {
+
+	@Override
+	public Layout addLayout(
+			String externalReferenceCode, long userId, long groupId,
+			boolean privateLayout, long parentLayoutId, long classNameId,
+			long classPK, Map<Locale, String> nameMap,
+			Map<Locale, String> titleMap, Map<Locale, String> descriptionMap,
+			Map<Locale, String> keywordsMap, Map<Locale, String> robotsMap,
+			String type, String typeSettings, boolean hidden, boolean system,
+			Map<Locale, String> friendlyURLMap,
+			String masterLayoutPageTemplateEntryERC,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		_validateMasterLayoutPageTemplateEntryERC(
+			groupId, () -> null, masterLayoutPageTemplateEntryERC);
+
+		return super.addLayout(
+			externalReferenceCode, userId, groupId, privateLayout,
+			parentLayoutId, classNameId, classPK, nameMap, titleMap,
+			descriptionMap, keywordsMap, robotsMap, type, typeSettings, hidden,
+			system, friendlyURLMap, masterLayoutPageTemplateEntryERC,
+			serviceContext);
+	}
+
+	@Override
+	public Layout convertEmptyLayout(
+			long userId, long plid, Map<Locale, String> nameMap, String type,
+			long classNameId, long classPK,
+			String masterLayoutPageTemplateEntryERC,
+			ServiceContext serviceContext)
+		throws Exception {
+
+		Layout layout = fetchLayout(plid);
+
+		if (layout != null) {
+			_validateMasterLayoutPageTemplateEntryERC(
+				layout.getGroupId(), () -> layout,
+				masterLayoutPageTemplateEntryERC);
+		}
+
+		return super.convertEmptyLayout(
+			userId, plid, nameMap, type, classNameId, classPK,
+			masterLayoutPageTemplateEntryERC, serviceContext);
+	}
 
 	@Override
 	public Layout copyLayoutContent(Layout sourceLayout, Layout targetLayout)
@@ -203,6 +251,54 @@ public class LayoutLocalServiceWrapper
 	}
 
 	@Override
+	public Layout updateLayout(
+			long groupId, boolean privateLayout, long layoutId,
+			long parentLayoutId, Map<Locale, String> nameMap,
+			Map<Locale, String> titleMap, Map<Locale, String> descriptionMap,
+			Map<Locale, String> keywordsMap, Map<Locale, String> robotsMap,
+			String type, boolean hidden, Map<Locale, String> friendlyURLMap,
+			boolean hasIconImage, byte[] iconBytes, String styleBookEntryERC,
+			String styleBookEntryScopeERC, String faviconFileEntryERC,
+			String faviconFileEntryScopeERC,
+			String masterLayoutPageTemplateEntryERC,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		_validateMasterLayoutPageTemplateEntryERC(
+			groupId, () -> fetchLayout(groupId, privateLayout, layoutId),
+			masterLayoutPageTemplateEntryERC);
+
+		return super.updateLayout(
+			groupId, privateLayout, layoutId, parentLayoutId, nameMap, titleMap,
+			descriptionMap, keywordsMap, robotsMap, type, hidden,
+			friendlyURLMap, hasIconImage, iconBytes, styleBookEntryERC,
+			styleBookEntryScopeERC, faviconFileEntryERC,
+			faviconFileEntryScopeERC, masterLayoutPageTemplateEntryERC,
+			serviceContext);
+	}
+
+	@Override
+	public Layout updateLayout(
+			long groupId, boolean privateLayout, long layoutId,
+			String typeSettings, byte[] iconBytes, String themeId,
+			String colorSchemeId, String styleBookEntryERC,
+			String styleBookEntryScopeERC, String css,
+			String faviconFileEntryERC, String faviconFileEntryScopeERC,
+			String masterLayoutPageTemplateEntryERC)
+		throws PortalException {
+
+		_validateMasterLayoutPageTemplateEntryERC(
+			groupId, () -> fetchLayout(groupId, privateLayout, layoutId),
+			masterLayoutPageTemplateEntryERC);
+
+		return super.updateLayout(
+			groupId, privateLayout, layoutId, typeSettings, iconBytes, themeId,
+			colorSchemeId, styleBookEntryERC, styleBookEntryScopeERC, css,
+			faviconFileEntryERC, faviconFileEntryScopeERC,
+			masterLayoutPageTemplateEntryERC);
+	}
+
+	@Override
 	public void updateLayoutContent(
 			String data, Layout layout, long segmentsExperienceId)
 		throws Exception {
@@ -270,6 +366,20 @@ public class LayoutLocalServiceWrapper
 				ServiceContextThreadLocal.popServiceContext();
 			}
 		}
+	}
+
+	@Override
+	public Layout updateMasterLayoutPageTemplateEntryERC(
+			long groupId, boolean privateLayout, long layoutId,
+			String masterLayoutPageTemplateEntryERC)
+		throws PortalException {
+
+		_validateMasterLayoutPageTemplateEntryERC(
+			groupId, () -> fetchLayout(groupId, privateLayout, layoutId),
+			masterLayoutPageTemplateEntryERC);
+
+		return super.updateMasterLayoutPageTemplateEntryERC(
+			groupId, privateLayout, layoutId, masterLayoutPageTemplateEntryERC);
 	}
 
 	private void _cleanDeletedSegmentsExperiences(
@@ -1525,6 +1635,33 @@ public class LayoutLocalServiceWrapper
 
 		_fragmentEntryLinkLocalService.deleteFragmentEntryLinks(
 			ArrayUtil.toLongArray(targetFragmentEntryLinkIds));
+	}
+
+	private void _validateMasterLayoutPageTemplateEntryERC(
+			long groupId, Supplier<Layout> layoutSupplier,
+			String masterLayoutPageTemplateEntryERC)
+		throws PortalException {
+
+		if (Validator.isNull(masterLayoutPageTemplateEntryERC)) {
+			return;
+		}
+
+		Layout layout = layoutSupplier.get();
+
+		if ((layout != null) &&
+			Objects.equals(
+				layout.getMasterLayoutPageTemplateEntryERC(),
+				masterLayoutPageTemplateEntryERC)) {
+
+			return;
+		}
+
+		LayoutPageTemplateEntry layoutPageTemplateEntry =
+			_layoutPageTemplateEntryLocalService.
+				fetchLayoutPageTemplateEntryByExternalReferenceCode(
+					masterLayoutPageTemplateEntryERC, groupId);
+
+		LayoutPageTemplateEntryUtil.validatePublished(layoutPageTemplateEntry);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
