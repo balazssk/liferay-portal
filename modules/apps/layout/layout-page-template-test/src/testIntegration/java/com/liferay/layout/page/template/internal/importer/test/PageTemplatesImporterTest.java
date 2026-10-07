@@ -1145,6 +1145,34 @@ public class PageTemplatesImporterTest {
 	}
 
 	@Test
+	@TestInfo("LPD-95027")
+	public void testImportLayoutPageTemplateWithUnpublishedMasterPage()
+		throws Exception {
+
+		_layoutPageTemplateEntryLocalService.addLayoutPageTemplateEntry(
+			null, TestPropsValues.getUserId(), _group.getGroupId(), 0, null,
+			"Test Master Page",
+			LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT, 0,
+			WorkflowConstants.STATUS_DRAFT,
+			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
+
+		List<LayoutsImporterResultEntry> layoutsImporterResultEntries =
+			_getLayoutsImporterResultEntries(
+				"layout-page-template-master-page", new HashMap<>());
+
+		Assert.assertEquals(
+			layoutsImporterResultEntries.toString(), 1,
+			layoutsImporterResultEntries.size());
+
+		LayoutsImporterResultEntry layoutsImporterResultEntry =
+			layoutsImporterResultEntries.get(0);
+
+		Assert.assertEquals(
+			LayoutsImporterResultEntry.Status.INVALID,
+			layoutsImporterResultEntry.getStatus());
+	}
+
+	@Test
 	public void testImportLayoutPageTemplates() throws Exception {
 		List<LayoutsImporterResultEntry> layoutsImporterResultEntries =
 			_getLayoutsImporterResultEntries(
