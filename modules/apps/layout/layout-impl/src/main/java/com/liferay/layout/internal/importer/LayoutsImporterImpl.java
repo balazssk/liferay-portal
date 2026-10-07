@@ -87,6 +87,7 @@ import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalServ
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryService;
 import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalService;
 import com.liferay.layout.page.template.util.CheckUnlockedLayoutThreadLocal;
+import com.liferay.layout.page.template.util.LayoutPageTemplateEntryUtil;
 import com.liferay.layout.util.LayoutServiceContextHelper;
 import com.liferay.layout.util.constants.LayoutStructureConstants;
 import com.liferay.layout.util.structure.FragmentStyledLayoutStructureItem;
@@ -691,6 +692,27 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 		key = StringUtil.toLowerCase(key);
 
 		return key;
+	}
+
+	private String _getMasterLayoutPageTemplateEntryERC(
+			long groupId, MasterPage masterPage)
+		throws Exception {
+
+		if (masterPage == null) {
+			return null;
+		}
+
+		LayoutPageTemplateEntry layoutPageTemplateEntry =
+			_layoutPageTemplateEntryLocalService.fetchLayoutPageTemplateEntry(
+				groupId, masterPage.getKey());
+
+		if (layoutPageTemplateEntry == null) {
+			return null;
+		}
+
+		LayoutPageTemplateEntryUtil.validatePublished(layoutPageTemplateEntry);
+
+		return layoutPageTemplateEntry.getExternalReferenceCode();
 	}
 
 	private String _getPageDefinitionJSON(
@@ -2215,7 +2237,8 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 	}
 
 	private Layout _updateLayoutSettings(
-		long userId, Layout layout, Settings settings) {
+			long userId, Layout layout, Settings settings)
+		throws Exception {
 
 		if (settings == null) {
 			layout.setThemeId(null);
@@ -2393,18 +2416,13 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 			}
 		}
 
-		MasterPage masterPage = settings.getMasterPage();
+		String masterLayoutPageTemplateEntryERC =
+			_getMasterLayoutPageTemplateEntryERC(
+				layout.getGroupId(), settings.getMasterPage());
 
-		if (masterPage != null) {
-			LayoutPageTemplateEntry masterLayoutPageTemplateEntry =
-				_layoutPageTemplateEntryLocalService.
-					fetchLayoutPageTemplateEntry(
-						layout.getGroupId(), masterPage.getKey());
-
-			if (masterLayoutPageTemplateEntry != null) {
-				layout.setMasterLayoutPageTemplateEntryERC(
-					masterLayoutPageTemplateEntry.getExternalReferenceCode());
-			}
+		if (masterLayoutPageTemplateEntryERC != null) {
+			layout.setMasterLayoutPageTemplateEntryERC(
+				masterLayoutPageTemplateEntryERC);
 		}
 
 		ArrayUtil.isNotEmptyForEach(
